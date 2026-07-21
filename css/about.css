@@ -1,0 +1,497 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #ffffff;
+    color: #222222;
+    line-height: 1.6;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+ul {
+    list-style: none;
+}
+
+img {
+    width: 100%;
+    display: block;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: auto;
+}
+
+header {
+    background: #ffffff;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+header .container {
+    min-height: 85px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo img {
+    width: 65px;
+    height: 65px;
+    object-fit: contain;
+}
+
+.logo h1 {
+    max-width: 310px;
+    color: #0b3d91;
+    font-size: 20px;
+    line-height: 1.2;
+    font-weight: 800;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+}
+
+.nav-links a {
+    color: #333333;
+    font-size: 15px;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: #ff7a00;
+}
+
+.page-banner {
+    min-height: 350px;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: #ffffff;
+    background:
+        linear-gradient(rgba(5, 30, 68, 0.82), rgba(5, 30, 68, 0.82)),
+        url("../images/about-st.png") center/cover no-repeat;
+}
+
+.page-banner h1 {
+    font-size: 52px;
+    margin-bottom: 10px;
+}
+
+.page-banner p {
+    color: #e3ebf8;
+    font-size: 19px;
+}
+
+section {
+    padding: 90px 0;
+}
+
+.about-company .container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 60px;
+}
+
+.about-image img {
+    height: 520px;
+    object-fit: cover;
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.about-content > span,
+.section-title span {
+    display: inline-block;
+    color: #ff7a00;
+    background: #fff1e3;
+    padding: 7px 15px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 18px;
+}
+
+.about-content h2 {
+    color: #0b2b5e;
+    font-size: 39px;
+    line-height: 1.25;
+    margin-bottom: 22px;
+}
+
+.about-content p {
+    color: #606060;
+    margin-bottom: 16px;
+}
+
+.about-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 28px;
+}
+
+.list-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #333333;
+    font-weight: 600;
+}
+
+.list-item i {
+    color: #ff7a00;
+    font-size: 18px;
+}
+
+.mission {
+    background: #f7f9fc;
+}
+
+.mission .container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+}
+
+.mission-card {
+    background: #ffffff;
+    padding: 45px 38px;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+    transition: 0.3s;
+    border-bottom: 4px solid transparent;
+}
+
+.mission-card:hover {
+    transform: translateY(-8px);
+    border-bottom-color: #ff7a00;
+}
+
+.mission-card i {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 22px;
+    border-radius: 50%;
+    background: #fff1e3;
+    color: #ff7a00;
+    font-size: 34px;
+}
+
+.mission-card h2 {
+    color: #0b2b5e;
+    font-size: 27px;
+    margin-bottom: 14px;
+}
+
+.mission-card p {
+    color: #666666;
+}
+
+.section-title {
+    max-width: 750px;
+    margin: 0 auto 50px;
+    text-align: center;
+}
+
+.section-title h2 {
+    color: #0b2b5e;
+    font-size: 38px;
+    line-height: 1.3;
+}
+
+.why-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+.why-card {
+    background: #ffffff;
+    padding: 32px 25px;
+    border-radius: 14px;
+    text-align: center;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+    transition: 0.3s;
+}
+
+.why-card:hover {
+    transform: translateY(-8px);
+}
+
+.why-card i {
+    width: 68px;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    border-radius: 14px;
+    background: #eef4ff;
+    color: #0b3d91;
+    font-size: 28px;
+}
+
+.why-card h3 {
+    color: #0b2b5e;
+    margin-bottom: 10px;
+}
+
+.why-card p {
+    color: #666666;
+    font-size: 15px;
+}
+
+.statistics {
+    background:
+        linear-gradient(rgba(133, 156, 195, 0.93), rgba(141, 155, 179, 0.93)),
+        url() center/cover fixed;
+    color: #ffffff;
+}
+
+.statistics .container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+}
+
+.stat-box {
+    text-align: center;
+    padding: 20px;
+}
+
+.stat-box h2 {
+    color: #091674;
+    font-size: 48px;
+    line-height: 1;
+    margin-bottom: 12px;
+}
+
+.stat-box p {
+    color: #ffffff;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.values {
+    background: #f7f9fc;
+}
+
+.value-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+}
+
+.value-card {
+    background: #ffffff;
+    padding: 38px 30px;
+    border-radius: 14px;
+    text-align: center;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.07);
+    transition: 0.3s;
+}
+
+.value-card:hover {
+    transform: translateY(-8px);
+}
+
+.value-card i {
+    width: 72px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    background: #fff1e3;
+    color: #ff7a00;
+    font-size: 29px;
+}
+
+.value-card h3 {
+    color: #0b2b5e;
+    font-size: 22px;
+    margin-bottom: 12px;
+}
+
+.value-card p {
+    color: #666666;
+}
+
+footer {
+    background: #071d3d;
+    color: #ffffff;
+    padding: 70px 0 20px;
+}
+
+.footer-content {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1.2fr;
+    gap: 50px;
+}
+
+.footer-logo {
+    width: 75px;
+    height: 75px;
+    object-fit: contain;
+    margin-bottom: 16px;
+    border-radius: 10px;
+}
+
+.footer-section h3 {
+    margin-bottom: 20px;
+}
+
+.footer-section p,
+.footer-section li {
+    color: #c6d0df;
+    margin-bottom: 11px;
+}
+
+.footer-section a {
+    transition: 0.3s;
+}
+
+.footer-section a:hover {
+    color: #ff7a00;
+    padding-left: 5px;
+}
+
+.footer-section p i {
+    color: #ff7a00;
+    margin-right: 8px;
+}
+
+.footer-bottom {
+    text-align: center;
+    border-top: 1px solid #284364;
+    margin-top: 45px;
+    padding-top: 20px;
+    color: #aebbd0;
+}
+
+.hidden {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: 0.7s ease;
+}
+
+.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media screen and (max-width: 992px) {
+    header .container {
+        flex-direction: column;
+        padding: 14px 0;
+        gap: 15px;
+    }
+
+    .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 18px;
+    }
+
+    .about-company .container {
+        grid-template-columns: 1fr;
+    }
+
+    .mission .container,
+    .value-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .why-grid,
+    .statistics .container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .footer-content {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media screen and (max-width: 600px) {
+    section {
+        padding: 65px 0;
+    }
+
+    .logo h1 {
+        max-width: 220px;
+        font-size: 16px;
+    }
+
+    .logo img {
+        width: 55px;
+        height: 55px;
+    }
+
+    .nav-links {
+        gap: 12px;
+    }
+
+    .nav-links a {
+        font-size: 13px;
+    }
+
+    .page-banner {
+        min-height: 280px;
+    }
+
+    .page-banner h1 {
+        font-size: 40px;
+    }
+
+    .about-content h2,
+    .section-title h2 {
+        font-size: 30px;
+    }
+
+    .about-image img {
+        height: 350px;
+    }
+
+    .about-list,
+    .mission .container,
+    .why-grid,
+    .statistics .container,
+    .value-grid,
+    .footer-content {
+        grid-template-columns: 1fr;
+    }
+}
