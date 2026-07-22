@@ -46,6 +46,7 @@ header .container{
 
 .logo img{
     width:60px;
+    border-radius: 10px;
 }
 
 .logo h1{
@@ -75,11 +76,11 @@ header .container{
 /* Banner */
 
 .page-banner{
-    background:linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,.6)),
-    url("../images/products-banner.jpg") center/cover;
-    color:#fff;
+    background:linear-gradient(rgba(131, 170, 192, 0.6),rgba(151, 194, 226, 0.6)),
+    url("../images/product-background.jpeg") center/cover;
+    color:#160d99;
     text-align:center;
-    padding:100px 20px;
+    padding: 50px 10px;
 }
 
 .page-banner h1{
@@ -322,6 +323,7 @@ footer{
 .footer-logo img{
     width:70px;
     margin-bottom:12px;
+    border-radius: 10px;
 }
 
 .footer-logo h2{
