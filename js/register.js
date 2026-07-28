@@ -18,7 +18,7 @@ document.querySelectorAll(".password-toggle").forEach(button=>{
     });
 });
 
-registerForm.addEventListener("submit",e=>{
+registerForm.addEventListener("submit",async e=>{
     e.preventDefault();
 
     clearErrors();
@@ -76,7 +76,8 @@ registerForm.addEventListener("submit",e=>{
     }
 
     if(!terms){
-        document.getElementById("termsError").textContent="You must accept the terms and conditions.";
+        document.getElementById("termsError").textContent=
+        "You must accept the terms and conditions.";
         valid=false;
     }
 
@@ -87,32 +88,88 @@ registerForm.addEventListener("submit",e=>{
 
     const button=registerForm.querySelector(".auth-btn");
     button.disabled=true;
-    button.innerHTML='<i class="fas fa-spinner fa-spin"></i> Creating account...';
+    button.innerHTML=
+    '<i class="fas fa-spinner fa-spin"></i> Creating account...';
 
-    setTimeout(()=>{
-        showMessage("Account created successfully! Redirecting to login...","success");
+    try{
+        const response=await fetch(
+            "http://localhost:5000/api/auth/register",
+            {
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:JSON.stringify({
+                    name:`${firstName} ${lastName}`,
+                    email:email,
+                    password:password,
+                    phone:phone
+                })
+            }
+        );
 
+        const data=await response.json();
+
+        if(response.ok){
+            showMessage(
+                "Account created successfully! Redirecting to login...",
+                "success"
+            );
+
+            registerForm.reset();
+
+            setTimeout(()=>{
+                window.location.href="login.html";
+            },1500);
+
+        }else{
+            showMessage(
+                data.message||"Registration failed. Please try again.",
+                "error"
+            );
+        }
+
+    }catch(error){
+        console.error("Registration error:",error);
+
+        showMessage(
+            "Cannot connect to the server. Please try again.",
+            "error"
+        );
+
+    }finally{
         button.disabled=false;
-        button.innerHTML='<span>Create Account</span><i class="fas fa-user-plus"></i>';
-        registerForm.reset();
-
-        setTimeout(()=>{
-            window.location.href="login.html";
-        },1500);
-    },1400);
+        button.innerHTML=
+        '<span>Create Account</span><i class="fas fa-user-plus"></i>';
+    }
 });
 
 function showError(id,text){
     const input=document.getElementById(id);
     const error=document.getElementById(id+"Error");
 
-    input.closest(".input-box").classList.add("error");
-    error.textContent=text;
+    if(input){
+        const inputBox=input.closest(".input-box");
+
+        if(inputBox){
+            inputBox.classList.add("error");
+        }
+    }
+
+    if(error){
+        error.textContent=text;
+    }
 }
 
 function clearErrors(){
-    document.querySelectorAll(".input-box").forEach(box=>box.classList.remove("error"));
-    document.querySelectorAll(".error-message").forEach(error=>error.textContent="");
+    document.querySelectorAll(".input-box").forEach(box=>{
+        box.classList.remove("error");
+    });
+
+    document.querySelectorAll(".error-message").forEach(error=>{
+        error.textContent="";
+    });
+
     message.textContent="";
     message.className="form-message";
 }

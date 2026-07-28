@@ -100,3 +100,53 @@ buttons.forEach(button => {
         button.style.transform = "translateY(0)";
     });
 });
+
+document.addEventListener("DOMContentLoaded",()=>{
+
+const loginNavItem=document.getElementById("loginNavItem");
+const userNavItem=document.getElementById("userNavItem");
+const logoutNavItem=document.getElementById("logoutNavItem");
+const navUserName=document.getElementById("navUserName");
+const logoutBtn=document.getElementById("logoutBtn");
+
+const token=
+    localStorage.getItem("token")||
+    sessionStorage.getItem("token");
+
+const userData=
+    localStorage.getItem("user")||
+    sessionStorage.getItem("user");
+
+if(token&&userData){
+    try{
+        const user=JSON.parse(userData);
+
+        loginNavItem.style.display="none";
+        userNavItem.style.display="block";
+        logoutNavItem.style.display="block";
+
+        navUserName.textContent=user.name||"User";
+    }catch(error){
+        console.error("Invalid user data:",error);
+        clearLoginData();
+    }
+}else{
+    loginNavItem.style.display="block";
+    userNavItem.style.display="none";
+    logoutNavItem.style.display="none";
+}
+
+logoutBtn.addEventListener("click",()=>{
+    clearLoginData();
+    window.location.href="login.html";
+});
+
+function clearLoginData(){
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+}
+
+});

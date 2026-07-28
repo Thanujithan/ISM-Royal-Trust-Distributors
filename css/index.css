@@ -104,6 +104,71 @@ header .container {
     cursor: pointer;
 }
 
+/* User Name */
+
+.nav-user{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:#333;
+    font-weight:600;
+    padding:10px 15px;
+    border-radius:30px;
+    background:#f5f5f5;
+}
+
+.nav-user i{
+    color:#0d6efd;
+    font-size:20px;
+}
+
+
+/* Logout Button */
+
+.btn-nav-logout{
+    background:#dc3545;
+    color:#fff;
+    border:none;
+    outline:none;
+    padding:10px 18px;
+    border-radius:30px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:15px;
+    font-weight:600;
+    transition:all .35s ease;
+    box-shadow:0 4px 12px rgba(220,53,69,.25);
+}
+
+
+/* Hover */
+
+.btn-nav-logout:hover{
+    background:#73b6da;
+    transform:translateY(-3px);
+    box-shadow:0 8px 20px rgba(220,53,69,.35);
+}
+
+
+/* Click Effect */
+
+.btn-nav-logout:active{
+    transform:scale(.96);
+}
+
+
+/* Icon */
+
+.btn-nav-logout i{
+    transition:transform .35s;
+}
+
+.btn-nav-logout:hover i{
+    transform:translateX(4px);
+}
+
 .hero {
     min-height: 620px;
     display: flex;
