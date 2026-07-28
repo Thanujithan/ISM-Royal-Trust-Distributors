@@ -1,8 +1,11 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+
 const connectDB = require("./config/db");
+
 const authRoutes = require("./routes/authRoutes");
+const productRoutes = require("./routes/productRoutes");
 
 dotenv.config();
 
@@ -14,12 +17,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/products", productRoutes);
 
 app.get("/", (req, res) => {
-    res.send(
-        "ISM Royal Trust Distributors Backend is Running..."
-    );
+    res.send("ISM Royal Trust Distributors Backend is Running...");
 });
 
 const PORT = process.env.PORT || 5000;
