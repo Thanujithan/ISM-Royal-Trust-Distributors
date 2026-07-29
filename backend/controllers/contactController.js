@@ -1,208 +1,206 @@
+const mongoose = require("mongoose");
 const Contact = require("../models/Contact");
 
-// Save a new contact message
+// @desc    Create contact message
+// @route   POST /api/contact
+// @access  Public
 const createContactMessage = async (req, res) => {
-    try {
-        const {
-            fullName,
-            email,
-            phone,
-            subject,
-            message
-        } = req.body;
+  try {
+    const { name, email, phone, subject, message } = req.body;
 
-        if (!fullName || !email || !phone || !subject || !message) {
-            return res.status(400).json({
-                success: false,
-                message: "Please fill in all required fields."
-            });
-        }
-
-        const newMessage = await Contact.create({
-            fullName,
-            email,
-            phone,
-            subject,
-            message
-        });
-
-        return res.status(201).json({
-            success: true,
-            message: "Your message has been sent successfully.",
-            data: newMessage
-        });
-    } catch (error) {
-        console.error("Create contact message error:", error);
-
-        return res.status(500).json({
-            success: false,
-            message: "Unable to send your message. Please try again."
-        });
+    if (!name || !email || !message) {
+      return res.status(400).json({
+        success: false,
+        message: "Name, email and message are required",
+      });
     }
+
+    const newMessage = await Contact.create({
+      name,
+      email,
+      phone,
+      subject,
+      message,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Your message has been sent successfully",
+      data: newMessage,
+    });
+  } catch (error) {
+    console.error("Create contact message error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to send message",
+      error: error.message,
+    });
+  }
 };
 
-// Get all messages - admin use
-const getAllContactMessages = async (req, res) => {
-    try {
-        const messages = await Contact.find().sort({
-            createdAt: -1
-        });
+// @desc    Get all contact messages
+// @route   GET /api/contact
+// @access  Admin
+const getAllMessages = async (req, res) => {
+  try {
+    const messages = await Contact.find().sort({ createdAt: -1 });
 
-        return res.status(200).json({
-            success: true,
-            count: messages.length,
-            data: messages
-        });
-    } catch (error) {
-        console.error("Get messages error:", error);
+    return res.status(200).json({
+      success: true,
+      count: messages.length,
+      data: messages,
+    });
+  } catch (error) {
+    console.error("Get messages error:", error);
 
-        return res.status(500).json({
-            success: false,
-            message: "Unable to retrieve messages."
-        });
-    }
+    return res.status(500).json({
+      success: false,
+      message: "Unable to load messages",
+      error: error.message,
+    });
+  }
 };
 
-// Get one message by ID
-const getContactMessageById = async (req, res) => {
-    try {
-        const message = await Contact.findById(req.params.id);
+// @desc    Get one contact message
+// @route   GET /api/contact/:id
+// @access  Admin
+const getMessageById = async (req, res) => {
+  try {
+    const { id } = req.params;
 
-        if (!message) {
-            return res.status(404).json({
-                success: false,
-                message: "Message not found."
-            });
-        }
-
-        return res.status(200).json({
-            success: true,
-            data: message
-        });
-    } catch (error) {
-        console.error("Get message error:", error);
-
-        return res.status(500).json({
-            success: false,
-            message: "Unable to retrieve the message."
-        });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid message ID",
+      });
     }
+
+    const contactMessage = await Contact.findById(id);
+
+    if (!contactMessage) {
+      return res.status(404).json({
+        success: false,
+        message: "Message not found",
+      });
+    }
+
+    if (contactMessage.status === "unread") {
+      contactMessage.status = "read";
+      await contactMessage.save();
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: contactMessage,
+    });
+  } catch (error) {
+    console.error("Get single message error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to load message",
+      error: error.message,
+    });
+  }
 };
 
-// Mark message as read
-const markMessageAsRead = async (req, res) => {
-    try {
-        const message = await Contact.findByIdAndUpdate(
-            req.params.id,
-            {
-                status: "read"
-            },
-            {
-                new: true,
-                runValidators: true
-            }
-        );
+// @desc    Update message status
+// @route   PUT /api/contact/:id/status
+// @access  Admin
+const updateMessageStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
 
-        if (!message) {
-            return res.status(404).json({
-                success: false,
-                message: "Message not found."
-            });
-        }
-
-        return res.status(200).json({
-            success: true,
-            message: "Message marked as read.",
-            data: message
-        });
-    } catch (error) {
-        console.error("Mark message error:", error);
-
-        return res.status(500).json({
-            success: false,
-            message: "Unable to update the message."
-        });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid message ID",
+      });
     }
+
+    if (!["read", "unread"].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Status must be read or unread",
+      });
+    }
+
+    const updatedMessage = await Contact.findByIdAndUpdate(
+      id,
+      { status },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!updatedMessage) {
+      return res.status(404).json({
+        success: false,
+        message: "Message not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Message status updated",
+      data: updatedMessage,
+    });
+  } catch (error) {
+    console.error("Update message status error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to update message status",
+      error: error.message,
+    });
+  }
 };
 
-// Save admin reply
-const replyToContactMessage = async (req, res) => {
-    try {
-        const { adminReply } = req.body;
+// @desc    Delete contact message
+// @route   DELETE /api/contact/:id
+// @access  Admin
+const deleteMessage = async (req, res) => {
+  try {
+    const { id } = req.params;
 
-        if (!adminReply || !adminReply.trim()) {
-            return res.status(400).json({
-                success: false,
-                message: "Reply message is required."
-            });
-        }
-
-        const message = await Contact.findByIdAndUpdate(
-            req.params.id,
-            {
-                adminReply: adminReply.trim(),
-                status: "replied",
-                repliedAt: new Date()
-            },
-            {
-                new: true,
-                runValidators: true
-            }
-        );
-
-        if (!message) {
-            return res.status(404).json({
-                success: false,
-                message: "Message not found."
-            });
-        }
-
-        return res.status(200).json({
-            success: true,
-            message: "Reply saved successfully.",
-            data: message
-        });
-    } catch (error) {
-        console.error("Reply message error:", error);
-
-        return res.status(500).json({
-            success: false,
-            message: "Unable to save the reply."
-        });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid message ID",
+      });
     }
-};
 
-// Delete a message
-const deleteContactMessage = async (req, res) => {
-    try {
-        const message = await Contact.findByIdAndDelete(req.params.id);
+    const deletedMessage = await Contact.findByIdAndDelete(id);
 
-        if (!message) {
-            return res.status(404).json({
-                success: false,
-                message: "Message not found."
-            });
-        }
-
-        return res.status(200).json({
-            success: true,
-            message: "Message deleted successfully."
-        });
-    } catch (error) {
-        console.error("Delete message error:", error);
-
-        return res.status(500).json({
-            success: false,
-            message: "Unable to delete the message."
-        });
+    if (!deletedMessage) {
+      return res.status(404).json({
+        success: false,
+        message: "Message not found",
+      });
     }
+
+    return res.status(200).json({
+      success: true,
+      message: "Message deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete message error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to delete message",
+      error: error.message,
+    });
+  }
 };
 
 module.exports = {
-    createContactMessage,
-    getAllContactMessages,
-    getContactMessageById,
-    markMessageAsRead,
-    replyToContactMessage,
-    deleteContactMessage
+  createContactMessage,
+  getAllMessages,
+  getMessageById,
+  updateMessageStatus,
+  deleteMessage,
 };

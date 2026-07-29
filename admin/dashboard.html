@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Admin Dashboard | ISM Royal Trust Distributors</title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+
+<body>
+    <div class="admin-layout">
+
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>ISM Admin</h2>
+                <p>Royal Trust Distributors</p>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="active">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                <a href="products.html">
+                    <i class="fas fa-box"></i>
+                    <span>Products</span>
+                </a>
+
+                <a href="messages.html">
+                    <i class="fas fa-envelope"></i>
+                    <span>Messages</span>
+                </a>
+
+                <a href="users.html">
+                    <i class="fas fa-users"></i>
+                    <span>Users</span>
+                </a>
+
+                <a href="../index.html">
+                    <i class="fas fa-globe"></i>
+                    <span>View Website</span>
+                </a>
+            </nav>
+
+            <button class="logout-btn" id="logoutButton">
+                <i class="fas fa-right-from-bracket"></i>
+                Logout
+            </button>
+        </aside>
+
+        <main class="main-content">
+
+            <header class="topbar">
+                <button
+                    class="menu-button"
+                    id="menuButton"
+                    type="button"
+                >
+                    <i class="fas fa-bars"></i>
+                </button>
+
+                <div>
+                    <h1>Admin Dashboard</h1>
+                    <p>Welcome back, Administrator</p>
+                </div>
+
+                <div class="admin-profile">
+                    <div class="profile-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+
+                    <div>
+                        <strong id="adminName">Admin</strong>
+                        <small id="adminEmail">Administrator</small>
+                    </div>
+                </div>
+            </header>
+
+            <section class="dashboard-content">
+
+                <div class="stats-grid">
+
+                    <article class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-box"></i>
+                        </div>
+
+                        <div>
+                            <p>Total Products</p>
+                            <h2 id="totalProducts">0</h2>
+                        </div>
+                    </article>
+
+                    <article class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+
+                        <div>
+                            <p>Total Users</p>
+                            <h2 id="totalUsers">0</h2>
+                        </div>
+                    </article>
+
+                    <article class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+
+                        <div>
+                            <p>Total Messages</p>
+                            <h2 id="totalMessages">0</h2>
+                        </div>
+                    </article>
+
+                    <article class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-envelope-open"></i>
+                        </div>
+
+                        <div>
+                            <p>Unread Messages</p>
+                            <h2 id="unreadMessages">0</h2>
+                        </div>
+                    </article>
+
+                </div>
+
+                <div class="dashboard-grid">
+
+                    <section class="content-card">
+                        <div class="card-header">
+                            <div>
+                                <h2>Recent Messages</h2>
+                                <p>Latest customer enquiries</p>
+                            </div>
+
+                            <a href="messages.html">View All</a>
+                        </div>
+
+                        <div
+                            class="recent-list"
+                            id="recentMessages"
+                        >
+                            <p class="empty-message">
+                                Loading messages...
+                            </p>
+                        </div>
+                    </section>
+
+                    <section class="content-card">
+                        <div class="card-header">
+                            <div>
+                                <h2>Recent Products</h2>
+                                <p>Latest added products</p>
+                            </div>
+
+                            <a href="products.html">Manage</a>
+                        </div>
+
+                        <div
+                            class="recent-list"
+                            id="recentProducts"
+                        >
+                            <p class="empty-message">
+                                Loading products...
+                            </p>
+                        </div>
+                    </section>
+
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <script src="js/admin-auth.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

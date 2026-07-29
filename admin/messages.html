@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Contact Messages | ISM Admin</title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <link rel="stylesheet" href="css/admin.css">
+
+    <style>
+        .message-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+        }
+
+        .message-summary h2 {
+            margin: 0 0 5px;
+        }
+
+        .message-summary p {
+            margin: 0;
+        }
+
+        .message-search-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: #ffffff;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 22px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+        }
+
+        .message-search-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            border: 1px solid #d9dfe7;
+            border-radius: 8px;
+            padding: 0 14px;
+            background: #ffffff;
+        }
+
+        .message-search-box i {
+            color: #7a8491;
+        }
+
+        .message-search-box input {
+            width: 100%;
+            border: none;
+            outline: none;
+            padding: 12px 0;
+            font-size: 15px;
+            background: transparent;
+        }
+
+        .message-status {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 72px;
+            padding: 6px 11px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .message-status.unread {
+            color: #b42318;
+            background: #fee4e2;
+        }
+
+        .message-status.read {
+            color: #067647;
+            background: #d1fadf;
+        }
+
+        .unread-message-row {
+            background: #f5f9ff;
+            font-weight: 600;
+        }
+
+        .message-action-buttons {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .message-view-button,
+        .message-delete-button {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s ease;
+        }
+
+        .message-view-button {
+            color: #ffffff;
+            background: #1769aa;
+        }
+
+        .message-delete-button {
+            color: #ffffff;
+            background: #d92d20;
+        }
+
+        .message-view-button:hover,
+        .message-delete-button:hover {
+            transform: translateY(-1px);
+            opacity: 0.9;
+        }
+
+        .message-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(15, 23, 42, 0.6);
+        }
+
+        .message-modal-overlay.active {
+            display: flex;
+        }
+
+        .message-modal-box {
+            width: 620px;
+            max-width: 100%;
+            max-height: 88vh;
+            overflow-y: auto;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+        }
+
+        .message-modal-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 22px 24px;
+            border-bottom: 1px solid #eceff3;
+        }
+
+        .message-modal-header h2 {
+            margin: 0 0 5px;
+        }
+
+        .message-modal-header p {
+            margin: 0;
+            color: #667085;
+        }
+
+        .message-modal-close {
+            border: none;
+            background: transparent;
+            font-size: 22px;
+            cursor: pointer;
+            color: #475467;
+        }
+
+        .message-modal-body {
+            padding: 24px;
+        }
+
+        .message-detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .message-detail-item {
+            padding: 14px;
+            border: 1px solid #e4e7ec;
+            border-radius: 10px;
+            background: #f9fafb;
+        }
+
+        .message-detail-item small {
+            display: block;
+            margin-bottom: 5px;
+            color: #667085;
+        }
+
+        .message-detail-item strong,
+        .message-detail-item span {
+            word-break: break-word;
+        }
+
+        .full-message-section h3 {
+            margin: 0 0 10px;
+        }
+
+        .full-message-text {
+            min-height: 120px;
+            padding: 16px;
+            border-radius: 10px;
+            background: #f5f7fa;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        @media (max-width: 768px) {
+            .message-detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .message-search-card {
+                padding: 12px;
+            }
+
+            .message-summary {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="admin-layout">
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+
+            <div class="sidebar-header">
+                <h2>ISM Admin</h2>
+                <p>Royal Trust Distributors</p>
+            </div>
+
+            <nav class="sidebar-nav">
+
+                <a href="dashboard.html">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                <a href="products.html">
+                    <i class="fas fa-box"></i>
+                    <span>Products</span>
+                </a>
+
+                <a href="messages.html" class="active">
+                    <i class="fas fa-envelope"></i>
+                    <span>Messages</span>
+                </a>
+
+                <a href="users.html">
+                    <i class="fas fa-users"></i>
+                    <span>Users</span>
+                </a>
+
+                <a href="../index.html">
+                    <i class="fas fa-globe"></i>
+                    <span>View Website</span>
+                </a>
+
+            </nav>
+
+            <button
+                class="logout-btn"
+                id="logoutButton"
+                type="button"
+            >
+                <i class="fas fa-right-from-bracket"></i>
+                Logout
+            </button>
+
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <header class="topbar">
+
+                <button
+                    class="menu-button"
+                    id="menuButton"
+                    type="button"
+                >
+                    <i class="fas fa-bars"></i>
+                </button>
+
+                <div>
+                    <h1>Contact Messages</h1>
+                    <p>View and manage customer messages</p>
+                </div>
+
+                <div class="admin-profile">
+
+                    <div class="profile-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+
+                    <div>
+                        <strong id="adminName">Admin</strong>
+                        <small id="adminEmail">Administrator</small>
+                    </div>
+
+                </div>
+
+            </header>
+
+            <section class="dashboard-content">
+
+                <!-- Page Header -->
+                <div class="message-summary">
+
+                    <div>
+                        <h2>Message List</h2>
+
+                        <p>
+                            Total Messages:
+                            <strong id="messageCount">0</strong>
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- Search -->
+                <div class="message-search-card">
+
+                    <div class="message-search-box">
+
+                        <i class="fas fa-search"></i>
+
+                        <input
+                            type="search"
+                            id="searchInput"
+                            placeholder="Search by name, email or subject"
+                        >
+
+                    </div>
+
+                </div>
+
+                <!-- Page Message -->
+                <div id="pageMessage"></div>
+
+                <!-- Messages Table -->
+                <div class="table-card">
+
+                    <div class="table-responsive">
+
+                        <table class="admin-table">
+
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Subject</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="messagesTableBody">
+
+                                <tr>
+                                    <td
+                                        colspan="6"
+                                        class="table-message"
+                                    >
+                                        Loading messages...
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <!-- Message View Modal -->
+    <div
+        class="message-modal-overlay"
+        id="messageModal"
+    >
+
+        <div class="message-modal-box">
+
+            <div class="message-modal-header">
+
+                <div>
+                    <h2>Message Details</h2>
+                    <p>Customer contact information</p>
+                </div>
+
+                <button
+                    class="message-modal-close"
+                    id="closeModalBtn"
+                    type="button"
+                >
+                    <i class="fas fa-times"></i>
+                </button>
+
+            </div>
+
+            <div class="message-modal-body">
+
+                <div class="message-detail-grid">
+
+                    <div class="message-detail-item">
+                        <small>Name</small>
+                        <strong id="modalName">-</strong>
+                    </div>
+
+                    <div class="message-detail-item">
+                        <small>Email</small>
+                        <span id="modalEmail">-</span>
+                    </div>
+
+                    <div class="message-detail-item">
+                        <small>Phone</small>
+                        <span id="modalPhone">-</span>
+                    </div>
+
+                    <div class="message-detail-item">
+                        <small>Subject</small>
+                        <span id="modalSubject">-</span>
+                    </div>
+
+                    <div class="message-detail-item">
+                        <small>Date</small>
+                        <span id="modalDate">-</span>
+                    </div>
+
+                    <div class="message-detail-item">
+                        <small>Status</small>
+                        <span id="modalStatus">-</span>
+                    </div>
+
+                </div>
+
+                <div class="full-message-section">
+
+                    <h3>Message</h3>
+
+                    <div
+                        class="full-message-text"
+                        id="modalMessage"
+                    >
+                        -
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="js/admin-auth.js"></script>
+    <script src="js/messages.js"></script>
+
+</body>
+</html>

@@ -1,24 +1,22 @@
 const express = require("express");
 
 const {
-    createContactMessage,
-    getAllContactMessages,
-    getContactMessageById,
-    markMessageAsRead,
-    replyToContactMessage,
-    deleteContactMessage
+  createContactMessage,
+  getAllMessages,
+  getMessageById,
+  updateMessageStatus,
+  deleteMessage,
 } = require("../controllers/contactController");
 
 const router = express.Router();
 
-// Public route
+// Public contact form
 router.post("/", createContactMessage);
 
-// Admin routes
-router.get("/", getAllContactMessages);
-router.get("/:id", getContactMessageById);
-router.put("/:id/read", markMessageAsRead);
-router.put("/:id/reply", replyToContactMessage);
-router.delete("/:id", deleteContactMessage);
+// Admin message routes
+router.get("/", getAllMessages);
+router.get("/:id", getMessageById);
+router.put("/:id/status", updateMessageStatus);
+router.delete("/:id", deleteMessage);
 
 module.exports = router;

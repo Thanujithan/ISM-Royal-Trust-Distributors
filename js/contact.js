@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const contactData = {
-            fullName,
+            name: fullName,
             email,
             phone,
             subject,
