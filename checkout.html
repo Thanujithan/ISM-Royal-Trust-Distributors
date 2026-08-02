@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Checkout | ISM ROYAL TRUST DISTRIBUTORS
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="css/checkout.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/theme.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+</head>
+
+<body>
+
+<header>
+    <div class="container">
+
+        <div class="logo">
+            <img
+                src="images/logo.png"
+                alt="ISM Logo"
+            >
+
+            <h1>
+                ISM ROYAL TRUST DISTRIBUTORS
+            </h1>
+        </div>
+
+        <nav>
+            <ul class="nav-links">
+
+                <li>
+                    <a href="index.html">
+                        Home
+                    </a>
+                </li>
+
+                <li>
+                    <a href="about.html">
+                        About
+                    </a>
+                </li>
+
+                <li>
+                    <a href="products.html">
+                        Products
+                    </a>
+                </li>
+
+                <li>
+                    <a href="services.html">
+                        Services
+                    </a>
+                </li>
+
+                <li>
+                    <a href="contact.html">
+                        Contact
+                    </a>
+                </li>
+
+                <li>
+                    <a href="cart.html">
+                        <i class="fas fa-cart-shopping"></i>
+                        Cart
+                    </a>
+                </li>
+
+                <li id="authNavItem">
+                    <a href="login.html">
+                        Login
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
+
+    </div>
+</header>
+
+
+<section class="page-banner">
+
+    <div class="container">
+
+        <h1>
+            Checkout
+        </h1>
+
+        <p>
+            Enter your delivery details and confirm your order.
+        </p>
+
+    </div>
+
+</section>
+
+
+<main class="checkout-section">
+
+    <div class="container">
+
+        <div class="checkout-layout">
+
+            <section class="checkout-form-card">
+
+                <div class="section-heading">
+
+                    <div class="heading-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+
+                    <div>
+                        <h2>
+                            Customer Information
+                        </h2>
+
+                        <p>
+                            Enter your contact and delivery details.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="checkoutMessage"
+                    class="checkout-message"
+                ></div>
+
+
+                <form id="checkoutForm">
+
+                    <div class="form-grid">
+
+                        <div class="form-group full-width">
+
+                            <label for="customerName">
+                                Full Name
+                            </label>
+
+                            <div class="input-box">
+
+                                <i class="fas fa-user"></i>
+
+                                <input
+                                    type="text"
+                                    id="customerName"
+                                    placeholder="Enter your full name"
+                                >
+
+                            </div>
+
+                            <small
+                                class="error-message"
+                                id="customerNameError"
+                            ></small>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="customerEmail">
+                                Email Address
+                            </label>
+
+                            <div class="input-box">
+
+                                <i class="fas fa-envelope"></i>
+
+                                <input
+                                    type="email"
+                                    id="customerEmail"
+                                    placeholder="Enter your email"
+                                >
+
+                            </div>
+
+                            <small
+                                class="error-message"
+                                id="customerEmailError"
+                            ></small>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="customerPhone">
+                                Phone Number
+                            </label>
+
+                            <div class="input-box">
+
+                                <i class="fas fa-phone"></i>
+
+                                <input
+                                    type="tel"
+                                    id="customerPhone"
+                                    placeholder="Enter your phone number"
+                                >
+
+                            </div>
+
+                            <small
+                                class="error-message"
+                                id="customerPhoneError"
+                            ></small>
+
+                        </div>
+
+
+                        <div class="form-group full-width">
+
+                            <label for="streetAddress">
+                                Street Address
+                            </label>
+
+                            <div class="input-box">
+
+                                <i class="fas fa-location-dot"></i>
+
+                                <input
+                                    type="text"
+                                    id="streetAddress"
+                                    placeholder="House number and street"
+                                >
+
+                            </div>
+
+                            <small
+                                class="error-message"
+                                id="streetAddressError"
+                            ></small>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="city">
+                                City
+                            </label>
+
+                            <div class="input-box">
+
+                                <i class="fas fa-city"></i>
+
+                                <input
+                                    type="text"
+                                    id="city"
+                                    placeholder="Enter city"
+                                >
+
+                            </div>
+
+                            <small
+                                class="error-message"
+                                id="cityError"
+                            ></small>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="district">
+                                District
+                            </label>
+
+                            <div class="input-box">
+
+                                <i class="fas fa-map"></i>
+
+                                <select id="district">
+
+                                    <option value="">
+                                        Select district
+                                    </option>
+
+                                    <option value="Ampara">
+                                        Ampara
+                                    </option>
+
+                                    <option value="Batticaloa">
+                                        Batticaloa
+                                    </option>
+
+                                    <option value="Trincomalee">
+                                        Trincomalee
+                                    </option>
+
+                                    <option value="Colombo">
+                                        Colombo
+                                    </option>
+
+                                    <option value="Kandy">
+                                        Kandy
+                                    </option>
+
+                                    <option value="Galle">
+                                        Galle
+                                    </option>
+
+                                    <option value="Jaffna">
+                                        Jaffna
+                                    </option>
+
+                                    <option value="Other">
+                                        Other
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                            <small
+                                class="error-message"
+                                id="districtError"
+                            ></small>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="postalCode">
+                                Postal Code
+                            </label>
+
+                            <div class="input-box">
+
+                                <i class="fas fa-location-crosshairs"></i>
+
+                                <input
+                                    type="text"
+                                    id="postalCode"
+                                    placeholder="Enter postal code"
+                                >
+
+                            </div>
+
+                            <small
+                                class="error-message"
+                                id="postalCodeError"
+                            ></small>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="deliveryNote">
+                                Delivery Note
+                            </label>
+
+                            <div class="input-box">
+
+                                <i class="fas fa-note-sticky"></i>
+
+                                <input
+                                    type="text"
+                                    id="deliveryNote"
+                                    placeholder="Optional note"
+                                >
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="payment-section">
+
+                        <div class="section-heading">
+
+                            <div class="heading-icon">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+
+                            <div>
+                                <h2>
+                                    Payment Method
+                                </h2>
+
+                                <p>
+                                    Select your preferred payment option.
+                                </p>
+                            </div>
+
+                        </div>
+
+
+                        <div class="payment-options">
+
+                            <label class="payment-card">
+
+                                <input
+                                    type="radio"
+                                    name="paymentMethod"
+                                    value="cash_on_delivery"
+                                    checked
+                                >
+
+                                <div class="payment-content">
+
+                                    <div class="payment-icon">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                    </div>
+
+                                    <div>
+                                        <strong>
+                                            Cash on Delivery
+                                        </strong>
+
+                                        <p>
+                                            Pay when your order is delivered.
+                                        </p>
+                                    </div>
+
+                                </div>
+
+                            </label>
+
+
+                            <label class="payment-card">
+
+                                <input
+                                    type="radio"
+                                    name="paymentMethod"
+                                    value="bank_transfer"
+                                >
+
+                                <div class="payment-content">
+
+                                    <div class="payment-icon">
+                                        <i class="fas fa-building-columns"></i>
+                                    </div>
+
+                                    <div>
+                                        <strong>
+                                            Bank Transfer
+                                        </strong>
+
+                                        <p>
+                                            Transfer payment after order confirmation.
+                                        </p>
+                                    </div>
+
+                                </div>
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        id="bankDetails"
+                        class="bank-details"
+                    >
+
+                        <h3>
+                            Bank Transfer Details
+                        </h3>
+
+                        <p>
+                            Bank: People's Bank
+                        </p>
+
+                        <p>
+                            Account Name: ISM Royal Trust Distributors
+                        </p>
+
+                        <p>
+                            Account Number: 0000000000
+                        </p>
+
+                        <small>
+                            Use your order number as the payment reference.
+                        </small>
+
+                    </div>
+
+
+                    <div class="checkout-actions">
+
+                        <a
+                            href="cart.html"
+                            class="back-cart-button"
+                        >
+                            <i class="fas fa-arrow-left"></i>
+                            Back to Cart
+                        </a>
+
+                        <button
+                            type="submit"
+                            id="placeOrderButton"
+                            class="place-order-button"
+                        >
+                            <span>
+                                Place Order
+                            </span>
+
+                            <i class="fas fa-check"></i>
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </section>
+
+
+            <aside class="checkout-summary">
+
+                <h2>
+                    Order Summary
+                </h2>
+
+                <div
+                    id="checkoutItems"
+                    class="checkout-items"
+                >
+
+                    <div class="summary-loading">
+
+                        <i class="fas fa-spinner fa-spin"></i>
+
+                        <p>
+                            Loading order...
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="summary-divider"></div>
+
+
+                <div class="summary-row">
+
+                    <span>
+                        Subtotal
+                    </span>
+
+                    <strong id="checkoutSubtotal">
+                        LKR 0.00
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-row">
+
+                    <span>
+                        Delivery Fee
+                    </span>
+
+                    <strong id="checkoutDeliveryFee">
+                        Free
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-divider"></div>
+
+
+                <div class="summary-row total-row">
+
+                    <span>
+                        Total
+                    </span>
+
+                    <strong id="checkoutTotal">
+                        LKR 0.00
+                    </strong>
+
+                </div>
+
+
+                <div class="checkout-security">
+
+                    <i class="fas fa-shield-halved"></i>
+
+                    <div>
+                        <strong>
+                            Secure Order
+                        </strong>
+
+                        <p>
+                            Your order details are protected.
+                        </p>
+                    </div>
+
+                </div>
+
+            </aside>
+
+        </div>
+
+    </div>
+
+</main>
+
+
+<div
+    id="successModal"
+    class="success-modal-overlay"
+>
+
+    <div class="success-modal">
+
+        <div class="success-icon">
+            <i class="fas fa-check"></i>
+        </div>
+
+        <h2>
+            Order Placed Successfully
+        </h2>
+
+        <p>
+            Thank you for your order.
+        </p>
+
+        <p>
+            Order Number:
+            <strong id="successOrderNumber">
+                -
+            </strong>
+        </p>
+
+        <a
+            href="index.html"
+            class="return-home-button"
+        >
+            Return to Home
+        </a>
+
+    </div>
+
+</div>
+
+
+<footer>
+
+    <div class="container footer-content">
+
+        <div class="footer-logo">
+
+            <img
+                src="images/logo.png"
+                alt="ISM Logo"
+            >
+
+            <h2>
+                ISM ROYAL TRUST DISTRIBUTORS
+            </h2>
+
+            <p>
+                Your trusted distribution partner across Sri Lanka.
+            </p>
+
+        </div>
+
+
+        <div class="footer-links">
+
+            <h3>
+                Quick Links
+            </h3>
+
+            <ul>
+
+                <li>
+                    <a href="index.html">
+                        Home
+                    </a>
+                </li>
+
+                <li>
+                    <a href="products.html">
+                        Products
+                    </a>
+                </li>
+
+                <li>
+                    <a href="cart.html">
+                        Cart
+                    </a>
+                </li>
+
+                <li>
+                    <a href="contact.html">
+                        Contact
+                    </a>
+                </li>
+
+            </ul>
+
+        </div>
+
+
+        <div class="footer-contact">
+
+            <h3>
+                Contact
+            </h3>
+
+            <p>
+                <i class="fas fa-phone"></i>
+                +94 75 769 3155
+            </p>
+
+            <p>
+                <i class="fas fa-envelope"></i>
+                ismdistributors1030@gmail.com
+            </p>
+
+            <p>
+                <i class="fas fa-location-dot"></i>
+                No. 29, Korakkovil Road,
+                Sammanthurai, Sri Lanka
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="copyright">
+
+        <p>
+            &copy; 2026 ISM ROYAL TRUST DISTRIBUTORS
+            (Pvt) Ltd. All Rights Reserved.
+        </p>
+
+    </div>
+
+</footer>
+
+
+<script src="js/checkout.js"></script>
+<script src="js/auth-navbar.js"></script>
+
+</body>
+</html>

@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const CART_STORAGE_KEY = "cart";
+    const CART_STORAGE_KEY = "ismCart";
     const DELIVERY_FEE = 0;
     const DISCOUNT = 0;
 
