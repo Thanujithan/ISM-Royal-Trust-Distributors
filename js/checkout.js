@@ -237,96 +237,103 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 
-    checkoutForm.addEventListener(
-        "submit",
-        async (event) => {
-            event.preventDefault();
+    checkoutForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-            clearErrors();
+        clearErrors();
 
-            const formData =
-                collectCheckoutData();
+        const formData = collectCheckoutData();
+        const valid = validateCheckoutData(formData);
 
-            const valid =
-                validateCheckoutData(formData);
+        if (!valid) {
+            showMessage(
+                "Please correct the highlighted fields.",
+                "error"
+            );
 
-            if (!valid) {
-                showMessage(
-                    "Please correct the highlighted fields.",
-                    "error"
+            return;
+        }
+
+        const token = getToken();
+
+        if (!token) {
+            showMessage(
+                "Please login before placing your order.",
+                "error"
+            );
+
+            localStorage.setItem(
+                "redirectAfterLogin",
+                "checkout.html"
+            );
+
+            setTimeout(() => {
+                window.location.href = "login.html";
+            }, 1200);
+
+            return;
+        }
+
+        const orderData = createOrderPayload(formData);
+
+        placeOrderButton.disabled = true;
+
+        placeOrderButton.innerHTML = `
+            <i class="fas fa-spinner fa-spin"></i>
+            Placing Order...
+        `;
+
+        try {
+            const response = await fetch(
+                "http://localhost:5000/api/orders",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+
+                    body: JSON.stringify(orderData)
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message ||
+                    "Unable to place order."
                 );
-
-                return;
             }
 
-            const orderData =
-                createOrderPayload(formData);
+            const order = result.data;
 
-            placeOrderButton.disabled = true;
+            successOrderNumber.textContent =
+                order.orderNumber || order._id;
+
+            clearCartStorage();
+
+            successModal.classList.add("show");
+
+        } catch (error) {
+            console.error("Checkout error:", error);
+
+            showMessage(
+                error.message ||
+                "Unable to place order. Please try again.",
+                "error"
+            );
+
+        } finally {
+            placeOrderButton.disabled = false;
 
             placeOrderButton.innerHTML = `
-                <i class="fas fa-spinner fa-spin"></i>
-                Placing Order...
+                <span>Place Order</span>
+                <i class="fas fa-check"></i>
             `;
-
-            try {
-                console.log(
-                    "Prepared order data:",
-                    orderData
-                );
-
-                /*
-                Backend API next step:
-
-                const response = await fetch(
-                    "http://localhost:5000/api/orders",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${getToken()}`
-                        },
-                        body: JSON.stringify(orderData)
-                    }
-                );
-                */
-
-                await new Promise((resolve) => {
-                    setTimeout(resolve, 900);
-                });
-
-                const temporaryOrderNumber =
-                    generateTemporaryOrderNumber();
-
-                successOrderNumber.textContent =
-                    temporaryOrderNumber;
-
-                clearCartStorage();
-
-                successModal.classList.add("show");
-
-            } catch (error) {
-                console.error(
-                    "Checkout error:",
-                    error
-                );
-
-                showMessage(
-                    error.message ||
-                    "Unable to place order.",
-                    "error"
-                );
-
-            } finally {
-                placeOrderButton.disabled = false;
-
-                placeOrderButton.innerHTML = `
-                    <span>Place Order</span>
-                    <i class="fas fa-check"></i>
-                `;
-            }
         }
-    );
+    });
 
     function collectCheckoutData() {
         const paymentMethod =
@@ -466,13 +473,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function createOrderPayload(formData) {
-        const subtotal = cart.reduce(
-            (total, item) =>
-                total +
-                item.price * item.quantity,
-            0
-        );
-
         return {
             customer: {
                 name: formData.customerName,
@@ -481,48 +481,27 @@ document.addEventListener("DOMContentLoaded", () => {
             },
 
             deliveryAddress: {
-                streetAddress:
-                    formData.streetAddress,
-
-                city:
-                    formData.city,
-
-                district:
-                    formData.district,
-
-                postalCode:
-                    formData.postalCode
+                streetAddress: formData.streetAddress,
+                city: formData.city,
+                district: formData.district,
+                postalCode: formData.postalCode
             },
 
             deliveryNote:
-                formData.deliveryNote,
+                formData.deliveryNote || "",
 
             paymentMethod:
                 formData.paymentMethod,
 
             items: cart.map((item) => ({
                 product:
-                    item._id,
-
-                name:
-                    item.name,
-
-                price:
-                    item.price,
+                    item._id ||
+                    item.id ||
+                    item.productId,
 
                 quantity:
-                    item.quantity,
-
-                image:
-                    item.image
-            })),
-
-            subtotal,
-            deliveryFee:
-                DELIVERY_FEE,
-
-            totalAmount:
-                subtotal + DELIVERY_FEE
+                    Number(item.quantity)
+            }))
         };
     }
 

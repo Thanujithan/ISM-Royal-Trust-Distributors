@@ -1,152 +1,143 @@
-// Mobile Menu
-const menuToggle = document.getElementById("menuToggle");
-const navLinks = document.getElementById("navLinks");
-
-if (menuToggle) {
-    menuToggle.addEventListener("click", () => {
-        navLinks.classList.toggle("show");
-    });
-}
-
-// Close menu after clicking a link (Mobile)
-const navItems = document.querySelectorAll(".nav-links a");
-
-navItems.forEach(link => {
-    link.addEventListener("click", () => {
-        if (navLinks.classList.contains("show")) {
-            navLinks.classList.remove("show");
-        }
-    });
+document.addEventListener("DOMContentLoaded", () => {
+    initializeHeaderShadow();
+    initializeScrollAnimations();
+    initializeCounters();
+    initializeSmoothScroll();
+    initializeButtonEffects();
 });
 
-// Header Shadow on Scroll
-const header = document.querySelector("header");
+/* ================================
+   HEADER SHADOW
+================================ */
 
-window.addEventListener("scroll", () => {
-    if (window.scrollY > 50) {
-        header.style.boxShadow = "0 8px 20px rgba(0,0,0,0.15)";
-    } else {
-        header.style.boxShadow = "0 2px 12px rgba(0,0,0,0.08)";
-    }
-});
+function initializeHeaderShadow() {
+    const header = document.querySelector("header");
 
-// Scroll Animation
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add("show");
-        }
-    });
-}, {
-    threshold: 0.2
-});
+    if (!header) return;
 
-document.querySelectorAll(
-    ".category-card, .service-card, .testimonial-card, .brand-card, .hero-card"
-).forEach(card => {
-    card.classList.add("hidden");
-    observer.observe(card);
-});
-
-// Counter Animation
-const counters = document.querySelectorAll(".stat-box h2");
-
-counters.forEach(counter => {
-    const target = parseInt(counter.innerText);
-
-    let count = 0;
-
-    const updateCounter = () => {
-        const increment = target / 80;
-
-        if (count < target) {
-            count += increment;
-            counter.innerText = Math.ceil(count) + "+";
-            requestAnimationFrame(updateCounter);
-        } else {
-            counter.innerText = target + "+";
-        }
+    const updateShadow = () => {
+        header.style.boxShadow =
+            window.scrollY > 50
+                ? "0 8px 20px rgba(0, 0, 0, 0.15)"
+                : "0 2px 12px rgba(0, 0, 0, 0.08)";
     };
 
-    updateCounter();
-});
+    updateShadow();
+    window.addEventListener("scroll", updateShadow);
+}
 
-// Smooth Scroll
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener("click", function(e) {
-        e.preventDefault();
+/* ================================
+   SCROLL ANIMATIONS
+================================ */
 
-        const target = document.querySelector(this.getAttribute("href"));
+function initializeScrollAnimations() {
+    const elements = document.querySelectorAll(
+        ".category-card, .service-card, .testimonial-card, .brand-card, .hero-card"
+    );
 
-        if (target) {
-            target.scrollIntoView({
-                behavior: "smooth"
-            });
-        }
-    });
-});
+    if (!elements.length) return;
 
-// Button Hover Effect
-const buttons = document.querySelectorAll(
-    ".btn-primary, .btn-secondary, .btn-light"
-);
-
-buttons.forEach(button => {
-    button.addEventListener("mouseenter", () => {
-        button.style.transform = "translateY(-3px)";
-    });
-
-    button.addEventListener("mouseleave", () => {
-        button.style.transform = "translateY(0)";
-    });
-});
-
-document.addEventListener("DOMContentLoaded",()=>{
-
-const loginNavItem=document.getElementById("loginNavItem");
-const userNavItem=document.getElementById("userNavItem");
-const logoutNavItem=document.getElementById("logoutNavItem");
-const navUserName=document.getElementById("navUserName");
-const logoutBtn=document.getElementById("logoutBtn");
-
-const token=
-    localStorage.getItem("token")||
-    sessionStorage.getItem("token");
-
-const userData=
-    localStorage.getItem("user")||
-    sessionStorage.getItem("user");
-
-if(token&&userData){
-    try{
-        const user=JSON.parse(userData);
-
-        loginNavItem.style.display="none";
-        userNavItem.style.display="block";
-        logoutNavItem.style.display="block";
-
-        navUserName.textContent=user.name||"User";
-    }catch(error){
-        console.error("Invalid user data:",error);
-        clearLoginData();
+    if (!("IntersectionObserver" in window)) {
+        elements.forEach((element) => {
+            element.classList.add("show");
+        });
+        return;
     }
-}else{
-    loginNavItem.style.display="block";
-    userNavItem.style.display="none";
-    logoutNavItem.style.display="none";
+
+    const observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("show");
+                    observer.unobserve(entry.target);
+                }
+            });
+        },
+        {
+            threshold: 0.2
+        }
+    );
+
+    elements.forEach((element) => {
+        element.classList.add("hidden");
+        observer.observe(element);
+    });
 }
 
-logoutBtn.addEventListener("click",()=>{
-    clearLoginData();
-    window.location.href="login.html";
-});
+/* ================================
+   COUNTER ANIMATION
+================================ */
 
-function clearLoginData(){
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+function initializeCounters() {
+    const counters = document.querySelectorAll(".stat-box h2");
 
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("user");
+    counters.forEach((counter) => {
+        const target = Number.parseInt(
+            counter.textContent.replace(/\D/g, ""),
+            10
+        );
+
+        if (!Number.isFinite(target)) return;
+
+        let current = 0;
+        const increment = Math.max(target / 80, 1);
+
+        const updateCounter = () => {
+            current += increment;
+
+            if (current < target) {
+                counter.textContent = `${Math.ceil(current)}+`;
+                requestAnimationFrame(updateCounter);
+            } else {
+                counter.textContent = `${target}+`;
+            }
+        };
+
+        updateCounter();
+    });
 }
 
-});
+/* ================================
+   SMOOTH SCROLL
+================================ */
+
+function initializeSmoothScroll() {
+    document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", (event) => {
+            const href = anchor.getAttribute("href");
+
+            if (!href || href === "#") return;
+
+            const target = document.querySelector(href);
+
+            if (!target) return;
+
+            event.preventDefault();
+
+            target.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        });
+    });
+}
+
+/* ================================
+   BUTTON EFFECTS
+================================ */
+
+function initializeButtonEffects() {
+    const buttons = document.querySelectorAll(
+        ".btn-primary, .btn-secondary, .btn-light"
+    );
+
+    buttons.forEach((button) => {
+        button.addEventListener("mouseenter", () => {
+            button.style.transform = "translateY(-3px)";
+        });
+
+        button.addEventListener("mouseleave", () => {
+            button.style.transform = "translateY(0)";
+        });
+    });
+}

@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
+    const API_URL = "http://localhost:5000/api/auth/login";
+
     const loginForm = document.getElementById("loginForm");
     const emailInput = document.getElementById("loginEmail");
     const passwordInput = document.getElementById("loginPassword");
@@ -6,120 +8,53 @@ document.addEventListener("DOMContentLoaded", () => {
     const rememberMe = document.getElementById("rememberMe");
     const forgotPassword = document.getElementById("forgotPassword");
 
-    if (!loginForm) {
-        console.error("Login form not found.");
+    if (!loginForm || !emailInput || !passwordInput) {
+        console.error("Required login elements not found.");
         return;
     }
 
     loadRememberedEmail();
+    setupPasswordToggles();
 
-    document.querySelectorAll(".password-toggle").forEach((button) => {
-        button.addEventListener("click", () => {
-            const targetId = button.dataset.target;
-            const input = document.getElementById(targetId);
-            const icon = button.querySelector("i");
+    loginForm.addEventListener("submit", handleLogin);
 
-            if (!input) {
-                return;
-            }
-
-            if (input.type === "password") {
-                input.type = "text";
-
-                if (icon) {
-                    icon.classList.replace(
-                        "fa-eye",
-                        "fa-eye-slash"
-                    );
-                }
-            } else {
-                input.type = "password";
-
-                if (icon) {
-                    icon.classList.replace(
-                        "fa-eye-slash",
-                        "fa-eye"
-                    );
-                }
-            }
-        });
+    forgotPassword?.addEventListener("click", (event) => {
+        event.preventDefault();
+        showMessage(
+            "Forgot password feature will be added later.",
+            "error"
+        );
     });
 
-    loginForm.addEventListener("submit", async (event) => {
+    async function handleLogin(event) {
         event.preventDefault();
-
         clearErrors();
 
         const email = emailInput.value.trim().toLowerCase();
         const password = passwordInput.value;
 
-        let valid = true;
-
-        if (email === "") {
-            showError(
-                "loginEmail",
-                "Email address is required."
-            );
-
-            valid = false;
-        } else if (!validateEmail(email)) {
-            showError(
-                "loginEmail",
-                "Enter a valid email address."
-            );
-
-            valid = false;
-        }
-
-        if (password === "") {
-            showError(
-                "loginPassword",
-                "Password is required."
-            );
-
-            valid = false;
-        } else if (password.length < 6) {
-            showError(
-                "loginPassword",
-                "Password must contain at least 6 characters."
-            );
-
-            valid = false;
-        }
-
-        if (!valid) {
+        if (!validateLoginForm(email, password)) {
             showMessage(
                 "Please correct the highlighted fields.",
                 "error"
             );
-
             return;
         }
 
         const button = loginForm.querySelector(".auth-btn");
-
-        if (button) {
-            button.disabled = true;
-            button.innerHTML = `
-                <i class="fas fa-spinner fa-spin"></i>
-                Logging in...
-            `;
-        }
+        setLoadingState(button, true);
 
         try {
-            const response = await fetch(
-                "http://localhost:5000/api/auth/login",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        email,
-                        password
-                    })
-                }
-            );
+            const response = await fetch(API_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    email,
+                    password
+                })
+            });
 
             const data = await response.json();
 
@@ -137,11 +72,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             clearOldLoginData();
 
-            saveLoginData(
-                data.token,
-                data.user,
-                rememberMe?.checked
+            localStorage.setItem("token", data.token);
+            localStorage.setItem(
+                "user",
+                JSON.stringify(data.user)
             );
+
+            sessionStorage.removeItem("token");
+            sessionStorage.removeItem("user");
 
             if (rememberMe?.checked) {
                 localStorage.setItem(
@@ -149,7 +87,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     email
                 );
             } else {
-                localStorage.removeItem("rememberedEmail");
+                localStorage.removeItem(
+                    "rememberedEmail"
+                );
             }
 
             showMessage(
@@ -157,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 "success"
             );
 
-            window.setTimeout(() => {
+            setTimeout(() => {
                 redirectUser(data.user);
             }, 800);
         } catch (error) {
@@ -170,87 +110,165 @@ document.addEventListener("DOMContentLoaded", () => {
                 "error"
             );
         } finally {
-            if (button) {
-                button.disabled = false;
-                button.innerHTML = `
-                    <span>Login</span>
-                    <i class="fas fa-arrow-right"></i>
-                `;
-            }
+            setLoadingState(button, false);
         }
-    });
+    }
 
-    if (forgotPassword) {
-        forgotPassword.addEventListener("click", (event) => {
-            event.preventDefault();
+    function validateLoginForm(email, password) {
+        let valid = true;
 
-            showMessage(
-                "Forgot password feature will be added later.",
-                "error"
+        if (!email) {
+            showError(
+                "loginEmail",
+                "Email address is required."
             );
-        });
-    }
+            valid = false;
+        } else if (!validateEmail(email)) {
+            showError(
+                "loginEmail",
+                "Enter a valid email address."
+            );
+            valid = false;
+        }
 
-    function saveLoginData(token, user, rememberUser) {
-        const storage = rememberUser
-            ? localStorage
-            : sessionStorage;
+        if (!password) {
+            showError(
+                "loginPassword",
+                "Password is required."
+            );
+            valid = false;
+        } else if (password.length < 6) {
+            showError(
+                "loginPassword",
+                "Password must contain at least 6 characters."
+            );
+            valid = false;
+        }
 
-        storage.setItem("token", token);
-        storage.setItem("user", JSON.stringify(user));
-    }
-
-    function clearOldLoginData() {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        localStorage.removeItem("adminToken");
-        localStorage.removeItem("adminUser");
-
-        sessionStorage.removeItem("token");
-        sessionStorage.removeItem("user");
-        sessionStorage.removeItem("adminToken");
-        sessionStorage.removeItem("adminUser");
+        return valid;
     }
 
     function redirectUser(user) {
+        const redirectAfterLogin =
+            localStorage.getItem("redirectAfterLogin");
+
+        if (redirectAfterLogin) {
+            localStorage.removeItem(
+                "redirectAfterLogin"
+            );
+            window.location.href =
+                redirectAfterLogin;
+            return;
+        }
+
         const role = String(
             user?.role || ""
         ).toLowerCase();
 
-        if (role === "admin") {
-            window.location.href = "admin/dashboard.html";
-            return;
-        }
+        window.location.href =
+            role === "admin"
+                ? "admin/dashboard.html"
+                : "index.html";
+    }
 
-        window.location.href = "index.html";
+    function clearOldLoginData() {
+        const keys = [
+            "token",
+            "user",
+            "adminToken",
+            "adminUser"
+        ];
+
+        keys.forEach((key) => {
+            localStorage.removeItem(key);
+            sessionStorage.removeItem(key);
+        });
     }
 
     function loadRememberedEmail() {
         const rememberedEmail =
-            localStorage.getItem("rememberedEmail");
+            localStorage.getItem(
+                "rememberedEmail"
+            );
 
-        if (rememberedEmail && emailInput) {
-            emailInput.value = rememberedEmail;
+        if (!rememberedEmail) return;
 
-            if (rememberMe) {
-                rememberMe.checked = true;
-            }
+        emailInput.value = rememberedEmail;
+
+        if (rememberMe) {
+            rememberMe.checked = true;
         }
     }
 
+    function setupPasswordToggles() {
+        document
+            .querySelectorAll(".password-toggle")
+            .forEach((button) => {
+                button.addEventListener(
+                    "click",
+                    () => {
+                        const input =
+                            document.getElementById(
+                                button.dataset.target
+                            );
+
+                        const icon =
+                            button.querySelector("i");
+
+                        if (!input) return;
+
+                        const showPassword =
+                            input.type === "password";
+
+                        input.type =
+                            showPassword
+                                ? "text"
+                                : "password";
+
+                        if (icon) {
+                            icon.classList.toggle(
+                                "fa-eye",
+                                !showPassword
+                            );
+
+                            icon.classList.toggle(
+                                "fa-eye-slash",
+                                showPassword
+                            );
+                        }
+                    }
+                );
+            });
+    }
+
+    function setLoadingState(button, loading) {
+        if (!button) return;
+
+        button.disabled = loading;
+
+        button.innerHTML = loading
+            ? `
+                <i class="fas fa-spinner fa-spin"></i>
+                Logging in...
+              `
+            : `
+                <span>Login</span>
+                <i class="fas fa-arrow-right"></i>
+              `;
+    }
+
     function showError(id, text) {
-        const input = document.getElementById(id);
-        const error = document.getElementById(
-            `${id}Error`
-        );
+        const input =
+            document.getElementById(id);
 
-        if (input) {
-            const inputBox = input.closest(".input-box");
+        const error =
+            document.getElementById(
+                `${id}Error`
+            );
 
-            if (inputBox) {
-                inputBox.classList.add("error");
-            }
-        }
+        input
+            ?.closest(".input-box")
+            ?.classList.add("error");
 
         if (error) {
             error.textContent = text;
@@ -272,20 +290,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (message) {
             message.textContent = "";
-            message.className = "form-message";
+            message.className =
+                "form-message";
         }
     }
 
     function showMessage(text, type) {
-        if (!message) {
-            return;
-        }
+        if (!message) return;
 
         message.textContent = text;
-        message.className = `form-message ${type}`;
+        message.className =
+            `form-message ${type}`;
     }
 
     function validateEmail(email) {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+            email
+        );
     }
 });

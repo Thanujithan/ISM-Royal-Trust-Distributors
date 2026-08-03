@@ -2,63 +2,85 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-// Register User
+/* ================================
+   REGISTER USER
+================================ */
+
 const registerUser = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const name = String(req.body.name || "").trim();
+        const email = String(req.body.email || "")
+            .trim()
+            .toLowerCase();
+        const password = String(req.body.password || "");
 
-        // Check all fields
         if (!name || !email || !password) {
             return res.status(400).json({
+                success: false,
                 message: "All fields are required"
             });
         }
 
-        // Check email already exists
+        if (password.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: "Password must contain at least 6 characters"
+            });
+        }
+
         const userExists = await User.findOne({ email });
 
         if (userExists) {
             return res.status(400).json({
+                success: false,
                 message: "Email already exists"
             });
         }
 
-        // Encrypt password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create user
         const user = await User.create({
             name,
             email,
             password: hashedPassword
         });
 
-        res.status(201).json({
+        return res.status(201).json({
             success: true,
             message: "User registered successfully",
             user: {
                 id: user._id,
                 name: user.name,
-                email: user.email
+                email: user.email,
+                role: user.role
             }
         });
-
     } catch (error) {
-        res.status(500).json({
+        console.error("Register error:", error);
+
+        return res.status(500).json({
             success: false,
-            message: error.message
+            message: "Unable to register user",
+            error: error.message
         });
     }
 };
 
-
+/* ================================
+   LOGIN USER
+================================ */
 
 const loginUser = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const email = String(req.body.email || "")
+            .trim()
+            .toLowerCase();
+
+        const password = String(req.body.password || "");
 
         if (!email || !password) {
             return res.status(400).json({
+                success: false,
                 message: "Email and password are required"
             });
         }
@@ -67,6 +89,7 @@ const loginUser = async (req, res) => {
 
         if (!user) {
             return res.status(401).json({
+                success: false,
                 message: "Invalid email or password"
             });
         }
@@ -78,7 +101,15 @@ const loginUser = async (req, res) => {
 
         if (!passwordMatch) {
             return res.status(401).json({
+                success: false,
                 message: "Invalid email or password"
+            });
+        }
+
+        if (!process.env.JWT_SECRET) {
+            return res.status(500).json({
+                success: false,
+                message: "JWT secret is not configured"
             });
         }
 
@@ -93,7 +124,7 @@ const loginUser = async (req, res) => {
             }
         );
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: "Login successful",
             token,
@@ -105,16 +136,24 @@ const loginUser = async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(500).json({
+        console.error("Login error:", error);
+
+        return res.status(500).json({
             success: false,
-            message: error.message
+            message: "Unable to login",
+            error: error.message
         });
     }
 };
 
+/* ================================
+   GET PROFILE
+================================ */
+
 const getProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).select("-password");
+        const user = await User.findById(req.user.id)
+            .select("-password");
 
         if (!user) {
             return res.status(404).json({
@@ -123,14 +162,17 @@ const getProfile = async (req, res) => {
             });
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             user
         });
     } catch (error) {
-        res.status(500).json({
+        console.error("Get profile error:", error);
+
+        return res.status(500).json({
             success: false,
-            message: error.message
+            message: "Unable to load profile",
+            error: error.message
         });
     }
 };

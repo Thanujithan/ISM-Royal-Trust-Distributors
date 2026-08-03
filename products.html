@@ -8,15 +8,18 @@
         content="width=device-width, initial-scale=1.0"
     >
 
+    <meta
+        name="description"
+        content="Browse quality food, beverage, household, electrical and hardware products distributed by ISM Royal Trust Distributors."
+    >
+
     <title>
         Products | ISM ROYAL TRUST DISTRIBUTORS
     </title>
 
-    <link
-        rel="stylesheet"
-        href="css/products.css"
-    >
+    <link rel="stylesheet" href="css/products.css">
     <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/navbar-auth.css">
 
     <link
         rel="stylesheet"
@@ -26,343 +29,454 @@
 
 <body>
 
-<header>
-    <div class="container">
+    <!-- Header -->
+    <header>
+        <div class="container">
 
-        <div class="logo">
-            <img
-                src="images/logo.png"
-                alt="ISM Logo"
+            <div class="logo">
+
+                <a href="index.html">
+                    <img
+                        src="images/logo.png"
+                        alt="ISM Royal Trust Distributors Logo"
+                    >
+                </a>
+
+                <h1>
+                    ISM ROYAL TRUST DISTRIBUTORS
+                </h1>
+
+            </div>
+
+            <nav>
+                <ul class="nav-links" id="navLinks">
+
+                    <li>
+                        <a href="index.html">
+                            Home
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="about.html">
+                            About
+                        </a>
+                    </li>
+
+                    <li>
+                        <a
+                            href="products.html"
+                            class="active"
+                        >
+                            Products
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="services.html">
+                            Services
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="contact.html">
+                            Contact
+                        </a>
+                    </li>
+
+                    <li>
+                        <a
+                            href="cart.html"
+                            class="cart-nav-link"
+                        >
+                            <i class="fas fa-cart-shopping"></i>
+
+                            Cart
+
+                            <span
+                                id="cartCount"
+                                class="cart-count"
+                            >
+                                0
+                            </span>
+                        </a>
+                    </li>
+
+                    <li id="authNavItem">
+                        <a
+                            href="login.html"
+                            class="btn-nav-login"
+                        >
+                            <i class="fas fa-sign-in-alt"></i>
+                            Login
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
+
+            <button
+                type="button"
+                class="menu-toggle"
+                id="menuToggle"
+                aria-label="Open navigation menu"
             >
+                <i class="fas fa-bars"></i>
+            </button>
+
+        </div>
+    </header>
+
+
+    <!-- Page Banner -->
+    <section class="page-banner">
+
+        <div class="container">
 
             <h1>
-                ISM ROYAL TRUST DISTRIBUTORS
+                Our Products
             </h1>
-        </div>
-
-        <nav>
-            <ul class="nav-links">
-
-                <li>
-                    <a href="index.html">
-                        Home
-                    </a>
-                </li>
-
-                <li>
-                    <a href="about.html">
-                        About
-                    </a>
-                </li>
-
-                <li>
-                    <a
-                        href="products.html"
-                        class="active"
-                    >
-                        Products
-                    </a>
-                </li>
-
-                <li>
-                    <a href="services.html">
-                        Services
-                    </a>
-                </li>
-
-                <li>
-                    <a href="contact.html">
-                        Contact
-                    </a>
-                </li>
-
-                <li>
-                    <a
-                        href="cart.html"
-                        class="cart-nav-link"
-                    >
-                        <i class="fas fa-cart-shopping"></i>
-
-                        Cart
-
-                        <span
-                            id="cartCount"
-                            class="cart-count"
-                        >
-                            0
-                        </span>
-                    </a>
-                </li>
-
-                <li id="authNavItem">
-                    <a href="login.html">
-                        Login
-                    </a>
-                </li>
-
-            </ul>
-        </nav>
-
-    </div>
-</header>
-
-
-<section class="page-banner">
-    <div class="container">
-
-        <h1>
-            Our Products
-        </h1>
-
-        <p>
-            We distribute high-quality products from trusted
-            brands across Sri Lanka.
-        </p>
-
-    </div>
-</section>
-
-
-<section class="search-section">
-    <div class="container">
-
-        <div class="search-box">
-
-            <input
-                type="text"
-                id="searchInput"
-                placeholder="Search Products..."
-                autocomplete="off"
-            >
-
-            <button
-                type="button"
-                id="searchButton"
-                aria-label="Search products"
-            >
-                <i class="fas fa-search"></i>
-            </button>
-
-        </div>
-
-    </div>
-</section>
-
-
-<section class="filter-section">
-    <div class="container">
-
-        <div class="filter-buttons">
-
-            <button
-                type="button"
-                class="active"
-                data-category="all"
-            >
-                All
-            </button>
-
-            <button
-                type="button"
-                data-category="food"
-            >
-                Food
-            </button>
-
-            <button
-                type="button"
-                data-category="beverages"
-            >
-                Beverages
-            </button>
-
-            <button
-                type="button"
-                data-category="household"
-            >
-                Household
-            </button>
-
-            <button
-                type="button"
-                data-category="electrical"
-            >
-                Electrical
-            </button>
-
-            <button
-                type="button"
-                data-category="hardware"
-            >
-                Hardware
-            </button>
-
-        </div>
-
-    </div>
-</section>
-
-
-<section class="products">
-    <div class="container">
-
-        <div
-            class="product-grid"
-            id="productGrid"
-        >
-            <p class="loading-message">
-                Loading products...
-            </p>
-        </div>
-
-    </div>
-</section>
-
-
-<section class="brands">
-    <div class="container">
-
-        <h2>
-            Trusted Brands
-        </h2>
-
-        <div class="brand-grid">
-
-            <div class="brand-box">
-                ISM Brand
-            </div>
-
-            <div class="brand-box">
-                Royal Brand
-            </div>
-
-            <div class="brand-box">
-                CleanMax
-            </div>
-
-            <div class="brand-box">
-                Bright Light
-            </div>
-
-            <div class="brand-box">
-                Ultra Build
-            </div>
-
-            <div class="brand-box">
-                Golden Drop
-            </div>
-
-        </div>
-
-    </div>
-</section>
-
-
-<footer>
-    <div class="container footer-content">
-
-        <div class="footer-logo">
-
-            <img
-                src="images/logo.png"
-                alt="ISM Logo"
-            >
-
-            <h2>
-                ISM ROYAL TRUST DISTRIBUTORS
-            </h2>
 
             <p>
-                Your trusted distribution partner across
-                Sri Lanka.
+                We distribute high-quality products from trusted
+                brands across Sri Lanka.
             </p>
 
         </div>
 
-
-        <div class="footer-links">
-
-            <h3>
-                Quick Links
-            </h3>
-
-            <ul>
-
-                <li>
-                    <a href="index.html">
-                        Home
-                    </a>
-                </li>
-
-                <li>
-                    <a href="about.html">
-                        About
-                    </a>
-                </li>
-
-                <li>
-                    <a href="products.html">
-                        Products
-                    </a>
-                </li>
-
-                <li>
-                    <a href="services.html">
-                        Services
-                    </a>
-                </li>
-
-                <li>
-                    <a href="contact.html">
-                        Contact
-                    </a>
-                </li>
-
-            </ul>
-        </div>
+    </section>
 
 
-        <div class="footer-contact">
+    <!-- Search -->
+    <section class="search-section">
 
-            <h3>
-                Contact
-            </h3>
+        <div class="container">
 
-            <p>
-                <i class="fas fa-phone"></i>
-                +94 75 769 3155
-            </p>
+            <div class="search-box">
 
-            <p>
-                <i class="fas fa-envelope"></i>
-                ismdistributors1030@gmail.com
-            </p>
+                <input
+                    type="search"
+                    id="searchInput"
+                    placeholder="Search products..."
+                    autocomplete="off"
+                    aria-label="Search products"
+                >
 
-            <p>
-                <i class="fas fa-location-dot"></i>
-                No. 29, Korakkovil Road,
-                Sammanthurai, Sri Lanka
-            </p>
+                <button
+                    type="button"
+                    id="searchButton"
+                    aria-label="Search products"
+                >
+                    <i class="fas fa-search"></i>
+                </button>
+
+            </div>
 
         </div>
 
-    </div>
+    </section>
 
 
-    <div class="copyright">
+    <!-- Category Filters -->
+    <section class="filter-section">
 
-        <p>
-            &copy; 2026 ISM ROYAL TRUST DISTRIBUTORS
-            (Pvt) Ltd. All Rights Reserved.
-        </p>
+        <div class="container">
 
-    </div>
-</footer>
+            <div
+                class="filter-buttons"
+                role="group"
+                aria-label="Product categories"
+            >
+
+                <button
+                    type="button"
+                    class="active"
+                    data-category="all"
+                >
+                    All
+                </button>
+
+                <button
+                    type="button"
+                    data-category="food"
+                >
+                    Food
+                </button>
+
+                <button
+                    type="button"
+                    data-category="beverages"
+                >
+                    Beverages
+                </button>
+
+                <button
+                    type="button"
+                    data-category="household"
+                >
+                    Household
+                </button>
+
+                <button
+                    type="button"
+                    data-category="electrical"
+                >
+                    Electrical
+                </button>
+
+                <button
+                    type="button"
+                    data-category="hardware"
+                >
+                    Hardware
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
 
 
-<script src="js/products.js"></script>
-<script src="js/auth-navbar.js"></script>
+    <!-- Products -->
+    <main class="products">
 
+        <div class="container">
+
+            <div
+                class="product-grid"
+                id="productGrid"
+                aria-live="polite"
+            >
+                <div class="products-loading">
+
+                    <i class="fas fa-spinner fa-spin"></i>
+
+                    <p>
+                        Loading products...
+                    </p>
+
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <!-- Trusted Brands -->
+    <section class="brands">
+
+        <div class="container">
+
+            <div class="section-title">
+
+                <span>
+                    Our Partners
+                </span>
+
+                <h2>
+                    Trusted Brands
+                </h2>
+
+                <p>
+                    We work with reliable brands to supply quality
+                    products to customers and businesses.
+                </p>
+
+            </div>
+
+            <div class="brand-grid">
+
+                <div class="brand-box">
+                    ISM Brand
+                </div>
+
+                <div class="brand-box">
+                    Royal Brand
+                </div>
+
+                <div class="brand-box">
+                    CleanMax
+                </div>
+
+                <div class="brand-box">
+                    Bright Light
+                </div>
+
+                <div class="brand-box">
+                    Ultra Build
+                </div>
+
+                <div class="brand-box">
+                    Golden Drop
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- Call to Action -->
+    <section class="products-cta">
+
+        <div class="container">
+
+            <div>
+
+                <h2>
+                    Cannot Find the Product You Need?
+                </h2>
+
+                <p>
+                    Contact our team and we will help you find the
+                    right products for your business.
+                </p>
+
+            </div>
+
+            <a
+                href="contact.html"
+                class="products-cta-button"
+            >
+                Contact Us
+                <i class="fas fa-arrow-right"></i>
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- Footer -->
+    <footer>
+
+        <div class="container footer-content">
+
+            <div class="footer-logo">
+
+                <img
+                    src="images/logo.png"
+                    alt="ISM Royal Trust Distributors Logo"
+                >
+
+                <h2>
+                    ISM ROYAL TRUST DISTRIBUTORS
+                </h2>
+
+                <p>
+                    Your trusted distribution partner providing
+                    quality products and reliable delivery services
+                    across Sri Lanka.
+                </p>
+
+            </div>
+
+
+            <div class="footer-links">
+
+                <h3>
+                    Quick Links
+                </h3>
+
+                <ul>
+
+                    <li>
+                        <a href="index.html">
+                            Home
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="about.html">
+                            About
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="products.html">
+                            Products
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="services.html">
+                            Services
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="contact.html">
+                            Contact
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="cart.html">
+                            Shopping Cart
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="profile.html">
+                            My Profile
+                        </a>
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <div class="footer-contact">
+
+                <h3>
+                    Contact Information
+                </h3>
+
+                <p>
+                    <i class="fas fa-phone"></i>
+                    +94 75 769 3155
+                </p>
+
+                <p>
+                    <i class="fas fa-envelope"></i>
+                    ismdistributors1030@gmail.com
+                </p>
+
+                <p>
+                    <i class="fas fa-location-dot"></i>
+                    No. 29, Korakkovil Road,
+                    Sammanthurai, Sri Lanka
+                </p>
+
+                <p>
+                    <i class="fas fa-clock"></i>
+                    Monday - Saturday:
+                    8.30 AM - 5.30 PM
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="copyright">
+
+            <p>
+                &copy; 2026 ISM ROYAL TRUST DISTRIBUTORS
+                (Pvt) Ltd. All Rights Reserved.
+            </p>
+
+        </div>
+
+    </footer>
+
+
+    <script src="js/products.js"></script>
+    <script src="js/auth-navbar.js"></script>
 
 </body>
 </html>

@@ -414,6 +414,27 @@ footer {
     transform: translateY(0);
 }
 
+/* About page navbar auth visibility */
+
+header .btn-nav-login,
+header .profile-btn {
+    color: #123f84 !important;
+}
+
+header .btn-nav-login:hover,
+header .profile-btn:hover,
+header .profile-btn[aria-expanded="true"] {
+    color: #ff9800 !important;
+    background: #eef5ff;
+}
+
+header .profile-btn > i:first-child {
+    color: #ff9800;
+}
+
+header #authNavItem::before {
+    background: #005eeb;
+}
 @media screen and (max-width: 992px) {
     header .container {
         flex-direction: column;

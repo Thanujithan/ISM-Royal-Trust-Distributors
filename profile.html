@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        My Profile | ISM ROYAL TRUST DISTRIBUTORS
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="css/profile.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/theme.css"
+    >
+    <link rel="stylesheet" href="css/navbar-auth.css">
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+</head>
+
+<body>
+
+<header>
+    <div class="container">
+
+        <div class="logo">
+            <img
+                src="images/logo.png"
+                alt="ISM Logo"
+            >
+
+            <h1>
+                ISM ROYAL TRUST DISTRIBUTORS
+            </h1>
+        </div>
+
+        <nav>
+            <ul class="nav-links">
+
+                <li>
+                    <a href="index.html">
+                        Home
+                    </a>
+                </li>
+
+                <li>
+                    <a href="about.html">
+                        About
+                    </a>
+                </li>
+
+                <li>
+                    <a href="products.html">
+                        Products
+                    </a>
+                </li>
+
+                <li>
+                    <a href="services.html">
+                        Services
+                    </a>
+                </li>
+
+                <li>
+                    <a href="contact.html">
+                        Contact
+                    </a>
+                </li>
+
+                <li>
+                    <a href="cart.html">
+                        <i class="fas fa-cart-shopping"></i>
+                        Cart
+                    </a>
+                </li>
+
+                <li>
+                    <a
+                        href="profile.html"
+                        class="active"
+                    >
+                        <i class="fas fa-user"></i>
+                        Profile
+                    </a>
+                </li>
+
+                <li id="authNavItem">
+                    <a href="login.html">
+                        Login
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
+
+    </div>
+</header>
+
+
+<section class="page-banner">
+
+    <div class="container">
+
+        <h1>
+            My Profile
+        </h1>
+
+        <p>
+            Manage your account and view your order information.
+        </p>
+
+    </div>
+
+</section>
+
+
+<main class="profile-section">
+
+    <div class="container">
+
+        <div class="profile-layout">
+
+            <!-- Profile Sidebar -->
+
+            <aside class="profile-sidebar">
+
+                <div class="profile-avatar">
+
+                    <div
+                        class="avatar-circle"
+                        id="profileInitial"
+                    >
+                        U
+                    </div>
+
+                    <h2 id="sidebarUserName">
+                        Loading...
+                    </h2>
+
+                    <p id="sidebarUserEmail">
+                        Loading...
+                    </p>
+
+                    <span
+                        class="role-badge"
+                        id="sidebarUserRole"
+                    >
+                        Customer
+                    </span>
+
+                </div>
+
+
+                <nav class="profile-menu">
+
+                    <a
+                        href="#profileDetails"
+                        class="active"
+                    >
+                        <i class="fas fa-user"></i>
+                        My Profile
+                    </a>
+
+                    <a href="my-orders.html">
+                        <i class="fas fa-box"></i>
+                        My Orders
+                    </a>
+
+                    <a href="#changePasswordSection">
+                        <i class="fas fa-lock"></i>
+                        Change Password
+                    </a>
+
+                    <button
+                        type="button"
+                        id="profileLogoutButton"
+                    >
+                        <i class="fas fa-right-from-bracket"></i>
+                        Logout
+                    </button>
+
+                </nav>
+
+            </aside>
+
+
+            <!-- Profile Main Content -->
+
+            <section class="profile-content">
+
+                <div
+                    id="profileAlert"
+                    class="profile-alert"
+                ></div>
+
+
+                <!-- Account Summary -->
+
+                <div class="profile-stats">
+
+                    <article class="profile-stat-card">
+
+                        <div class="stat-icon">
+                            <i class="fas fa-box"></i>
+                        </div>
+
+                        <div>
+                            <p>
+                                Total Orders
+                            </p>
+
+                            <h2 id="totalOrders">
+                                0
+                            </h2>
+                        </div>
+
+                    </article>
+
+
+                    <article class="profile-stat-card">
+
+                        <div class="stat-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+
+                        <div>
+                            <p>
+                                Total Spent
+                            </p>
+
+                            <h2 id="totalSpent">
+                                LKR 0.00
+                            </h2>
+                        </div>
+
+                    </article>
+
+
+                    <article class="profile-stat-card">
+
+                        <div class="stat-icon">
+                            <i class="fas fa-truck"></i>
+                        </div>
+
+                        <div>
+                            <p>
+                                Delivered Orders
+                            </p>
+
+                            <h2 id="deliveredOrders">
+                                0
+                            </h2>
+                        </div>
+
+                    </article>
+
+                </div>
+
+
+                <!-- Profile Details -->
+
+                <section
+                    class="profile-card"
+                    id="profileDetails"
+                >
+
+                    <div class="card-header">
+
+                        <div>
+                            <h2>
+                                Personal Information
+                            </h2>
+
+                            <p>
+                                View and update your account details.
+                            </p>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="edit-profile-button"
+                            id="editProfileButton"
+                        >
+                            <i class="fas fa-pen"></i>
+                            Edit Profile
+                        </button>
+
+                    </div>
+
+
+                    <form id="profileForm">
+
+                        <div class="form-grid">
+
+                            <div class="form-group">
+
+                                <label for="profileName">
+                                    Full Name
+                                </label>
+
+                                <div class="input-box">
+
+                                    <i class="fas fa-user"></i>
+
+                                    <input
+                                        type="text"
+                                        id="profileName"
+                                        disabled
+                                    >
+
+                                </div>
+
+                                <small
+                                    class="error-message"
+                                    id="profileNameError"
+                                ></small>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="profileEmail">
+                                    Email Address
+                                </label>
+
+                                <div class="input-box">
+
+                                    <i class="fas fa-envelope"></i>
+
+                                    <input
+                                        type="email"
+                                        id="profileEmail"
+                                        disabled
+                                    >
+
+                                </div>
+
+                                <small
+                                    class="error-message"
+                                    id="profileEmailError"
+                                ></small>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="profileRole">
+                                    Account Role
+                                </label>
+
+                                <div class="input-box">
+
+                                    <i class="fas fa-user-tag"></i>
+
+                                    <input
+                                        type="text"
+                                        id="profileRole"
+                                        disabled
+                                    >
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="profileJoinedDate">
+                                    Joined Date
+                                </label>
+
+                                <div class="input-box">
+
+                                    <i class="fas fa-calendar"></i>
+
+                                    <input
+                                        type="text"
+                                        id="profileJoinedDate"
+                                        disabled
+                                    >
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            class="profile-form-actions"
+                            id="profileFormActions"
+                        >
+
+                            <button
+                                type="button"
+                                class="cancel-edit-button"
+                                id="cancelEditButton"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                type="submit"
+                                class="save-profile-button"
+                                id="saveProfileButton"
+                            >
+                                <i class="fas fa-check"></i>
+                                Save Changes
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </section>
+
+
+                <!-- Recent Orders -->
+
+                <section class="profile-card">
+
+                    <div class="card-header">
+
+                        <div>
+                            <h2>
+                                Recent Orders
+                            </h2>
+
+                            <p>
+                                Your latest placed orders.
+                            </p>
+                        </div>
+
+                        <a
+                            href="my-orders.html"
+                            class="view-all-orders"
+                        >
+                            View All Orders
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+
+                    </div>
+
+
+                    <div
+                        class="recent-orders-list"
+                        id="recentOrdersList"
+                    >
+
+                        <div class="profile-loading">
+
+                            <i class="fas fa-spinner fa-spin"></i>
+
+                            <p>
+                                Loading orders...
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- Change Password -->
+
+                <section
+                    class="profile-card"
+                    id="changePasswordSection"
+                >
+
+                    <div class="card-header">
+
+                        <div>
+                            <h2>
+                                Change Password
+                            </h2>
+
+                            <p>
+                                Update your account password securely.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <form id="changePasswordForm">
+
+                        <div class="form-grid">
+
+                            <div class="form-group full-width">
+
+                                <label for="currentPassword">
+                                    Current Password
+                                </label>
+
+                                <div class="input-box">
+
+                                    <i class="fas fa-lock"></i>
+
+                                    <input
+                                        type="password"
+                                        id="currentPassword"
+                                        placeholder="Enter current password"
+                                    >
+
+                                    <button
+                                        type="button"
+                                        class="password-toggle"
+                                        data-target="currentPassword"
+                                    >
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+
+                                </div>
+
+                                <small
+                                    class="error-message"
+                                    id="currentPasswordError"
+                                ></small>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="newPassword">
+                                    New Password
+                                </label>
+
+                                <div class="input-box">
+
+                                    <i class="fas fa-key"></i>
+
+                                    <input
+                                        type="password"
+                                        id="newPassword"
+                                        placeholder="Enter new password"
+                                    >
+
+                                    <button
+                                        type="button"
+                                        class="password-toggle"
+                                        data-target="newPassword"
+                                    >
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+
+                                </div>
+
+                                <small
+                                    class="error-message"
+                                    id="newPasswordError"
+                                ></small>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="confirmPassword">
+                                    Confirm Password
+                                </label>
+
+                                <div class="input-box">
+
+                                    <i class="fas fa-key"></i>
+
+                                    <input
+                                        type="password"
+                                        id="confirmPassword"
+                                        placeholder="Confirm new password"
+                                    >
+
+                                    <button
+                                        type="button"
+                                        class="password-toggle"
+                                        data-target="confirmPassword"
+                                    >
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+
+                                </div>
+
+                                <small
+                                    class="error-message"
+                                    id="confirmPasswordError"
+                                ></small>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="password-form-actions">
+
+                            <button
+                                type="submit"
+                                class="change-password-button"
+                                id="changePasswordButton"
+                            >
+                                <i class="fas fa-lock"></i>
+                                Update Password
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </section>
+
+            </section>
+
+        </div>
+
+    </div>
+
+</main>
+
+
+<footer>
+
+    <div class="container footer-content">
+
+        <div class="footer-logo">
+
+            <img
+                src="images/logo.png"
+                alt="ISM Logo"
+            >
+
+            <h2>
+                ISM ROYAL TRUST DISTRIBUTORS
+            </h2>
+
+            <p>
+                Your trusted distribution partner across Sri Lanka.
+            </p>
+
+        </div>
+
+
+        <div class="footer-links">
+
+            <h3>
+                Quick Links
+            </h3>
+
+            <ul>
+
+                <li>
+                    <a href="index.html">
+                        Home
+                    </a>
+                </li>
+
+                <li>
+                    <a href="products.html">
+                        Products
+                    </a>
+                </li>
+
+                <li>
+                    <a href="cart.html">
+                        Cart
+                    </a>
+                </li>
+
+                <li>
+                    <a href="my-orders.html">
+                        My Orders
+                    </a>
+                </li>
+
+            </ul>
+
+        </div>
+
+
+        <div class="footer-contact">
+
+            <h3>
+                Contact
+            </h3>
+
+            <p>
+                <i class="fas fa-phone"></i>
+                +94 75 769 3155
+            </p>
+
+            <p>
+                <i class="fas fa-envelope"></i>
+                ismdistributors1030@gmail.com
+            </p>
+
+            <p>
+                <i class="fas fa-location-dot"></i>
+                No. 29, Korakkovil Road,
+                Sammanthurai, Sri Lanka
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="copyright">
+
+        <p>
+            &copy; 2026 ISM ROYAL TRUST DISTRIBUTORS
+            (Pvt) Ltd. All Rights Reserved.
+        </p>
+
+    </div>
+
+</footer>
+
+
+<script src="js/profile.js"></script>
+<script src="js/auth-navbar.js"></script>
+
+</body>
+</html>
