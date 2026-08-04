@@ -1,43 +1,115 @@
 const API_BASE_URL = "http://localhost:5000/api";
 
-const token =
-    localStorage.getItem("token") ||
-    sessionStorage.getItem("token");
+document.addEventListener("DOMContentLoaded", initializeProfilePage);
 
-const storedUser =
-    JSON.parse(
-        localStorage.getItem("user") ||
-        sessionStorage.getItem("user")
-    );
-
-document.addEventListener(
-    "DOMContentLoaded",
-    initializeProfile
-);
-
-async function initializeProfile() {
+async function initializeProfilePage() {
+    const token = getAuthToken();
+    const storedUser = getStoredUser();
 
     if (!token || !storedUser) {
-
+        localStorage.setItem("redirectAfterLogin", "profile.html");
         window.location.href = "login.html";
         return;
     }
 
-    setupPasswordToggle();
+    setupProfileEvents();
+    setupPasswordToggles();
 
-    await loadProfile();
-
-    await loadOrders();
+    await Promise.all([
+        loadProfile(),
+        loadOrders()
+    ]);
 }
 
-/* ==========================
-   LOAD PROFILE
-========================== */
+/* =========================================
+   AUTH HELPERS
+========================================= */
 
-async function loadProfile() {
+function getAuthToken() {
+    return (
+        localStorage.getItem("token") ||
+        sessionStorage.getItem("token")
+    );
+}
+
+function getStoredUser() {
+    const rawUser =
+        localStorage.getItem("user") ||
+        sessionStorage.getItem("user");
+
+    if (!rawUser) return null;
 
     try {
+        return JSON.parse(rawUser);
+    } catch (error) {
+        console.error("Invalid stored user data:", error);
+        clearAuthenticationData();
+        return null;
+    }
+}
 
+function saveUserData(user) {
+    if (localStorage.getItem("token")) {
+        localStorage.setItem("user", JSON.stringify(user));
+        sessionStorage.removeItem("user");
+        return;
+    }
+
+    if (sessionStorage.getItem("token")) {
+        sessionStorage.setItem("user", JSON.stringify(user));
+        localStorage.removeItem("user");
+        return;
+    }
+
+    localStorage.setItem("user", JSON.stringify(user));
+}
+
+function clearAuthenticationData() {
+    const keys = [
+        "token",
+        "user",
+        "adminToken",
+        "adminUser",
+        "redirectAfterLogin"
+    ];
+
+    keys.forEach((key) => {
+        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
+    });
+}
+
+/* =========================================
+   PROFILE EVENTS
+========================================= */
+
+function setupProfileEvents() {
+    const editButton = document.getElementById("editProfileButton");
+    const cancelButton = document.getElementById("cancelEditButton");
+    const profileForm = document.getElementById("profileForm");
+    const changePasswordForm =
+        document.getElementById("changePasswordForm");
+    const logoutButton =
+        document.getElementById("profileLogoutButton");
+
+    editButton?.addEventListener("click", enableProfileEdit);
+    cancelButton?.addEventListener("click", cancelProfileEdit);
+    profileForm?.addEventListener("submit", updateProfile);
+    changePasswordForm?.addEventListener(
+        "submit",
+        updatePassword
+    );
+    logoutButton?.addEventListener("click", logoutUser);
+}
+
+/* =========================================
+   LOAD PROFILE
+========================================= */
+
+async function loadProfile() {
+    const token = getAuthToken();
+
+    try {
         const response = await fetch(
             `${API_BASE_URL}/auth/profile`,
             {
@@ -47,69 +119,58 @@ async function loadProfile() {
             }
         );
 
-        const result = await response.json();
+        const result = await parseResponse(response);
 
         if (!response.ok) {
-            throw new Error(result.message);
+            handleUnauthorizedResponse(response);
+
+            throw new Error(
+                result.message || "Unable to load profile."
+            );
         }
 
-        const user = result.user;
+        if (!result.user) {
+            throw new Error("Profile data was not found.");
+        }
 
-        document.getElementById(
-            "sidebarUserName"
-        ).textContent = user.name;
-
-        document.getElementById(
-            "sidebarUserEmail"
-        ).textContent = user.email;
-
-        document.getElementById(
-            "sidebarUserRole"
-        ).textContent = user.role;
-
-        document.getElementById(
-            "profileName"
-        ).value = user.name;
-
-        document.getElementById(
-            "profileEmail"
-        ).value = user.email;
-
-        document.getElementById(
-            "profileRole"
-        ).value =
-            user.role.charAt(0).toUpperCase() +
-            user.role.slice(1);
-
-        document.getElementById(
-            "profileJoinedDate"
-        ).value =
-            new Date(
-                user.createdAt
-            ).toLocaleDateString();
-
-        document.getElementById(
-            "profileInitial"
-        ).textContent =
-            user.name.charAt(0).toUpperCase();
-
+        updateProfileInterface(result.user);
+        saveUserData(result.user);
     } catch (error) {
-
-        showAlert(
-            error.message,
-            "error"
-        );
+        console.error("Load profile error:", error);
+        showAlert(error.message, "error");
     }
 }
 
-/* ==========================
+function updateProfileInterface(user) {
+    const name = String(user.name || "User");
+    const email = String(user.email || "");
+    const role = String(user.role || "customer");
+    const joinedDate = formatDate(user.createdAt);
+
+    setText("sidebarUserName", name);
+    setText("sidebarUserEmail", email);
+    setText("sidebarUserRole", capitalize(role));
+    setText(
+        "profileInitial",
+        name.charAt(0).toUpperCase() || "U"
+    );
+
+    setInputValue("profileName", name);
+    setInputValue("profileEmail", email);
+    setInputValue("profileRole", capitalize(role));
+    setInputValue("profileJoinedDate", joinedDate);
+}
+
+/* =========================================
    LOAD ORDERS
-========================== */
+========================================= */
 
 async function loadOrders() {
+    const token = getAuthToken();
+    const ordersContainer =
+        document.getElementById("recentOrdersList");
 
     try {
-
         const response = await fetch(
             `${API_BASE_URL}/orders/my-orders`,
             {
@@ -119,410 +180,593 @@ async function loadOrders() {
             }
         );
 
-        const result = await response.json();
+        const result = await parseResponse(response);
 
         if (!response.ok) {
-            throw new Error(result.message);
+            handleUnauthorizedResponse(response);
+
+            throw new Error(
+                result.message || "Unable to load orders."
+            );
         }
 
-        const orders =
-            result.data || [];
+        const orders = Array.isArray(result.data)
+            ? result.data
+            : Array.isArray(result.orders)
+                ? result.orders
+                : [];
 
-        loadStatistics(orders);
-
-        loadRecentOrders(orders);
-
+        updateOrderStatistics(orders);
+        renderRecentOrders(orders);
     } catch (error) {
+        console.error("Load orders error:", error);
 
-        document.getElementById(
-            "recentOrdersList"
-        ).innerHTML = `
+        setText("totalOrders", "0");
+        setText("deliveredOrders", "0");
+        setText("totalSpent", formatPrice(0));
 
-        <div class="error-orders">
-
-            <i class="fas fa-circle-exclamation"></i>
-
-            <p>${error.message}</p>
-
-        </div>
-
-        `;
+        if (ordersContainer) {
+            ordersContainer.innerHTML = `
+                <div class="error-orders">
+                    <i class="fas fa-circle-exclamation"></i>
+                    <p>${escapeHTML(error.message)}</p>
+                </div>
+            `;
+        }
     }
 }
 
-/* ==========================
-   STATISTICS
-========================== */
+function updateOrderStatistics(orders) {
+    const deliveredOrders = orders.filter((order) => {
+        return normalizeStatus(order.orderStatus) === "delivered";
+    });
 
-function loadStatistics(
-    orders
-) {
+    const totalSpent = deliveredOrders.reduce(
+        (total, order) => {
+            return total + Number(order.totalAmount || 0);
+        },
+        0
+    );
 
-    document.getElementById(
-        "totalOrders"
-    ).textContent =
-        orders.length;
-
-    const delivered =
-        orders.filter(
-            order =>
-                order.orderStatus ===
-                "delivered"
-        );
-
-    document.getElementById(
-        "deliveredOrders"
-    ).textContent =
-        delivered.length;
-
-    const totalSpent =
-        delivered.reduce(
-            (sum, order) =>
-                sum +
-                order.totalAmount,
-            0
-        );
-
-    document.getElementById(
-        "totalSpent"
-    ).textContent =
-        formatPrice(totalSpent);
+    setText("totalOrders", String(orders.length));
+    setText(
+        "deliveredOrders",
+        String(deliveredOrders.length)
+    );
+    setText("totalSpent", formatPrice(totalSpent));
 }
 
-/* ==========================
-   RECENT ORDERS
-========================== */
-
-function loadRecentOrders(
-    orders
-) {
-
+function renderRecentOrders(orders) {
     const container =
-        document.getElementById(
-            "recentOrdersList"
-        );
+        document.getElementById("recentOrdersList");
+
+    if (!container) return;
 
     if (!orders.length) {
-
         container.innerHTML = `
-
-        <div class="empty-orders">
-
-            <i class="fas fa-box-open"></i>
-
-            <p>No orders found.</p>
-
-        </div>
-
+            <div class="empty-orders">
+                <i class="fas fa-box-open"></i>
+                <p>No orders found.</p>
+                <a href="products.html">
+                    Browse Products
+                </a>
+            </div>
         `;
-
         return;
     }
 
-    container.innerHTML =
-        orders
-            .slice(0,5)
-            .map(order=>`
-
-    <div class="recent-order-item">
-
-    <div class="order-main-info">
-
-    <h3>${order.orderNumber}</h3>
-
-    <p>
-    ${new Date(order.createdAt).toLocaleDateString()}
-    </p>
-
-    </div>
-
-    <span class="order-status ${order.orderStatus}">
-    ${order.orderStatus}
-    </span>
-
-    <strong class="order-amount">
-    ${formatPrice(order.totalAmount)}
-    </strong>
-
-    </div>
-
-    `).join("");
-    }
-
-    /* ==========================
-    HELPERS
-    ========================== */
-
-    function formatPrice(
-        value
-    ){
-
-    return Number(value)
-    .toLocaleString(
-    "en-LK",
-    {
-    style:"currency",
-    currency:"LKR"
-    }
-    );
-
-    }
-
-    function showAlert(
-    text,
-    type
-    ){
-
-    const alert=
-    document.getElementById(
-    "profileAlert"
-    );
-
-    alert.textContent=text;
-
-    alert.className=
-    `profile-alert ${type} show`;
-
-    setTimeout(()=>{
-
-    alert.classList.remove(
-    "show"
-    );
-
-    },3000);
-
-    }
-
-    function setupPasswordToggle(){
-
-    document
-    .querySelectorAll(
-    ".password-toggle"
-    )
-    .forEach(button=>{
-
-    button.addEventListener(
-    "click",
-    ()=>{
-
-    const input=
-    document.getElementById(
-    button.dataset.target
-    );
-
-    const icon=
-    button.querySelector("i");
-
-    if(
-    input.type==="password"
-    ){
-
-    input.type="text";
-
-    icon.classList.replace(
-    "fa-eye",
-    "fa-eye-slash"
-    );
-
-    }else{
-
-    input.type="password";
-
-    icon.classList.replace(
-    "fa-eye-slash",
-    "fa-eye"
-    );
-
-    }
-
+    const sortedOrders = [...orders].sort((first, second) => {
+        return (
+            new Date(second.createdAt).getTime() -
+            new Date(first.createdAt).getTime()
+        );
     });
 
-    });
+    container.innerHTML = sortedOrders
+        .slice(0, 5)
+        .map((order) => {
+            const status = normalizeStatus(
+                order.orderStatus || "pending"
+            );
 
+            const orderNumber =
+                order.orderNumber ||
+                `#${String(order._id || "").slice(-8)}`;
+
+            return `
+                <div class="recent-order-item">
+                    <div class="order-main-info">
+                        <h3>
+                            ${escapeHTML(orderNumber)}
+                        </h3>
+
+                        <p>
+                            ${escapeHTML(formatDate(order.createdAt))}
+                        </p>
+                    </div>
+
+                    <span class="order-status ${status}">
+                        ${escapeHTML(capitalize(status))}
+                    </span>
+
+                    <strong class="order-amount">
+                        ${formatPrice(order.totalAmount)}
+                    </strong>
+                </div>
+            `;
+        })
+        .join("");
+}
+
+/* =========================================
+   PROFILE EDIT
+========================================= */
+
+function enableProfileEdit() {
+    const nameInput = document.getElementById("profileName");
+    const emailInput = document.getElementById("profileEmail");
+    const actions = document.getElementById(
+        "profileFormActions"
+    );
+    const editButton = document.getElementById(
+        "editProfileButton"
+    );
+
+    if (nameInput) nameInput.disabled = false;
+    if (emailInput) emailInput.disabled = false;
+
+    nameInput
+        ?.closest(".input-box")
+        ?.classList.add("editing");
+
+    emailInput
+        ?.closest(".input-box")
+        ?.classList.add("editing");
+
+    actions?.classList.add("show");
+
+    if (editButton) {
+        editButton.style.display = "none";
     }
-    /* ==========================
-   EDIT PROFILE
-========================== */
 
-const editBtn = document.getElementById("editProfileButton");
-const cancelBtn = document.getElementById("cancelEditButton");
-const profileForm = document.getElementById("profileForm");
-const profileActions = document.getElementById("profileFormActions");
-
-editBtn.addEventListener("click", enableEdit);
-cancelBtn.addEventListener("click", disableEdit);
-
-function enableEdit() {
-    document.getElementById("profileName").disabled = false;
-    document.getElementById("profileEmail").disabled = false;
-
-    profileActions.classList.add("show");
-    editBtn.style.display = "none";
+    nameInput?.focus();
 }
 
-function disableEdit() {
-    document.getElementById("profileName").disabled = true;
-    document.getElementById("profileEmail").disabled = true;
-
-    profileActions.classList.remove("show");
-    editBtn.style.display = "inline-flex";
-
-    loadProfile();
+async function cancelProfileEdit() {
+    clearProfileErrors();
+    disableProfileEdit();
+    await loadProfile();
 }
 
-/* ==========================
-   UPDATE PROFILE
-========================== */
+function disableProfileEdit() {
+    const nameInput = document.getElementById("profileName");
+    const emailInput = document.getElementById("profileEmail");
+    const actions = document.getElementById(
+        "profileFormActions"
+    );
+    const editButton = document.getElementById(
+        "editProfileButton"
+    );
 
-profileForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+    if (nameInput) nameInput.disabled = true;
+    if (emailInput) emailInput.disabled = true;
 
-    const saveBtn = document.getElementById("saveProfileButton");
+    nameInput
+        ?.closest(".input-box")
+        ?.classList.remove("editing");
 
-    saveBtn.disabled = true;
-    saveBtn.innerHTML =
-        '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    emailInput
+        ?.closest(".input-box")
+        ?.classList.remove("editing");
+
+    actions?.classList.remove("show");
+
+    if (editButton) {
+        editButton.style.display = "inline-flex";
+    }
+}
+
+async function updateProfile(event) {
+    event.preventDefault();
+    clearProfileErrors();
+
+    const token = getAuthToken();
+    const nameInput = document.getElementById("profileName");
+    const emailInput = document.getElementById("profileEmail");
+    const saveButton = document.getElementById(
+        "saveProfileButton"
+    );
+
+    const name = nameInput?.value.trim() || "";
+    const email = emailInput?.value.trim().toLowerCase() || "";
+
+    if (!validateProfileForm(name, email)) {
+        showAlert(
+            "Please correct the highlighted fields.",
+            "error"
+        );
+        return;
+    }
+
+    setButtonLoading(
+        saveButton,
+        true,
+        "Saving...",
+        "Save Changes",
+        "fa-check"
+    );
 
     try {
-        const response = await fetch(`${API_BASE_URL}/users/profile`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`
-            },
-            body: JSON.stringify({
-                name: document.getElementById("profileName").value.trim(),
-                email: document.getElementById("profileEmail").value.trim()
-            })
-        });
+        const response = await fetch(
+            `${API_BASE_URL}/users/profile`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    name,
+                    email
+                })
+            }
+        );
 
-        const result = await response.json();
+        const result = await parseResponse(response);
 
         if (!response.ok) {
-            throw new Error(result.message);
+            handleUnauthorizedResponse(response);
+
+            throw new Error(
+                result.message || "Unable to update profile."
+            );
         }
 
-        localStorage.setItem("user", JSON.stringify(result.user));
+        const updatedUser = result.user || {
+            ...getStoredUser(),
+            name,
+            email
+        };
 
-        showAlert("Profile updated successfully.", "success");
+        saveUserData(updatedUser);
+        updateProfileInterface(updatedUser);
+        disableProfileEdit();
 
-        disableEdit();
+        window.dispatchEvent(
+            new CustomEvent("profileUpdated", {
+                detail: updatedUser
+            })
+        );
 
-        loadProfile();
-
+        showAlert(
+            result.message || "Profile updated successfully.",
+            "success"
+        );
     } catch (error) {
+        console.error("Update profile error:", error);
         showAlert(error.message, "error");
     } finally {
-        saveBtn.disabled = false;
-        saveBtn.innerHTML =
-            '<i class="fas fa-check"></i> Save Changes';
+        setButtonLoading(
+            saveButton,
+            false,
+            "Saving...",
+            "Save Changes",
+            "fa-check"
+        );
     }
-});
+}
 
-/* ==========================
-   LOGOUT
-========================== */
+function validateProfileForm(name, email) {
+    let valid = true;
 
-document
-    .getElementById("profileLogoutButton")
-    .addEventListener("click", () => {
+    if (!name) {
+        showProfileError(
+            "profileName",
+            "Full name is required."
+        );
+        valid = false;
+    } else if (name.length < 2) {
+        showProfileError(
+            "profileName",
+            "Full name must contain at least 2 characters."
+        );
+        valid = false;
+    }
 
-        if (!confirm("Are you sure you want to logout?")) {
-            return;
-        }
+    if (!email) {
+        showProfileError(
+            "profileEmail",
+            "Email address is required."
+        );
+        valid = false;
+    } else if (!validateEmail(email)) {
+        showProfileError(
+            "profileEmail",
+            "Enter a valid email address."
+        );
+        valid = false;
+    }
 
-        localStorage.clear();
-        sessionStorage.clear();
+    return valid;
+}
 
-        window.location.href = "login.html";
-    });
-    /* ==========================
+/* =========================================
    CHANGE PASSWORD
-========================== */
+========================================= */
 
-const changePasswordForm = document.getElementById("changePasswordForm");
-const changePasswordBtn = document.getElementById("changePasswordButton");
-
-changePasswordForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+async function updatePassword(event) {
+    event.preventDefault();
     clearPasswordErrors();
 
-    const currentPassword = document.getElementById("currentPassword").value;
-    const newPassword = document.getElementById("newPassword").value;
-    const confirmPassword = document.getElementById("confirmPassword").value;
+    const token = getAuthToken();
+    const form = document.getElementById(
+        "changePasswordForm"
+    );
+    const button = document.getElementById(
+        "changePasswordButton"
+    );
 
+    const currentPassword =
+        document.getElementById("currentPassword")
+            ?.value || "";
+
+    const newPassword =
+        document.getElementById("newPassword")
+            ?.value || "";
+
+    const confirmPassword =
+        document.getElementById("confirmPassword")
+            ?.value || "";
+
+    if (
+        !validatePasswordForm(
+            currentPassword,
+            newPassword,
+            confirmPassword
+        )
+    ) {
+        showAlert(
+            "Please correct the password fields.",
+            "error"
+        );
+        return;
+    }
+
+    setButtonLoading(
+        button,
+        true,
+        "Updating...",
+        "Update Password",
+        "fa-lock"
+    );
+
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/users/change-password`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    currentPassword,
+                    newPassword
+                })
+            }
+        );
+
+        const result = await parseResponse(response);
+
+        if (!response.ok) {
+            handleUnauthorizedResponse(response);
+
+            throw new Error(
+                result.message || "Unable to update password."
+            );
+        }
+
+        form?.reset();
+
+        [
+            "currentPassword",
+            "newPassword",
+            "confirmPassword"
+        ].forEach((id) => {
+            const input = document.getElementById(id);
+            if (input) input.type = "password";
+        });
+
+        resetPasswordToggleIcons();
+
+        showAlert(
+            result.message || "Password updated successfully.",
+            "success"
+        );
+    } catch (error) {
+        console.error("Change password error:", error);
+        showAlert(error.message, "error");
+    } finally {
+        setButtonLoading(
+            button,
+            false,
+            "Updating...",
+            "Update Password",
+            "fa-lock"
+        );
+    }
+}
+
+function validatePasswordForm(
+    currentPassword,
+    newPassword,
+    confirmPassword
+) {
     let valid = true;
 
     if (!currentPassword) {
-        showPasswordError("currentPassword", "Current password is required.");
+        showPasswordError(
+            "currentPassword",
+            "Current password is required."
+        );
         valid = false;
     }
 
     if (!newPassword) {
-        showPasswordError("newPassword", "New password is required.");
+        showPasswordError(
+            "newPassword",
+            "New password is required."
+        );
         valid = false;
     } else if (newPassword.length < 6) {
-        showPasswordError("newPassword", "Password must contain at least 6 characters.");
+        showPasswordError(
+            "newPassword",
+            "Password must contain at least 6 characters."
+        );
         valid = false;
     } else if (newPassword === currentPassword) {
-        showPasswordError("newPassword", "New password must be different.");
+        showPasswordError(
+            "newPassword",
+            "New password must be different."
+        );
         valid = false;
     }
 
     if (!confirmPassword) {
-        showPasswordError("confirmPassword", "Please confirm your new password.");
+        showPasswordError(
+            "confirmPassword",
+            "Please confirm your new password."
+        );
         valid = false;
     } else if (newPassword !== confirmPassword) {
-        showPasswordError("confirmPassword", "Passwords do not match.");
+        showPasswordError(
+            "confirmPassword",
+            "Passwords do not match."
+        );
         valid = false;
     }
 
-    if (!valid) return;
+    return valid;
+}
 
-    changePasswordBtn.disabled = true;
-    changePasswordBtn.innerHTML =
-        '<i class="fas fa-spinner fa-spin"></i> Updating...';
+/* =========================================
+   PASSWORD TOGGLE
+========================================= */
 
-    try {
-        const response = await fetch(`${API_BASE_URL}/users/change-password`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`
-            },
-            body: JSON.stringify({
-                currentPassword,
-                newPassword
-            })
+function setupPasswordToggles() {
+    document
+        .querySelectorAll(".password-toggle")
+        .forEach((button) => {
+            button.addEventListener("click", () => {
+                const targetId = button.dataset.target;
+                const input =
+                    document.getElementById(targetId);
+                const icon = button.querySelector("i");
+
+                if (!input) return;
+
+                const shouldShow =
+                    input.type === "password";
+
+                input.type = shouldShow
+                    ? "text"
+                    : "password";
+
+                if (icon) {
+                    icon.classList.toggle(
+                        "fa-eye",
+                        !shouldShow
+                    );
+
+                    icon.classList.toggle(
+                        "fa-eye-slash",
+                        shouldShow
+                    );
+                }
+
+                button.setAttribute(
+                    "aria-label",
+                    shouldShow
+                        ? "Hide password"
+                        : "Show password"
+                );
+            });
+        });
+}
+
+function resetPasswordToggleIcons() {
+    document
+        .querySelectorAll(".password-toggle")
+        .forEach((button) => {
+            const icon = button.querySelector("i");
+
+            if (!icon) return;
+
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+
+            button.setAttribute(
+                "aria-label",
+                "Show password"
+            );
+        });
+}
+
+/* =========================================
+   LOGOUT
+========================================= */
+
+function logoutUser() {
+    const confirmed = window.confirm(
+        "Are you sure you want to logout?"
+    );
+
+    if (!confirmed) return;
+
+    clearAuthenticationData();
+    window.location.href = "login.html";
+}
+
+/* =========================================
+   VALIDATION ERRORS
+========================================= */
+
+function showProfileError(id, text) {
+    const input = document.getElementById(id);
+    const error = document.getElementById(`${id}Error`);
+
+    input
+        ?.closest(".input-box")
+        ?.classList.add("error");
+
+    if (error) {
+        error.textContent = text;
+    }
+}
+
+function clearProfileErrors() {
+    const form = document.getElementById("profileForm");
+
+    form
+        ?.querySelectorAll(".input-box")
+        .forEach((box) => {
+            box.classList.remove("error");
         });
 
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(result.message || "Unable to change password.");
-        }
-
-        changePasswordForm.reset();
-
-        showAlert("Password updated successfully.", "success");
-    } catch (error) {
-        showAlert(error.message, "error");
-    } finally {
-        changePasswordBtn.disabled = false;
-        changePasswordBtn.innerHTML =
-            '<i class="fas fa-lock"></i> Update Password';
-    }
-});
-
-/* ==========================
-   PASSWORD ERRORS
-========================== */
+    form
+        ?.querySelectorAll(".error-message")
+        .forEach((error) => {
+            error.textContent = "";
+        });
+}
 
 function showPasswordError(id, text) {
     const input = document.getElementById(id);
     const error = document.getElementById(`${id}Error`);
 
-    input.closest(".input-box")?.classList.add("error");
+    input
+        ?.closest(".input-box")
+        ?.classList.add("error");
 
     if (error) {
         error.textContent = text;
@@ -530,11 +774,167 @@ function showPasswordError(id, text) {
 }
 
 function clearPasswordErrors() {
-    changePasswordForm
-        .querySelectorAll(".input-box")
-        .forEach((box) => box.classList.remove("error"));
+    const form = document.getElementById(
+        "changePasswordForm"
+    );
 
-    changePasswordForm
-        .querySelectorAll(".error-message")
-        .forEach((error) => error.textContent = "");
+    form
+        ?.querySelectorAll(".input-box")
+        .forEach((box) => {
+            box.classList.remove("error");
+        });
+
+    form
+        ?.querySelectorAll(".error-message")
+        .forEach((error) => {
+            error.textContent = "";
+        });
+}
+
+/* =========================================
+   UI HELPERS
+========================================= */
+
+function showAlert(text, type) {
+    const alert = document.getElementById("profileAlert");
+
+    if (!alert) return;
+
+    alert.textContent = text;
+    alert.className = `profile-alert ${type} show`;
+
+    window.clearTimeout(showAlert.timeoutId);
+
+    showAlert.timeoutId = window.setTimeout(() => {
+        alert.classList.remove("show");
+    }, 4000);
+}
+
+function setButtonLoading(
+    button,
+    loading,
+    loadingText,
+    normalText,
+    normalIcon
+) {
+    if (!button) return;
+
+    button.disabled = loading;
+
+    button.innerHTML = loading
+        ? `
+            <i class="fas fa-spinner fa-spin"></i>
+            ${loadingText}
+          `
+        : `
+            <i class="fas ${normalIcon}"></i>
+            ${normalText}
+          `;
+}
+
+function setText(id, value) {
+    const element = document.getElementById(id);
+
+    if (element) {
+        element.textContent = value;
+    }
+}
+
+function setInputValue(id, value) {
+    const input = document.getElementById(id);
+
+    if (input) {
+        input.value = value;
+    }
+}
+
+function handleUnauthorizedResponse(response) {
+    if (response.status !== 401) return;
+
+    clearAuthenticationData();
+    localStorage.setItem(
+        "redirectAfterLogin",
+        "profile.html"
+    );
+
+    window.location.href = "login.html";
+}
+
+async function parseResponse(response) {
+    const contentType =
+        response.headers.get("content-type") || "";
+
+    if (contentType.includes("application/json")) {
+        return response.json();
+    }
+
+    const text = await response.text();
+
+    return {
+        message:
+            text ||
+            `Server returned status ${response.status}.`
+    };
+}
+
+/* =========================================
+   FORMAT HELPERS
+========================================= */
+
+function formatPrice(value) {
+    return Number(value || 0).toLocaleString(
+        "en-LK",
+        {
+            style: "currency",
+            currency: "LKR",
+            minimumFractionDigits: 2
+        }
+    );
+}
+
+function formatDate(value) {
+    if (!value) return "Not available";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return "Not available";
+    }
+
+    return date.toLocaleDateString("en-LK", {
+        year: "numeric",
+        month: "short",
+        day: "numeric"
+    });
+}
+
+function normalizeStatus(value) {
+    return String(value || "pending")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "-");
+}
+
+function capitalize(value) {
+    const text = String(value || "");
+
+    if (!text) return "";
+
+    return (
+        text.charAt(0).toUpperCase() +
+        text.slice(1).replace(/-/g, " ")
+    );
+}
+
+function validateEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function escapeHTML(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 }
