@@ -11,6 +11,7 @@ const productRoutes = require("./routes/productRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const userRoutes = require("./routes/userRoutes");
 const orderRoutes = require("./routes/orderRoutes");
+const dashboardRoutes =require("./routes/dashboardRoutes");
 
 connectDB();
 
@@ -34,6 +35,7 @@ app.use("/api/contact", contactRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/users", userRoutes); 
 app.use("/api/orders", orderRoutes);
+app.use("/api/dashboard",dashboardRoutes);
 app.get("/", (req, res) => {
     res.send("ISM Royal Trust Distributors Backend is Running...");
 });

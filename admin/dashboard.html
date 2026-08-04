@@ -8,7 +8,9 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Admin Dashboard | ISM Royal Trust Distributors</title>
+    <title>
+        Admin Dashboard | ISM Royal Trust Distributors
+    </title>
 
     <link
         rel="stylesheet"
@@ -19,16 +21,22 @@
 </head>
 
 <body>
+
     <div class="admin-layout">
 
         <aside class="sidebar" id="sidebar">
+
             <div class="sidebar-header">
                 <h2>ISM Admin</h2>
                 <p>Royal Trust Distributors</p>
             </div>
 
             <nav class="sidebar-nav">
-                <a href="dashboard.html" class="active">
+
+                <a
+                    href="dashboard.html"
+                    class="active"
+                >
                     <i class="fas fa-chart-line"></i>
                     <span>Dashboard</span>
                 </a>
@@ -36,6 +44,11 @@
                 <a href="products.html">
                     <i class="fas fa-box"></i>
                     <span>Products</span>
+                </a>
+
+                <a href="orders.html">
+                    <i class="fas fa-cart-shopping"></i>
+                    <span>Orders</span>
                 </a>
 
                 <a href="messages.html">
@@ -52,122 +65,270 @@
                     <i class="fas fa-globe"></i>
                     <span>View Website</span>
                 </a>
+
             </nav>
 
-            <button class="logout-btn" id="logoutButton">
+            <button
+                type="button"
+                class="logout-btn"
+                id="logoutButton"
+            >
                 <i class="fas fa-right-from-bracket"></i>
                 Logout
             </button>
+
         </aside>
+
 
         <main class="main-content">
 
             <header class="topbar">
+
                 <button
+                    type="button"
                     class="menu-button"
                     id="menuButton"
-                    type="button"
+                    aria-label="Open admin menu"
                 >
                     <i class="fas fa-bars"></i>
                 </button>
 
                 <div>
                     <h1>Admin Dashboard</h1>
-                    <p>Welcome back, Administrator</p>
+                    <p>
+                        Live business overview and latest activity
+                    </p>
                 </div>
 
                 <div class="admin-profile">
+
                     <div class="profile-icon">
-                        <i class="fas fa-user"></i>
+                        <i class="fas fa-user-shield"></i>
                     </div>
 
                     <div>
-                        <strong id="adminName">Admin</strong>
-                        <small id="adminEmail">Administrator</small>
+                        <strong id="adminName">
+                            Administrator
+                        </strong>
+
+                        <small id="adminEmail">
+                            Admin
+                        </small>
                     </div>
+
                 </div>
+
             </header>
+
 
             <section class="dashboard-content">
 
+                <div
+                    id="dashboardAlert"
+                    class="page-alert"
+                    hidden
+                ></div>
+
+
+                <!-- Primary Statistics -->
                 <div class="stats-grid">
 
                     <article class="stat-card">
+
                         <div class="stat-icon">
                             <i class="fas fa-box"></i>
                         </div>
 
                         <div>
                             <p>Total Products</p>
-                            <h2 id="totalProducts">0</h2>
+
+                            <h2 id="totalProducts">
+                                0
+                            </h2>
                         </div>
+
                     </article>
 
+
                     <article class="stat-card">
+
+                        <div class="stat-icon">
+                            <i class="fas fa-cart-shopping"></i>
+                        </div>
+
+                        <div>
+                            <p>Total Orders</p>
+
+                            <h2 id="totalOrders">
+                                0
+                            </h2>
+                        </div>
+
+                    </article>
+
+
+                    <article class="stat-card">
+
                         <div class="stat-icon">
                             <i class="fas fa-users"></i>
                         </div>
 
                         <div>
                             <p>Total Users</p>
-                            <h2 id="totalUsers">0</h2>
+
+                            <h2 id="totalUsers">
+                                0
+                            </h2>
                         </div>
+
                     </article>
 
+
                     <article class="stat-card">
+
                         <div class="stat-icon">
-                            <i class="fas fa-envelope"></i>
+                            <i class="fas fa-money-bill-wave"></i>
                         </div>
 
                         <div>
-                            <p>Total Messages</p>
-                            <h2 id="totalMessages">0</h2>
-                        </div>
-                    </article>
+                            <p>Total Revenue</p>
 
-                    <article class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-envelope-open"></i>
+                            <h2 id="totalRevenue">
+                                LKR 0.00
+                            </h2>
                         </div>
 
-                        <div>
-                            <p>Unread Messages</p>
-                            <h2 id="unreadMessages">0</h2>
-                        </div>
                     </article>
 
                 </div>
 
-                <div class="dashboard-grid">
 
-                    <section class="content-card">
+                <!-- Secondary Statistics -->
+                <div class="dashboard-mini-stats">
+
+                    <article class="dashboard-mini-card">
+                        <span>Pending Orders</span>
+                        <strong id="pendingOrders">0</strong>
+                    </article>
+
+                    <article class="dashboard-mini-card">
+                        <span>Processing Orders</span>
+                        <strong id="processingOrders">0</strong>
+                    </article>
+
+                    <article class="dashboard-mini-card">
+                        <span>Delivered Orders</span>
+                        <strong id="deliveredOrders">0</strong>
+                    </article>
+
+                    <article class="dashboard-mini-card">
+                        <span>Unread Messages</span>
+                        <strong id="unreadMessages">0</strong>
+                    </article>
+
+                </div>
+
+                <div class="dashboard-charts">
+
+                    <section class="content-card dashboard-chart-card">
+
                         <div class="card-header">
                             <div>
-                                <h2>Recent Messages</h2>
-                                <p>Latest customer enquiries</p>
+                                <h2>Monthly Revenue</h2>
+                                <p>
+                                    Delivered order revenue for the last 6 months
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="chart-container">
+                            <canvas id="monthlyRevenueChart"></canvas>
+                        </div>
+
+                    </section>
+
+
+                    <section class="content-card dashboard-chart-card">
+
+                        <div class="card-header">
+                            <div>
+                                <h2>Orders by Status</h2>
+                                <p>
+                                    Current order status distribution
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="chart-container chart-container-small">
+                            <canvas id="orderStatusChart"></canvas>
+                        </div>
+
+                    </section>
+
+
+                    <section class="content-card dashboard-chart-card">
+
+                        <div class="card-header">
+                            <div>
+                                <h2>Monthly Orders</h2>
+                                <p>
+                                    Order volume during the last 6 months
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="chart-container">
+                            <canvas id="monthlyOrdersChart"></canvas>
+                        </div>
+
+                    </section>
+
+                </div>
+
+
+                <!-- Recent Content -->
+                <div class="dashboard-grid dashboard-grid-three">
+
+                    <section class="content-card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <h2>Recent Orders</h2>
+                                <p>Latest customer purchases</p>
                             </div>
 
-                            <a href="messages.html">View All</a>
+                            <a href="orders.html">
+                                View All
+                            </a>
+
                         </div>
 
                         <div
                             class="recent-list"
-                            id="recentMessages"
+                            id="recentOrders"
                         >
                             <p class="empty-message">
-                                Loading messages...
+                                Loading orders...
                             </p>
                         </div>
+
                     </section>
 
+
                     <section class="content-card">
+
                         <div class="card-header">
+
                             <div>
                                 <h2>Recent Products</h2>
                                 <p>Latest added products</p>
                             </div>
 
-                            <a href="products.html">Manage</a>
+                            <a href="products.html">
+                                Manage
+                            </a>
+
                         </div>
 
                         <div
@@ -178,15 +339,47 @@
                                 Loading products...
                             </p>
                         </div>
+
+                    </section>
+
+
+                    <section class="content-card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <h2>Recent Messages</h2>
+                                <p>Latest customer enquiries</p>
+                            </div>
+
+                            <a href="messages.html">
+                                View All
+                            </a>
+
+                        </div>
+
+                        <div
+                            class="recent-list"
+                            id="recentMessages"
+                        >
+                            <p class="empty-message">
+                                Loading messages...
+                            </p>
+                        </div>
+
                     </section>
 
                 </div>
 
             </section>
+
         </main>
+
     </div>
 
     <script src="js/admin-auth.js"></script>
     <script src="js/dashboard.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </body>
 </html>

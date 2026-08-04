@@ -1,33 +1,56 @@
 const API_BASE_URL = "http://localhost:5000/api";
+let monthlyRevenueChartInstance = null;
+let orderStatusChartInstance = null;
+let monthlyOrdersChartInstance = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-    loadAdminInformation();
-    loadDashboard();
+    initializeDashboard();
 });
 
-async function loadDashboard() {
-    await Promise.allSettled([
-        loadProducts(),
-        loadMessages(),
-        loadUsers()
-    ]);
+async function initializeDashboard() {
+    loadAdminInformation();
+    initializeSidebar();
+    initializeLogout();
+
+    const token = getAdminToken();
+    const admin = getStoredAdmin();
+
+    if (!token || !admin) {
+        window.location.href = "../login.html";
+        return;
+    }
+
+    if (
+        String(admin.role || "").toLowerCase() !==
+        "admin"
+    ) {
+        clearAuthenticationData();
+        window.location.href = "../login.html";
+        return;
+    }
+
+    await loadDashboard();
 }
 
 /* =================================
-   TOKEN AND ADMIN INFORMATION
+   AUTH
 ================================= */
 
 function getAdminToken() {
     return (
         localStorage.getItem("token") ||
-        localStorage.getItem("adminToken")
+        sessionStorage.getItem("token") ||
+        localStorage.getItem("adminToken") ||
+        sessionStorage.getItem("adminToken")
     );
 }
 
 function getStoredAdmin() {
     const storedUser =
         localStorage.getItem("user") ||
-        localStorage.getItem("adminUser");
+        sessionStorage.getItem("user") ||
+        localStorage.getItem("adminUser") ||
+        sessionStorage.getItem("adminUser");
 
     if (!storedUser) {
         return null;
@@ -36,199 +59,315 @@ function getStoredAdmin() {
     try {
         return JSON.parse(storedUser);
     } catch (error) {
-        console.error("Invalid stored admin information:", error);
+        console.error(
+            "Invalid stored admin data:",
+            error
+        );
+
+        clearAuthenticationData();
         return null;
     }
 }
 
-function loadAdminInformation() {
-    const adminNameElement = document.getElementById("adminName");
-    const adminEmailElement = document.getElementById("adminEmail");
+function clearAuthenticationData() {
+    const keys = [
+        "token",
+        "user",
+        "adminToken",
+        "adminUser",
+        "redirectAfterLogin"
+    ];
 
+    keys.forEach((key) => {
+        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
+    });
+}
+
+function loadAdminInformation() {
     const admin = getStoredAdmin();
 
     if (!admin) {
         return;
     }
 
-    if (adminNameElement) {
-        adminNameElement.textContent =
-            admin.name || "Administrator";
-    }
+    setText(
+        "adminName",
+        admin.name || "Administrator"
+    );
 
-    if (adminEmailElement) {
-        adminEmailElement.textContent =
-            admin.email || "Admin";
-    }
+    setText(
+        "adminEmail",
+        admin.email || "Admin"
+    );
 }
 
-function getAuthorizationHeaders() {
-    const token = getAdminToken();
+function initializeLogout() {
+    document
+        .getElementById("logoutButton")
+        ?.addEventListener("click", () => {
+            const confirmed = window.confirm(
+                "Are you sure you want to logout?"
+            );
 
-    if (!token) {
-        return {};
-    }
+            if (!confirmed) {
+                return;
+            }
 
-    return {
-        Authorization: `Bearer ${token}`
-    };
+            clearAuthenticationData();
+            window.location.href = "../login.html";
+        });
 }
 
 /* =================================
-   PRODUCTS
+   SIDEBAR
 ================================= */
 
-async function loadProducts() {
-    const totalProducts =
-        document.getElementById("totalProducts");
+function initializeSidebar() {
+    const menuButton =
+        document.getElementById("menuButton");
 
-    const recentProducts =
-        document.getElementById("recentProducts");
+    const sidebar =
+        document.getElementById("sidebar");
+
+    menuButton?.addEventListener("click", () => {
+        sidebar?.classList.toggle("open");
+    });
+
+    document
+        .querySelectorAll(".sidebar-nav a")
+        .forEach((link) => {
+            link.addEventListener("click", () => {
+                sidebar?.classList.remove("open");
+            });
+        });
+}
+
+/* =================================
+   LOAD DASHBOARD
+================================= */
+
+async function loadDashboard() {
+    setDashboardLoading();
 
     try {
         const response = await fetch(
-            `${API_BASE_URL}/products`
+            `${API_BASE_URL}/dashboard`,
+            {
+                headers: {
+                    Authorization:
+                        `Bearer ${getAdminToken()}`
+                }
+            }
         );
 
-        const result = await response.json();
+        const result =
+            await parseResponse(response);
+
+        if (
+            response.status === 401 ||
+            response.status === 403
+        ) {
+            clearAuthenticationData();
+            window.location.href = "../login.html";
+            return;
+        }
 
         if (!response.ok) {
             throw new Error(
-                result.message || "Unable to load products."
+                result.message ||
+                "Unable to load dashboard."
             );
         }
 
-        const products = extractArray(result);
+        const statistics =
+            result.statistics || {};
 
-        const sortedProducts = sortByNewest(products);
+        const recent =
+            result.recent || {};
 
-        totalProducts.textContent = products.length;
+        const charts =
+            result.charts || {};
+
+        renderStatistics(statistics);
+        renderDashboardCharts(charts);
+
+        renderRecentOrders(
+            Array.isArray(recent.orders)
+                ? recent.orders
+                : []
+        );
 
         renderRecentProducts(
-            sortedProducts.slice(0, 5)
+            Array.isArray(recent.products)
+                ? recent.products
+                : []
         );
-    } catch (error) {
-        console.error("Dashboard products error:", error);
-
-        totalProducts.textContent = "0";
-
-        recentProducts.innerHTML = `
-            <p class="error-message">
-                Unable to load products.
-            </p>
-        `;
-    }
-}
-
-/* =================================
-   MESSAGES
-================================= */
-
-async function loadMessages() {
-    const totalMessages =
-        document.getElementById("totalMessages");
-
-    const unreadMessages =
-        document.getElementById("unreadMessages");
-
-    const recentMessages =
-        document.getElementById("recentMessages");
-
-    try {
-        const response = await fetch(
-            `${API_BASE_URL}/contact`,
-            {
-                method: "GET",
-                headers: getAuthorizationHeaders()
-            }
-        );
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(
-                result.message || "Unable to load messages."
-            );
-        }
-
-        const messages = extractArray(result);
-
-        const sortedMessages = sortByNewest(messages);
-
-        totalMessages.textContent = messages.length;
-
-        const unreadCount = messages.filter(
-            (message) =>
-                String(message.status).toLowerCase() === "unread"
-        ).length;
-
-        unreadMessages.textContent = unreadCount;
 
         renderRecentMessages(
-            sortedMessages.slice(0, 5)
+            Array.isArray(recent.messages)
+                ? recent.messages
+                : []
         );
     } catch (error) {
-        console.error("Dashboard messages error:", error);
+        console.error(
+            "Dashboard load error:",
+            error
+        );
 
-        totalMessages.textContent = "0";
-        unreadMessages.textContent = "0";
+        showDashboardAlert(
+            error.message ||
+            "Unable to load dashboard.",
+            "error"
+        );
 
-        recentMessages.innerHTML = `
-            <p class="error-message">
-                Unable to load messages.
-            </p>
-        `;
+        renderStatistics({});
+        renderRecentOrders([]);
+        renderRecentProducts([]);
+        renderRecentMessages([]);
     }
 }
 
 /* =================================
-   USERS
+   STATISTICS
 ================================= */
 
-async function loadUsers() {
-    const totalUsers =
-        document.getElementById("totalUsers");
+function renderStatistics(statistics) {
+    setText(
+        "totalProducts",
+        String(statistics.totalProducts || 0)
+    );
 
-    try {
-        const token = getAdminToken();
+    setText(
+        "totalOrders",
+        String(statistics.totalOrders || 0)
+    );
 
-        if (!token) {
-            throw new Error("Admin token not found.");
-        }
+    setText(
+        "totalUsers",
+        String(statistics.totalUsers || 0)
+    );
 
-        const response = await fetch(
-            `${API_BASE_URL}/users`,
-            {
-                method: "GET",
-                headers: getAuthorizationHeaders()
-            }
-        );
+    setText(
+        "totalRevenue",
+        formatCurrency(
+            statistics.totalRevenue || 0
+        )
+    );
 
-        const result = await response.json();
+    setText(
+        "pendingOrders",
+        String(statistics.pendingOrders || 0)
+    );
 
-        if (!response.ok) {
-            throw new Error(
-                result.message || "Unable to load users."
-            );
-        }
+    setText(
+        "processingOrders",
+        String(statistics.processingOrders || 0)
+    );
 
-        const users = extractArray(result);
+    setText(
+        "deliveredOrders",
+        String(statistics.deliveredOrders || 0)
+    );
 
-        totalUsers.textContent = users.length;
-    } catch (error) {
-        console.error("Dashboard users error:", error);
-
-        totalUsers.textContent = "0";
-    }
+    setText(
+        "unreadMessages",
+        String(statistics.unreadMessages || 0)
+    );
 }
 
 /* =================================
-   RENDER PRODUCTS
+   RECENT ORDERS
+================================= */
+
+function renderRecentOrders(orders) {
+    const container =
+        document.getElementById("recentOrders");
+
+    if (!container) {
+        return;
+    }
+
+    if (!orders.length) {
+        container.innerHTML = `
+            <p class="empty-message">
+                No orders found.
+            </p>
+        `;
+        return;
+    }
+
+    container.innerHTML = orders
+        .slice(0, 5)
+        .map((order) => {
+            const orderNumber =
+                order.orderNumber ||
+                `#${String(order._id || "")
+                    .slice(-8)
+                    .toUpperCase()}`;
+
+            const customerName =
+                order.customer?.name ||
+                order.user?.name ||
+                "Unknown Customer";
+
+            const status =
+                normalizeStatus(
+                    order.orderStatus
+                );
+
+            return `
+                <div class="recent-item">
+
+                    <div>
+                        <h3>
+                            ${escapeHTML(orderNumber)}
+                        </h3>
+
+                        <p>
+                            ${escapeHTML(customerName)}
+                            ·
+                            ${escapeHTML(
+                                formatDate(order.createdAt)
+                            )}
+                        </p>
+                    </div>
+
+                    <div class="dashboard-recent-right">
+
+                        <strong>
+                            ${formatCurrency(
+                                order.totalAmount
+                            )}
+                        </strong>
+
+                        <span
+                            class="admin-status-badge ${status}"
+                        >
+                            ${escapeHTML(
+                                formatStatus(status)
+                            )}
+                        </span>
+
+                    </div>
+
+                </div>
+            `;
+        })
+        .join("");
+}
+
+/* =================================
+   RECENT PRODUCTS
 ================================= */
 
 function renderRecentProducts(products) {
     const container =
         document.getElementById("recentProducts");
+
+    if (!container) {
+        return;
+    }
 
     if (!products.length) {
         container.innerHTML = `
@@ -236,37 +375,39 @@ function renderRecentProducts(products) {
                 No products found.
             </p>
         `;
-
         return;
     }
 
     container.innerHTML = products
+        .slice(0, 5)
         .map((product) => {
-            const name = escapeHtml(
+            const name =
                 product.name ||
-                product.productName ||
-                "Unnamed Product"
-            );
+                "Unnamed Product";
 
-            const category = escapeHtml(
-                product.category || "No category"
-            );
-
-            const price = Number(
-                product.price || 0
-            ).toLocaleString("en-LK", {
-                style: "currency",
-                currency: "LKR"
-            });
+            const category =
+                product.category ||
+                "No category";
 
             return `
                 <div class="recent-item">
+
                     <div>
-                        <h3>${name}</h3>
-                        <p>${category}</p>
+                        <h3>
+                            ${escapeHTML(name)}
+                        </h3>
+
+                        <p>
+                            ${escapeHTML(category)}
+                            · Stock:
+                            ${Number(product.stock || 0)}
+                        </p>
                     </div>
 
-                    <strong>${price}</strong>
+                    <strong>
+                        ${formatCurrency(product.price)}
+                    </strong>
+
                 </div>
             `;
         })
@@ -274,12 +415,16 @@ function renderRecentProducts(products) {
 }
 
 /* =================================
-   RENDER MESSAGES
+   RECENT MESSAGES
 ================================= */
 
 function renderRecentMessages(messages) {
     const container =
         document.getElementById("recentMessages");
+
+    if (!container) {
+        return;
+    }
 
     if (!messages.length) {
         container.innerHTML = `
@@ -287,21 +432,19 @@ function renderRecentMessages(messages) {
                 No customer messages found.
             </p>
         `;
-
         return;
     }
 
     container.innerHTML = messages
+        .slice(0, 5)
         .map((message) => {
-            const customerName = escapeHtml(
+            const customerName =
                 message.name ||
-                message.fullName ||
-                "Unknown Customer"
-            );
+                "Unknown Customer";
 
-            const subject = escapeHtml(
-                message.subject || "No subject"
-            );
+            const subject =
+                message.subject ||
+                "No subject";
 
             const status =
                 String(
@@ -309,20 +452,29 @@ function renderRecentMessages(messages) {
                 ).toLowerCase();
 
             const safeStatus =
-                status === "read" ? "read" : "unread";
+                status === "read"
+                    ? "read"
+                    : "unread";
 
             return `
                 <div class="recent-item">
+
                     <div>
-                        <h3>${customerName}</h3>
-                        <p>${subject}</p>
+                        <h3>
+                            ${escapeHTML(customerName)}
+                        </h3>
+
+                        <p>
+                            ${escapeHTML(subject)}
+                        </p>
                     </div>
 
                     <span
                         class="status-badge status-${safeStatus}"
                     >
-                        ${escapeHtml(safeStatus)}
+                        ${escapeHTML(safeStatus)}
                     </span>
+
                 </div>
             `;
         })
@@ -330,56 +482,347 @@ function renderRecentMessages(messages) {
 }
 
 /* =================================
-   HELPERS
+   UI STATES
 ================================= */
 
-function extractArray(result) {
-    if (Array.isArray(result)) {
-        return result;
-    }
-
-    if (Array.isArray(result.data)) {
-        return result.data;
-    }
-
-    if (Array.isArray(result.products)) {
-        return result.products;
-    }
-
-    if (Array.isArray(result.messages)) {
-        return result.messages;
-    }
-
-    if (Array.isArray(result.contacts)) {
-        return result.contacts;
-    }
-
-    if (Array.isArray(result.users)) {
-        return result.users;
-    }
-
-    return [];
-}
-
-function sortByNewest(items) {
-    return [...items].sort((firstItem, secondItem) => {
-        const firstDate = new Date(
-            firstItem.createdAt || 0
-        ).getTime();
-
-        const secondDate = new Date(
-            secondItem.createdAt || 0
-        ).getTime();
-
-        return secondDate - firstDate;
+function setDashboardLoading() {
+    [
+        "totalProducts",
+        "totalOrders",
+        "totalUsers",
+        "totalRevenue",
+        "pendingOrders",
+        "processingOrders",
+        "deliveredOrders",
+        "unreadMessages"
+    ].forEach((id) => {
+        setText(id, "...");
     });
 }
 
-function escapeHtml(value) {
+function showDashboardAlert(message, type) {
+    const alert =
+        document.getElementById("dashboardAlert");
+
+    if (!alert) {
+        return;
+    }
+
+    alert.hidden = false;
+    alert.textContent = message;
+
+    alert.className =
+        type === "success"
+            ? "page-alert page-alert-success"
+            : "page-alert page-alert-error";
+}
+
+/* =================================
+   HELPERS
+================================= */
+
+async function parseResponse(response) {
+    const contentType =
+        response.headers.get("content-type") || "";
+
+    if (
+        contentType.includes(
+            "application/json"
+        )
+    ) {
+        return response.json();
+    }
+
+    const text =
+        await response.text();
+
+    return {
+        message:
+            text ||
+            `Server returned status ${response.status}.`
+    };
+}
+
+function setText(id, value) {
+    const element =
+        document.getElementById(id);
+
+    if (element) {
+        element.textContent = value;
+    }
+}
+
+function formatCurrency(value) {
+    return Number(value || 0).toLocaleString(
+        "en-LK",
+        {
+            style: "currency",
+            currency: "LKR",
+            minimumFractionDigits: 2
+        }
+    );
+}
+
+function formatDate(value) {
+    if (!value) {
+        return "Not available";
+    }
+
+    const date =
+        new Date(value);
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+        return "Not available";
+    }
+
+    return date.toLocaleDateString(
+        "en-LK",
+        {
+            year: "numeric",
+            month: "short",
+            day: "numeric"
+        }
+    );
+}
+
+function normalizeStatus(value) {
+    return String(value || "pending")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "-");
+}
+
+function formatStatus(value) {
+    return normalizeStatus(value)
+        .split("-")
+        .map((word) => {
+            return (
+                word.charAt(0).toUpperCase() +
+                word.slice(1)
+            );
+        })
+        .join(" ");
+}
+
+function escapeHTML(value) {
     return String(value ?? "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+}
+
+/* =================================
+   DASHBOARD CHARTS
+================================= */
+
+function renderDashboardCharts(charts) {
+    if (typeof Chart === "undefined") {
+        console.error("Chart.js is not loaded.");
+        return;
+    }
+
+    renderMonthlyRevenueChart(charts);
+    renderOrderStatusChart(charts);
+    renderMonthlyOrdersChart(charts);
+}
+
+function renderMonthlyRevenueChart(charts) {
+    const canvas =
+        document.getElementById(
+            "monthlyRevenueChart"
+        );
+
+    if (!canvas) return;
+
+    monthlyRevenueChartInstance?.destroy();
+
+    monthlyRevenueChartInstance =
+        new Chart(canvas, {
+            type: "bar",
+
+            data: {
+                labels:
+                    charts.monthlyLabels || [],
+
+                datasets: [
+                    {
+                        label: "Revenue (LKR)",
+
+                        data:
+                            charts.monthlyRevenue ||
+                            [],
+
+                        borderWidth: 1,
+                        borderRadius: 8
+                    }
+                ]
+            },
+
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+
+                    tooltip: {
+                        callbacks: {
+                            label(context) {
+                                return formatCurrency(
+                                    context.raw
+                                );
+                            }
+                        }
+                    }
+                },
+
+                scales: {
+                    y: {
+                        beginAtZero: true,
+
+                        ticks: {
+                            callback(value) {
+                                return `LKR ${Number(
+                                    value
+                                ).toLocaleString(
+                                    "en-LK"
+                                )}`;
+                            }
+                        }
+                    },
+
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+}
+
+function renderOrderStatusChart(charts) {
+    const canvas =
+        document.getElementById(
+            "orderStatusChart"
+        );
+
+    if (!canvas) return;
+
+    orderStatusChartInstance?.destroy();
+
+    const labels = Array.isArray(
+        charts.statusLabels
+    )
+        ? charts.statusLabels.map(
+              formatStatus
+          )
+        : [];
+
+    orderStatusChartInstance =
+        new Chart(canvas, {
+            type: "doughnut",
+
+            data: {
+                labels,
+
+                datasets: [
+                    {
+                        data:
+                            charts.statusCounts || [],
+
+                        borderWidth: 2
+                    }
+                ]
+            },
+
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+
+                plugins: {
+                    legend: {
+                        position: "bottom",
+
+                        labels: {
+                            usePointStyle: true,
+                            padding: 16
+                        }
+                    }
+                },
+
+                cutout: "65%"
+            }
+        });
+}
+
+function renderMonthlyOrdersChart(charts) {
+    const canvas =
+        document.getElementById(
+            "monthlyOrdersChart"
+        );
+
+    if (!canvas) return;
+
+    monthlyOrdersChartInstance?.destroy();
+
+    monthlyOrdersChartInstance =
+        new Chart(canvas, {
+            type: "line",
+
+            data: {
+                labels:
+                    charts.monthlyLabels || [],
+
+                datasets: [
+                    {
+                        label: "Orders",
+
+                        data:
+                            charts.monthlyOrderCount ||
+                            [],
+
+                        borderWidth: 3,
+                        tension: 0.35,
+                        fill: false,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }
+                ]
+            },
+
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    },
+
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
 }

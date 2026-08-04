@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="View and manage your orders placed with ISM Royal Trust Distributors."
+    >
+
+    <title>
+        My Orders | ISM ROYAL TRUST DISTRIBUTORS
+    </title>
+
+    <link rel="stylesheet" href="css/my-orders.css">
+    <link rel="stylesheet" href="css/navbar-auth.css">
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+
+            <div class="logo">
+                <a href="index.html">
+                    <img
+                        src="images/logo.png"
+                        alt="ISM Royal Trust Distributors Logo"
+                    >
+                </a>
+
+                <h1>
+                    ISM ROYAL TRUST DISTRIBUTORS
+                </h1>
+            </div>
+
+            <nav>
+                <ul class="nav-links" id="navLinks">
+
+                    <li>
+                        <a href="index.html">
+                            Home
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="about.html">
+                            About
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="products.html">
+                            Products
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="services.html">
+                            Services
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="contact.html">
+                            Contact
+                        </a>
+                    </li>
+
+                    <li>
+                        <a
+                            href="cart.html"
+                            class="cart-nav-link"
+                        >
+                            <i class="fas fa-cart-shopping"></i>
+                            Cart
+
+                            <span
+                                id="cartCount"
+                                class="cart-count"
+                            >
+                                0
+                            </span>
+                        </a>
+                    </li>
+
+                    <li id="authNavItem">
+                        <a
+                            href="login.html"
+                            class="btn-nav-login"
+                        >
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Login</span>
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
+
+            <button
+                type="button"
+                class="menu-toggle"
+                id="menuToggle"
+                aria-label="Open navigation menu"
+            >
+                <i class="fas fa-bars"></i>
+            </button>
+
+        </div>
+    </header>
+
+
+    <!-- Banner -->
+    <section class="page-banner">
+        <div class="container">
+
+            <h1>
+                My Orders
+            </h1>
+
+            <p>
+                View your order history and track the latest order status.
+            </p>
+
+        </div>
+    </section>
+
+
+    <!-- Orders -->
+    <main class="orders-section">
+        <div class="container">
+
+            <div
+                id="ordersAlert"
+                class="orders-alert"
+                role="alert"
+                aria-live="polite"
+            ></div>
+
+
+            <!-- Summary Cards -->
+            <section class="orders-summary">
+
+                <article class="summary-card">
+
+                    <div class="summary-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+
+                    <div>
+                        <p>
+                            Total Orders
+                        </p>
+
+                        <h2 id="summaryTotalOrders">
+                            0
+                        </h2>
+                    </div>
+
+                </article>
+
+
+                <article class="summary-card">
+
+                    <div class="summary-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+
+                    <div>
+                        <p>
+                            Pending Orders
+                        </p>
+
+                        <h2 id="summaryPendingOrders">
+                            0
+                        </h2>
+                    </div>
+
+                </article>
+
+
+                <article class="summary-card">
+
+                    <div class="summary-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+
+                    <div>
+                        <p>
+                            Delivered Orders
+                        </p>
+
+                        <h2 id="summaryDeliveredOrders">
+                            0
+                        </h2>
+                    </div>
+
+                </article>
+
+
+                <article class="summary-card">
+
+                    <div class="summary-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+
+                    <div>
+                        <p>
+                            Total Value
+                        </p>
+
+                        <h2 id="summaryTotalValue">
+                            LKR 0.00
+                        </h2>
+                    </div>
+
+                </article>
+
+            </section>
+
+
+            <!-- Toolbar -->
+            <section class="orders-card">
+
+                <div class="orders-toolbar">
+
+                    <div>
+
+                        <h2>
+                            Order History
+                        </h2>
+
+                        <p>
+                            Search and filter your placed orders.
+                        </p>
+
+                    </div>
+
+                    <div class="orders-controls">
+
+                        <div class="order-search">
+
+                            <i class="fas fa-search"></i>
+
+                            <input
+                                type="search"
+                                id="orderSearchInput"
+                                placeholder="Search order number..."
+                                autocomplete="off"
+                            >
+
+                        </div>
+
+                        <select
+                            id="orderStatusFilter"
+                            aria-label="Filter orders by status"
+                        >
+                            <option value="all">
+                                All Statuses
+                            </option>
+
+                            <option value="pending">
+                                Pending
+                            </option>
+
+                            <option value="confirmed">
+                                Confirmed
+                            </option>
+
+                            <option value="processing">
+                                Processing
+                            </option>
+
+                            <option value="shipped">
+                                Shipped
+                            </option>
+
+                            <option value="delivered">
+                                Delivered
+                            </option>
+
+                            <option value="cancelled">
+                                Cancelled
+                            </option>
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Order List -->
+                <div
+                    class="orders-list"
+                    id="ordersList"
+                    aria-live="polite"
+                >
+
+                    <div class="orders-loading">
+
+                        <i class="fas fa-spinner fa-spin"></i>
+
+                        <p>
+                            Loading your orders...
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+    </main>
+
+
+    <!-- Order Details Modal -->
+    <div
+        class="order-modal"
+        id="orderDetailsModal"
+        aria-hidden="true"
+    >
+
+        <div class="order-modal-overlay" data-close-modal></div>
+
+        <div
+            class="order-modal-content"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="orderModalTitle"
+        >
+
+            <div class="order-modal-header">
+
+                <div>
+                    <span>
+                        Order Details
+                    </span>
+
+                    <h2 id="orderModalTitle">
+                        Order
+                    </h2>
+                </div>
+
+                <button
+                    type="button"
+                    class="modal-close-button"
+                    id="closeOrderModalButton"
+                    aria-label="Close order details"
+                >
+                    <i class="fas fa-xmark"></i>
+                </button>
+
+            </div>
+
+            <div
+                class="order-modal-body"
+                id="orderModalBody"
+            ></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Footer -->
+    <footer>
+
+        <div class="container footer-content">
+
+            <div class="footer-logo">
+
+                <img
+                    src="images/logo.png"
+                    alt="ISM Royal Trust Distributors Logo"
+                >
+
+                <h2>
+                    ISM ROYAL TRUST DISTRIBUTORS
+                </h2>
+
+                <p>
+                    Your trusted distribution partner across Sri Lanka.
+                </p>
+
+            </div>
+
+
+            <div class="footer-links">
+
+                <h3>
+                    Quick Links
+                </h3>
+
+                <ul>
+
+                    <li>
+                        <a href="index.html">
+                            Home
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="products.html">
+                            Products
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="cart.html">
+                            Cart
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="profile.html">
+                            My Profile
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="my-orders.html">
+                            My Orders
+                        </a>
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <div class="footer-contact">
+
+                <h3>
+                    Contact
+                </h3>
+
+                <p>
+                    <i class="fas fa-phone"></i>
+                    +94 75 769 3155
+                </p>
+
+                <p>
+                    <i class="fas fa-envelope"></i>
+                    ismdistributors1030@gmail.com
+                </p>
+
+                <p>
+                    <i class="fas fa-location-dot"></i>
+                    No. 29, Korakkovil Road,
+                    Sammanthurai, Sri Lanka
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="copyright">
+
+            <p>
+                &copy; 2026 ISM ROYAL TRUST DISTRIBUTORS
+                (Pvt) Ltd. All Rights Reserved.
+            </p>
+
+        </div>
+
+    </footer>
+
+
+    <script src="js/my-orders.js"></script>
+    <script src="js/auth-navbar.js"></script>
+
+</body>
+</html>

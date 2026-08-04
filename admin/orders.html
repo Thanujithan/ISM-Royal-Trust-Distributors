@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Manage Orders | ISM Admin
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="css/admin.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+</head>
+
+<body>
+
+    <div class="admin-layout">
+
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+
+            <div class="admin-logo">
+
+                <img
+                    src="../images/logo.png"
+                    alt="ISM Logo"
+                >
+
+                <div>
+                    <h2>ISM Admin</h2>
+                    <p>Management Panel</p>
+                </div>
+
+            </div>
+
+            <nav class="admin-navigation">
+
+                <a href="dashboard.html">
+                    <i class="fas fa-chart-line"></i>
+                    Dashboard
+                </a>
+
+                <a href="products.html">
+                    <i class="fas fa-box"></i>
+                    Products
+                </a>
+
+                <a
+                    href="orders.html"
+                    class="active"
+                >
+                    <i class="fas fa-cart-shopping"></i>
+                    Orders
+                </a>
+
+                <a href="users.html">
+                    <i class="fas fa-users"></i>
+                    Users
+                </a>
+
+                <a href="messages.html">
+                    <i class="fas fa-envelope"></i>
+                    Messages
+                </a>
+
+                <a href="settings.html">
+                    <i class="fas fa-gear"></i>
+                    Settings
+                </a>
+
+            </nav>
+
+            <button
+                type="button"
+                class="admin-logout-button"
+                id="adminLogoutButton"
+            >
+                <i class="fas fa-right-from-bracket"></i>
+                Logout
+            </button>
+
+        </aside>
+
+
+        <!-- Main Content -->
+        <main class="admin-main">
+
+            <!-- Topbar -->
+            <header class="admin-topbar">
+
+                <div>
+
+                    <button
+                        type="button"
+                        class="admin-menu-button"
+                        id="adminMenuButton"
+                        aria-label="Open admin menu"
+                    >
+                        <i class="fas fa-bars"></i>
+                    </button>
+
+                    <div>
+                        <h1>
+                            Order Management
+                        </h1>
+
+                        <p>
+                            View and update customer orders.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="admin-profile">
+
+                    <div class="admin-avatar">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+
+                    <div>
+                        <strong id="adminUserName">
+                            Administrator
+                        </strong>
+
+                        <span>
+                            Admin
+                        </span>
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <!-- Content -->
+            <section class="admin-content">
+
+                <div
+                    id="ordersAlert"
+                    class="admin-alert"
+                    role="alert"
+                    aria-live="polite"
+                ></div>
+
+
+                <!-- Statistics -->
+                <div class="admin-stat-grid">
+
+                    <article class="admin-stat-card">
+
+                        <div class="admin-stat-icon">
+                            <i class="fas fa-box"></i>
+                        </div>
+
+                        <div>
+                            <p>Total Orders</p>
+
+                            <h2 id="totalOrders">
+                                0
+                            </h2>
+                        </div>
+
+                    </article>
+
+
+                    <article class="admin-stat-card">
+
+                        <div class="admin-stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+
+                        <div>
+                            <p>Pending</p>
+
+                            <h2 id="pendingOrders">
+                                0
+                            </h2>
+                        </div>
+
+                    </article>
+
+
+                    <article class="admin-stat-card">
+
+                        <div class="admin-stat-icon">
+                            <i class="fas fa-truck"></i>
+                        </div>
+
+                        <div>
+                            <p>Delivered</p>
+
+                            <h2 id="deliveredOrders">
+                                0
+                            </h2>
+                        </div>
+
+                    </article>
+
+
+                    <article class="admin-stat-card">
+
+                        <div class="admin-stat-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+
+                        <div>
+                            <p>Total Revenue</p>
+
+                            <h2 id="totalRevenue">
+                                LKR 0.00
+                            </h2>
+                        </div>
+
+                    </article>
+
+                </div>
+
+
+                <!-- Orders Table Card -->
+                <section class="admin-card">
+
+                    <div class="admin-card-header">
+
+                        <div>
+                            <h2>
+                                Customer Orders
+                            </h2>
+
+                            <p>
+                                Search, filter and update orders.
+                            </p>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="admin-refresh-button"
+                            id="refreshOrdersButton"
+                        >
+                            <i class="fas fa-rotate-right"></i>
+                            Refresh
+                        </button>
+
+                    </div>
+
+
+                    <!-- Controls -->
+                    <div class="admin-controls">
+
+                        <div class="admin-search-box">
+
+                            <i class="fas fa-search"></i>
+
+                            <input
+                                type="search"
+                                id="orderSearchInput"
+                                placeholder="Search order number or customer..."
+                                autocomplete="off"
+                            >
+
+                        </div>
+
+                        <select
+                            id="orderStatusFilter"
+                            aria-label="Filter orders by status"
+                        >
+                            <option value="all">
+                                All Statuses
+                            </option>
+
+                            <option value="pending">
+                                Pending
+                            </option>
+
+                            <option value="confirmed">
+                                Confirmed
+                            </option>
+
+                            <option value="processing">
+                                Processing
+                            </option>
+
+                            <option value="shipped">
+                                Shipped
+                            </option>
+
+                            <option value="delivered">
+                                Delivered
+                            </option>
+
+                            <option value="cancelled">
+                                Cancelled
+                            </option>
+                        </select>
+
+                    </div>
+
+
+                    <!-- Orders Table -->
+                    <div class="admin-table-wrapper">
+
+                        <table class="admin-table">
+
+                            <thead>
+                                <tr>
+                                    <th>Order</th>
+                                    <th>Customer</th>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="ordersTableBody">
+
+                                <tr>
+                                    <td
+                                        colspan="6"
+                                        class="admin-table-message"
+                                    >
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                        Loading orders...
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </section>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <!-- Order Details Modal -->
+    <div
+        class="admin-modal"
+        id="orderModal"
+        aria-hidden="true"
+    >
+
+        <div
+            class="admin-modal-overlay"
+            data-close-order-modal
+        ></div>
+
+        <div
+            class="admin-modal-content"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="orderModalTitle"
+        >
+
+            <div class="admin-modal-header">
+
+                <div>
+                    <span>
+                        Order Details
+                    </span>
+
+                    <h2 id="orderModalTitle">
+                        Order
+                    </h2>
+                </div>
+
+                <button
+                    type="button"
+                    class="admin-modal-close"
+                    id="closeOrderModalButton"
+                    aria-label="Close order details"
+                >
+                    <i class="fas fa-xmark"></i>
+                </button>
+
+            </div>
+
+            <div
+                class="admin-modal-body"
+                id="orderModalBody"
+            ></div>
+
+        </div>
+
+    </div>
+
+
+    <script src="js/admin-auth.js"></script>
+    <script src="js/orders.js"></script>
+
+</body>
+</html>
