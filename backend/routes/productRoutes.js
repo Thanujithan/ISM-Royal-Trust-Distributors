@@ -1,6 +1,14 @@
 const express = require("express");
 
 const {
+    protect,
+    adminOnly
+} = require("../middleware/auth");
+
+const uploadProductImage =
+    require("../middleware/productUpload");
+
+const {
     getProducts,
     getProductById,
     createProduct,
@@ -10,26 +18,35 @@ const {
 
 const router = express.Router();
 
-/*
-========================================
-Product Routes
-Base URL: /api/products
-========================================
-*/
+/* Public routes */
 
-// Get all products
 router.get("/", getProducts);
 
-// Get one product
 router.get("/:id", getProductById);
 
-// Create a new product
-router.post("/", createProduct);
+/* Admin routes */
 
-// Update an existing product
-router.put("/:id", updateProduct);
+router.post(
+    "/",
+    protect,
+    adminOnly,
+    uploadProductImage.single("image"),
+    createProduct
+);
 
-// Delete a product
-router.delete("/:id", deleteProduct);
+router.put(
+    "/:id",
+    protect,
+    adminOnly,
+    uploadProductImage.single("image"),
+    updateProduct
+);
+
+router.delete(
+    "/:id",
+    protect,
+    adminOnly,
+    deleteProduct
+);
 
 module.exports = router;

@@ -1,121 +1,204 @@
-const PRODUCT_API_URL = "http://localhost:5000/api/products";
+const PRODUCT_API_URL =
+    "http://localhost:5000/api/products";
+
+const BACKEND_URL =
+    "http://localhost:5000";
 
 let allProducts = [];
 let productToDeleteId = null;
 
-document.addEventListener("DOMContentLoaded", () => {
-    initializeProductPage();
-});
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+        initializeProductPage();
+    }
+);
 
 function initializeProductPage() {
-    const openAddButton = document.getElementById(
-        "openAddProductButton"
+    const openAddButton =
+        document.getElementById(
+            "openAddProductButton"
+        );
+
+    const closeModalButton =
+        document.getElementById(
+            "closeModalButton"
+        );
+
+    const cancelProductButton =
+        document.getElementById(
+            "cancelProductButton"
+        );
+
+    const cancelDeleteButton =
+        document.getElementById(
+            "cancelDeleteButton"
+        );
+
+    const confirmDeleteButton =
+        document.getElementById(
+            "confirmDeleteButton"
+        );
+
+    const productForm =
+        document.getElementById(
+            "productForm"
+        );
+
+    const productSearch =
+        document.getElementById(
+            "productSearch"
+        );
+
+    const categoryFilter =
+        document.getElementById(
+            "categoryFilter"
+        );
+
+    const productImage =
+        document.getElementById(
+            "productImage"
+        );
+
+    openAddButton?.addEventListener(
+        "click",
+        openAddModal
     );
 
-    const closeModalButton = document.getElementById(
-        "closeModalButton"
-    );
-
-    const cancelProductButton = document.getElementById(
-        "cancelProductButton"
-    );
-
-    const cancelDeleteButton = document.getElementById(
-        "cancelDeleteButton"
-    );
-
-    const confirmDeleteButton = document.getElementById(
-        "confirmDeleteButton"
-    );
-
-    const productForm = document.getElementById(
-        "productForm"
-    );
-
-    const productSearch = document.getElementById(
-        "productSearch"
-    );
-
-    const categoryFilter = document.getElementById(
-        "categoryFilter"
-    );
-
-    openAddButton.addEventListener("click", openAddModal);
-
-    closeModalButton.addEventListener(
+    closeModalButton?.addEventListener(
         "click",
         closeProductModal
     );
 
-    cancelProductButton.addEventListener(
+    cancelProductButton?.addEventListener(
         "click",
         closeProductModal
     );
 
-    cancelDeleteButton.addEventListener(
+    cancelDeleteButton?.addEventListener(
         "click",
         closeDeleteModal
     );
 
-    confirmDeleteButton.addEventListener(
+    confirmDeleteButton?.addEventListener(
         "click",
         deleteProduct
     );
 
-    productForm.addEventListener(
+    productForm?.addEventListener(
         "submit",
         saveProduct
     );
 
-    productSearch.addEventListener(
+    productSearch?.addEventListener(
         "input",
         filterProducts
     );
 
-    categoryFilter.addEventListener(
+    categoryFilter?.addEventListener(
         "change",
         filterProducts
+    );
+
+    productImage?.addEventListener(
+        "change",
+        handleImagePreview
     );
 
     loadProducts();
 }
 
-async function loadProducts() {
-    const tableBody = document.getElementById(
-        "productTableBody"
+/* ========================================
+   AUTH HELPERS
+======================================== */
+
+function getAdminToken() {
+    return (
+        localStorage.getItem("token") ||
+        sessionStorage.getItem("token") ||
+        localStorage.getItem("adminToken") ||
+        sessionStorage.getItem("adminToken")
     );
+}
+
+function getAuthorizationHeaders() {
+    const token = getAdminToken();
+
+    return token
+        ? {
+            Authorization:
+                `Bearer ${token}`
+        }
+        : {};
+}
+
+/* ========================================
+   LOAD PRODUCTS
+======================================== */
+
+async function loadProducts() {
+    const tableBody =
+        document.getElementById(
+            "productTableBody"
+        );
+
+    if (!tableBody) {
+        return;
+    }
 
     tableBody.innerHTML = `
         <tr>
-            <td colspan="7" class="table-message">
+            <td
+                colspan="7"
+                class="table-message"
+            >
                 Loading products...
             </td>
         </tr>
     `;
 
     try {
-        const response = await fetch(PRODUCT_API_URL);
+        const response =
+            await fetch(
+                PRODUCT_API_URL
+            );
 
-        const result = await response.json();
+        const result =
+            await parseResponse(
+                response
+            );
 
         if (!response.ok) {
             throw new Error(
-                result.message || "Unable to load products."
+                result.message ||
+                "Unable to load products."
             );
         }
 
-        allProducts = extractProducts(result);
+        allProducts =
+            extractProducts(result);
 
-        updateProductCount(allProducts.length);
+        updateProductCount(
+            allProducts.length
+        );
+
         populateCategoryFilter();
         renderProducts(allProducts);
     } catch (error) {
-        console.error("Load products error:", error);
+        console.error(
+            "Load products error:",
+            error
+        );
 
         tableBody.innerHTML = `
             <tr>
-                <td colspan="7" class="table-message error-text">
-                    ${escapeHtml(error.message)}
+                <td
+                    colspan="7"
+                    class="table-message error-text"
+                >
+                    ${escapeHtml(
+                        error.message
+                    )}
                 </td>
             </tr>
         `;
@@ -127,26 +210,46 @@ function extractProducts(result) {
         return result;
     }
 
-    if (Array.isArray(result.data)) {
+    if (
+        Array.isArray(
+            result.data
+        )
+    ) {
         return result.data;
     }
 
-    if (Array.isArray(result.products)) {
+    if (
+        Array.isArray(
+            result.products
+        )
+    ) {
         return result.products;
     }
 
     return [];
 }
 
+/* ========================================
+   RENDER PRODUCTS
+======================================== */
+
 function renderProducts(products) {
-    const tableBody = document.getElementById(
-        "productTableBody"
-    );
+    const tableBody =
+        document.getElementById(
+            "productTableBody"
+        );
+
+    if (!tableBody) {
+        return;
+    }
 
     if (!products.length) {
         tableBody.innerHTML = `
             <tr>
-                <td colspan="7" class="table-message">
+                <td
+                    colspan="7"
+                    class="table-message"
+                >
                     No products found.
                 </td>
             </tr>
@@ -155,167 +258,234 @@ function renderProducts(products) {
         return;
     }
 
-    tableBody.innerHTML = products
-        .map((product) => {
-            const productId = product._id || product.id;
+    tableBody.innerHTML =
+        products
+            .map((product) => {
+                const productId =
+                    product._id ||
+                    product.id;
 
-            const name =
-                product.name ||
-                product.productName ||
-                "Unnamed Product";
+                const name =
+                    product.name ||
+                    product.productName ||
+                    "Unnamed Product";
 
-            const category =
-                product.category ||
-                "Uncategorized";
+                const category =
+                    product.category ||
+                    "Uncategorized";
 
-            const price = Number(
-                product.price || 0
-            ).toLocaleString("en-LK", {
-                style: "currency",
-                currency: "LKR"
-            });
+                const price =
+                    formatCurrency(
+                        product.price
+                    );
 
-            const stock = Number(
-                product.stock ??
-                product.quantity ??
-                0
-            );
+                const stock =
+                    Number(
+                        product.stock ??
+                        product.quantity ??
+                        0
+                    );
 
-            const status =
-                product.status ||
-                (stock > 0 ? "active" : "inactive");
+                const status =
+                    product.status ||
+                    (
+                        stock > 0
+                            ? "active"
+                            : "inactive"
+                    );
 
-            const image =
-                product.image ||
-                product.imageUrl ||
-                product.imageURL ||
-                "";
+                const image =
+                    getProductImageUrl(
+                        product.image ||
+                        product.imageUrl ||
+                        product.imageURL ||
+                        ""
+                    );
 
-            return `
-                <tr>
+                return `
+                    <tr>
 
-                    <td>
-                        <div class="product-table-image">
-                            ${
-                                image
-                                    ? `
-                                        <img
-                                            src="${escapeHtml(image)}"
-                                            alt="${escapeHtml(name)}"
-                                            onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';"
-                                        >
+                        <td>
+                            <div class="product-table-image">
 
-                                        <div
-                                            class="image-placeholder"
-                                            style="display:none;"
-                                        >
-                                            <i class="fas fa-box"></i>
-                                        </div>
-                                    `
-                                    : `
-                                        <div class="image-placeholder">
-                                            <i class="fas fa-box"></i>
-                                        </div>
-                                    `
-                            }
-                        </div>
-                    </td>
+                                ${
+                                    image
+                                        ? `
+                                            <img
+                                                src="${escapeHtml(image)}"
+                                                alt="${escapeHtml(name)}"
+                                                onerror="
+                                                    this.style.display='none';
+                                                    this.nextElementSibling.style.display='grid';
+                                                "
+                                            >
 
-                    <td>
-                        <strong>
-                            ${escapeHtml(name)}
-                        </strong>
+                                            <div
+                                                class="image-placeholder"
+                                                style="display:none;"
+                                            >
+                                                <i class="fas fa-box"></i>
+                                            </div>
+                                          `
+                                        : `
+                                            <div class="image-placeholder">
+                                                <i class="fas fa-box"></i>
+                                            </div>
+                                          `
+                                }
 
-                        <small class="table-description">
-                            ${escapeHtml(
-                                shortenText(
-                                    product.description || "",
-                                    45
-                                )
-                            )}
-                        </small>
-                    </td>
+                            </div>
+                        </td>
 
-                    <td>
-                        ${escapeHtml(category)}
-                    </td>
 
-                    <td>
-                        <strong>${price}</strong>
-                    </td>
+                        <td>
+                            <strong>
+                                ${escapeHtml(name)}
+                            </strong>
 
-                    <td>
-                        <span class="${
-                            stock > 0
-                                ? "stock-available"
-                                : "stock-empty"
-                        }">
-                            ${stock}
-                        </span>
-                    </td>
+                            <small class="table-description">
+                                ${escapeHtml(
+                                    shortenText(
+                                        product.description || "",
+                                        45
+                                    )
+                                )}
+                            </small>
+                        </td>
 
-                    <td>
-                        <span class="status-badge status-${escapeHtml(status)}">
-                            ${escapeHtml(status)}
-                        </span>
-                    </td>
 
-                    <td>
-                        <div class="table-actions">
+                        <td>
+                            ${escapeHtml(category)}
+                        </td>
 
-                            <button
-                                class="action-button edit-button"
-                                type="button"
-                                title="Edit Product"
-                                onclick="openEditModal('${productId}')"
+
+                        <td>
+                            <strong>
+                                ${price}
+                            </strong>
+                        </td>
+
+
+                        <td>
+                            <span
+                                class="${
+                                    stock > 0
+                                        ? "stock-available"
+                                        : "stock-empty"
+                                }"
                             >
-                                <i class="fas fa-pen"></i>
-                            </button>
+                                ${stock}
+                            </span>
+                        </td>
 
-                            <button
-                                class="action-button delete-button"
-                                type="button"
-                                title="Delete Product"
-                                onclick="openDeleteModal('${productId}')"
+
+                        <td>
+                            <span
+                                class="status-badge status-${escapeHtml(
+                                    status
+                                )}"
                             >
-                                <i class="fas fa-trash"></i>
-                            </button>
+                                ${escapeHtml(status)}
+                            </span>
+                        </td>
 
-                        </div>
-                    </td>
 
-                </tr>
-            `;
-        })
-        .join("");
+                        <td>
+                            <div class="table-actions">
+
+                                <button
+                                    class="action-button edit-button"
+                                    type="button"
+                                    title="Edit Product"
+                                    onclick="openEditModal('${escapeHtml(
+                                        productId
+                                    )}')"
+                                >
+                                    <i class="fas fa-pen"></i>
+                                </button>
+
+                                <button
+                                    class="action-button delete-button"
+                                    type="button"
+                                    title="Delete Product"
+                                    onclick="openDeleteModal('${escapeHtml(
+                                        productId
+                                    )}')"
+                                >
+                                    <i class="fas fa-trash"></i>
+                                </button>
+
+                            </div>
+                        </td>
+
+                    </tr>
+                `;
+            })
+            .join("");
 }
+
+/* ========================================
+   ADD PRODUCT MODAL
+======================================== */
 
 function openAddModal() {
-    document.getElementById("modalTitle").textContent =
-        "Add Product";
+    const form =
+        document.getElementById(
+            "productForm"
+        );
 
-    document.getElementById("productForm").reset();
+    form?.reset();
 
-    document.getElementById("productId").value = "";
+    setInputValue(
+        "productId",
+        ""
+    );
 
-    document.getElementById("productStatus").value =
-        "active";
+    setInputValue(
+        "productStatus",
+        "active"
+    );
 
-    document.getElementById("saveProductButton").innerHTML = `
-        <i class="fas fa-save"></i>
-        Save Product
-    `;
+    setText(
+        "modalTitle",
+        "Add Product"
+    );
+
+    hideImagePreview();
+
+    const saveButton =
+        document.getElementById(
+            "saveProductButton"
+        );
+
+    if (saveButton) {
+        saveButton.innerHTML = `
+            <i class="fas fa-save"></i>
+            Save Product
+        `;
+    }
 
     document
-        .getElementById("productModal")
-        .classList.add("show");
+        .getElementById(
+            "productModal"
+        )
+        ?.classList.add("show");
 }
 
+/* ========================================
+   EDIT PRODUCT MODAL
+======================================== */
+
 function openEditModal(productId) {
-    const product = allProducts.find(
-        (item) =>
-            String(item._id || item.id) === String(productId)
-    );
+    const product =
+        allProducts.find(
+            (item) =>
+                String(
+                    item._id ||
+                    item.id
+                ) ===
+                String(productId)
+        );
 
     if (!product) {
         showPageMessage(
@@ -326,160 +496,381 @@ function openEditModal(productId) {
         return;
     }
 
-    document.getElementById("modalTitle").textContent =
-        "Edit Product";
+    setText(
+        "modalTitle",
+        "Edit Product"
+    );
 
-    document.getElementById("productId").value =
-        productId;
+    setInputValue(
+        "productId",
+        productId
+    );
 
-    document.getElementById("productName").value =
+    setInputValue(
+        "productName",
         product.name ||
         product.productName ||
-        "";
+        ""
+    );
 
-    document.getElementById("productCategory").value =
-        product.category ||
-        "";
+    setInputValue(
+        "productCategory",
+        product.category || ""
+    );
 
-    document.getElementById("productPrice").value =
-        product.price ??
-        "";
+    setInputValue(
+        "productPrice",
+        product.price ?? ""
+    );
 
-    document.getElementById("productStock").value =
+    setInputValue(
+        "productStock",
         product.stock ??
         product.quantity ??
-        0;
+        0
+    );
 
-    document.getElementById("productImage").value =
-        product.image ||
-        product.imageUrl ||
-        product.imageURL ||
-        "";
+    /*
+       File input-க்கு existing image path set
+       பண்ண முடியாது. அதனால் value clear-ஆ
+       வைக்கிறோம்; preview மட்டும் காட்டப்படும்.
+    */
+    const imageInput =
+        document.getElementById(
+            "productImage"
+        );
 
-    document.getElementById("productStatus").value =
+    if (imageInput) {
+        imageInput.value = "";
+    }
+
+    setInputValue(
+        "productStatus",
         product.status ||
-        "active";
+        "active"
+    );
 
-    document.getElementById(
-        "productDescription"
-    ).value = product.description || "";
+    setInputValue(
+        "productDescription",
+        product.description ||
+        ""
+    );
 
-    document.getElementById(
-        "saveProductButton"
-    ).innerHTML = `
-        <i class="fas fa-pen"></i>
-        Update Product
-    `;
+    const existingImage =
+        getProductImageUrl(
+            product.image ||
+            product.imageUrl ||
+            product.imageURL ||
+            ""
+        );
+
+    if (existingImage) {
+        showImagePreview(
+            existingImage
+        );
+    } else {
+        hideImagePreview();
+    }
+
+    const saveButton =
+        document.getElementById(
+            "saveProductButton"
+        );
+
+    if (saveButton) {
+        saveButton.innerHTML = `
+            <i class="fas fa-pen"></i>
+            Update Product
+        `;
+    }
 
     document
-        .getElementById("productModal")
-        .classList.add("show");
+        .getElementById(
+            "productModal"
+        )
+        ?.classList.add("show");
 }
 
-async function saveProduct(event) {
-    event.preventDefault();
+/* ========================================
+   IMAGE PREVIEW
+======================================== */
 
-    const productId = document
-        .getElementById("productId")
-        .value
-        .trim();
+function handleImagePreview(event) {
+    const file =
+        event.target.files?.[0];
 
-    const name = document
-        .getElementById("productName")
-        .value
-        .trim();
+    if (!file) {
+        hideImagePreview();
+        return;
+    }
 
-    const category = document
-        .getElementById("productCategory")
-        .value
-        .trim();
-
-    const price = Number(
-        document.getElementById("productPrice").value
-    );
-
-    const stock = Number(
-        document.getElementById("productStock").value
-    );
-
-    const image = document
-        .getElementById("productImage")
-        .value
-        .trim();
-
-    const status = document
-        .getElementById("productStatus")
-        .value;
-
-    const description = document
-        .getElementById("productDescription")
-        .value
-        .trim();
+    const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    ];
 
     if (
-        !name ||
-        !category ||
-        Number.isNaN(price) ||
-        Number.isNaN(stock) ||
-        !description
+        !allowedTypes.includes(
+            file.type
+        )
     ) {
+        event.target.value = "";
+
+        hideImagePreview();
+
         showPageMessage(
-            "Please fill in all required fields.",
+            "Only JPG, PNG and WEBP images are allowed.",
             "error"
         );
 
         return;
     }
 
-    const productData = {
-        name,
-        category,
-        price,
-        stock,
-        image,
-        status,
-        description
-    };
+    const maximumSize =
+        5 * 1024 * 1024;
 
-    const saveButton = document.getElementById(
-        "saveProductButton"
+    if (
+        file.size > maximumSize
+    ) {
+        event.target.value = "";
+
+        hideImagePreview();
+
+        showPageMessage(
+            "Image size must be 5 MB or less.",
+            "error"
+        );
+
+        return;
+    }
+
+    const previewUrl =
+        URL.createObjectURL(file);
+
+    showImagePreview(
+        previewUrl
+    );
+}
+
+function showImagePreview(source) {
+    const preview =
+        document.getElementById(
+            "imagePreview"
+        );
+
+    if (!preview) {
+        return;
+    }
+
+    preview.src = source;
+    preview.style.display =
+        "block";
+}
+
+function hideImagePreview() {
+    const preview =
+        document.getElementById(
+            "imagePreview"
+        );
+
+    if (!preview) {
+        return;
+    }
+
+    preview.src = "";
+    preview.style.display =
+        "none";
+}
+
+/* ========================================
+   SAVE PRODUCT
+======================================== */
+
+async function saveProduct(event) {
+    event.preventDefault();
+
+    const productId =
+        getInputValue(
+            "productId"
+        ).trim();
+
+    const name =
+        getInputValue(
+            "productName"
+        ).trim();
+
+    const category =
+        getInputValue(
+            "productCategory"
+        ).trim();
+
+    const price =
+        Number(
+            getInputValue(
+                "productPrice"
+            )
+        );
+
+    const stock =
+        Number(
+            getInputValue(
+                "productStock"
+            )
+        );
+
+    const status =
+        getInputValue(
+            "productStatus"
+        );
+
+    const description =
+        getInputValue(
+            "productDescription"
+        ).trim();
+
+    const imageInput =
+        document.getElementById(
+            "productImage"
+        );
+
+    const imageFile =
+        imageInput?.files?.[0] ||
+        null;
+
+    if (
+        !name ||
+        !category ||
+        Number.isNaN(price) ||
+        price < 0 ||
+        Number.isNaN(stock) ||
+        stock < 0 ||
+        !description
+    ) {
+        showPageMessage(
+            "Please fill in all required fields correctly.",
+            "error"
+        );
+
+        return;
+    }
+
+    /*
+       Add product செய்யும்போது image required.
+       Edit product செய்யும்போது புதிய image optional.
+    */
+    if (
+        !productId &&
+        !imageFile
+    ) {
+        showPageMessage(
+            "Please select a product image.",
+            "error"
+        );
+
+        return;
+    }
+
+    const formData =
+        new FormData();
+
+    formData.append(
+        "name",
+        name
     );
 
+    formData.append(
+        "category",
+        category
+    );
+
+    formData.append(
+        "price",
+        String(price)
+    );
+
+    formData.append(
+        "stock",
+        String(stock)
+    );
+
+    formData.append(
+        "status",
+        status
+    );
+
+    formData.append(
+        "description",
+        description
+    );
+
+    formData.append(
+        "isAvailable",
+        String(
+            status === "active"
+        )
+    );
+
+    if (imageFile) {
+        formData.append(
+            "image",
+            imageFile
+        );
+    }
+
+    const saveButton =
+        document.getElementById(
+            "saveProductButton"
+        );
+
     try {
-        saveButton.disabled = true;
+        if (saveButton) {
+            saveButton.disabled =
+                true;
 
-        saveButton.innerHTML = `
-            <i class="fas fa-spinner fa-spin"></i>
-            Saving...
-        `;
+            saveButton.innerHTML = `
+                <i class="fas fa-spinner fa-spin"></i>
+                Saving...
+            `;
+        }
 
-        const token = localStorage.getItem("token");
+        const url =
+            productId
+                ? `${PRODUCT_API_URL}/${productId}`
+                : PRODUCT_API_URL;
 
-        const url = productId
-            ? `${PRODUCT_API_URL}/${productId}`
-            : PRODUCT_API_URL;
+        const method =
+            productId
+                ? "PUT"
+                : "POST";
 
-        const method = productId
-            ? "PUT"
-            : "POST";
+        const response =
+            await fetch(
+                url,
+                {
+                    method,
 
-        const response = await fetch(url, {
-            method,
+                    headers:
+                        getAuthorizationHeaders(),
 
-            headers: {
-                "Content-Type": "application/json",
+                    body:
+                        formData
+                }
+            );
 
-                ...(token
-                    ? {
-                        Authorization: `Bearer ${token}`
-                    }
-                    : {})
-            },
+        const result =
+            await parseResponse(
+                response
+            );
 
-            body: JSON.stringify(productData)
-        });
-
-        const result = await response.json();
+        if (
+            response.status === 401 ||
+            response.status === 403
+        ) {
+            throw new Error(
+                "Admin login expired. Please login again."
+            );
+        }
 
         if (!response.ok) {
             throw new Error(
@@ -499,32 +890,48 @@ async function saveProduct(event) {
 
         await loadProducts();
     } catch (error) {
-        console.error("Save product error:", error);
+        console.error(
+            "Save product error:",
+            error
+        );
 
         showPageMessage(
             error.message,
             "error"
         );
     } finally {
-        saveButton.disabled = false;
+        if (saveButton) {
+            saveButton.disabled =
+                false;
 
-        saveButton.innerHTML = productId
-            ? `
-                <i class="fas fa-pen"></i>
-                Update Product
-            `
-            : `
-                <i class="fas fa-save"></i>
-                Save Product
-            `;
+            saveButton.innerHTML =
+                productId
+                    ? `
+                        <i class="fas fa-pen"></i>
+                        Update Product
+                      `
+                    : `
+                        <i class="fas fa-save"></i>
+                        Save Product
+                      `;
+        }
     }
 }
 
+/* ========================================
+   DELETE PRODUCT
+======================================== */
+
 function openDeleteModal(productId) {
-    const product = allProducts.find(
-        (item) =>
-            String(item._id || item.id) === String(productId)
-    );
+    const product =
+        allProducts.find(
+            (item) =>
+                String(
+                    item._id ||
+                    item.id
+                ) ===
+                String(productId)
+        );
 
     if (!product) {
         showPageMessage(
@@ -535,18 +942,21 @@ function openDeleteModal(productId) {
         return;
     }
 
-    productToDeleteId = productId;
+    productToDeleteId =
+        productId;
 
-    document.getElementById(
-        "deleteProductName"
-    ).textContent =
+    setText(
+        "deleteProductName",
         product.name ||
         product.productName ||
-        "this product";
+        "this product"
+    );
 
     document
-        .getElementById("deleteModal")
-        .classList.add("show");
+        .getElementById(
+            "deleteModal"
+        )
+        ?.classList.add("show");
 }
 
 async function deleteProduct() {
@@ -554,34 +964,38 @@ async function deleteProduct() {
         return;
     }
 
-    const confirmButton = document.getElementById(
-        "confirmDeleteButton"
-    );
-
-    try {
-        confirmButton.disabled = true;
-
-        confirmButton.innerHTML = `
-            <i class="fas fa-spinner fa-spin"></i>
-            Deleting...
-        `;
-
-        const token = localStorage.getItem("token");
-
-        const response = await fetch(
-            `${PRODUCT_API_URL}/${productToDeleteId}`,
-            {
-                method: "DELETE",
-
-                headers: token
-                    ? {
-                        Authorization: `Bearer ${token}`
-                    }
-                    : {}
-            }
+    const confirmButton =
+        document.getElementById(
+            "confirmDeleteButton"
         );
 
-        const result = await response.json();
+    try {
+        if (confirmButton) {
+            confirmButton.disabled =
+                true;
+
+            confirmButton.innerHTML = `
+                <i class="fas fa-spinner fa-spin"></i>
+                Deleting...
+            `;
+        }
+
+        const response =
+            await fetch(
+                `${PRODUCT_API_URL}/${productToDeleteId}`,
+                {
+                    method:
+                        "DELETE",
+
+                    headers:
+                        getAuthorizationHeaders()
+                }
+            );
+
+        const result =
+            await parseResponse(
+                response
+            );
 
         if (!response.ok) {
             throw new Error(
@@ -599,7 +1013,10 @@ async function deleteProduct() {
 
         await loadProducts();
     } catch (error) {
-        console.error("Delete product error:", error);
+        console.error(
+            "Delete product error:",
+            error
+        );
 
         closeDeleteModal();
 
@@ -608,68 +1025,96 @@ async function deleteProduct() {
             "error"
         );
     } finally {
-        confirmButton.disabled = false;
+        if (confirmButton) {
+            confirmButton.disabled =
+                false;
 
-        confirmButton.innerHTML = `
-            <i class="fas fa-trash"></i>
-            Delete
-        `;
+            confirmButton.innerHTML = `
+                <i class="fas fa-trash"></i>
+                Delete
+            `;
+        }
     }
 }
 
+/* ========================================
+   SEARCH AND FILTER
+======================================== */
+
 function filterProducts() {
-    const searchValue = document
-        .getElementById("productSearch")
-        .value
-        .trim()
-        .toLowerCase();
+    const searchValue =
+        getInputValue(
+            "productSearch"
+        )
+            .trim()
+            .toLowerCase();
 
-    const selectedCategory = document
-        .getElementById("categoryFilter")
-        .value
-        .toLowerCase();
+    const selectedCategory =
+        getInputValue(
+            "categoryFilter"
+        ).toLowerCase();
 
-    const filteredProducts = allProducts.filter(
-        (product) => {
-            const name = String(
-                product.name ||
-                product.productName ||
-                ""
-            ).toLowerCase();
+    const filteredProducts =
+        allProducts.filter(
+            (product) => {
+                const name =
+                    String(
+                        product.name ||
+                        product.productName ||
+                        ""
+                    ).toLowerCase();
 
-            const category = String(
-                product.category ||
-                ""
-            ).toLowerCase();
+                const category =
+                    String(
+                        product.category ||
+                        ""
+                    ).toLowerCase();
 
-            const matchesSearch =
-                name.includes(searchValue) ||
-                category.includes(searchValue);
+                const matchesSearch =
+                    name.includes(
+                        searchValue
+                    ) ||
+                    category.includes(
+                        searchValue
+                    );
 
-            const matchesCategory =
-                !selectedCategory ||
-                category === selectedCategory;
+                const matchesCategory =
+                    !selectedCategory ||
+                    category ===
+                        selectedCategory;
 
-            return matchesSearch && matchesCategory;
-        }
+                return (
+                    matchesSearch &&
+                    matchesCategory
+                );
+            }
+        );
+
+    renderProducts(
+        filteredProducts
     );
-
-    renderProducts(filteredProducts);
 }
 
 function populateCategoryFilter() {
-    const categoryFilter = document.getElementById(
-        "categoryFilter"
-    );
+    const categoryFilter =
+        document.getElementById(
+            "categoryFilter"
+        );
 
-    const currentValue = categoryFilter.value;
+    if (!categoryFilter) {
+        return;
+    }
+
+    const currentValue =
+        categoryFilter.value;
 
     const categories = [
         ...new Set(
             allProducts
                 .map((product) =>
                     String(
-                        product.category || ""
+                        product.category ||
+                        ""
                     ).trim()
                 )
                 .filter(Boolean)
@@ -677,12 +1122,16 @@ function populateCategoryFilter() {
     ].sort();
 
     categoryFilter.innerHTML = `
-        <option value="">All Categories</option>
+        <option value="">
+            All Categories
+        </option>
 
         ${categories
             .map(
                 (category) => `
-                    <option value="${escapeHtml(category)}">
+                    <option
+                        value="${escapeHtml(category)}"
+                    >
                         ${escapeHtml(category)}
                     </option>
                 `
@@ -690,66 +1139,238 @@ function populateCategoryFilter() {
             .join("")}
     `;
 
-    categoryFilter.value = currentValue;
+    categoryFilter.value =
+        currentValue;
 }
 
-function updateProductCount(count) {
-    document.getElementById(
-        "productCount"
-    ).textContent = count;
-}
+/* ========================================
+   MODAL HELPERS
+======================================== */
 
 function closeProductModal() {
     document
-        .getElementById("productModal")
-        .classList.remove("show");
+        .getElementById(
+            "productModal"
+        )
+        ?.classList.remove("show");
 
-    document.getElementById("productForm").reset();
-    document.getElementById("productId").value = "";
+    document
+        .getElementById(
+            "productForm"
+        )
+        ?.reset();
+
+    setInputValue(
+        "productId",
+        ""
+    );
+
+    hideImagePreview();
 }
 
 function closeDeleteModal() {
     document
-        .getElementById("deleteModal")
-        .classList.remove("show");
+        .getElementById(
+            "deleteModal"
+        )
+        ?.classList.remove("show");
 
-    productToDeleteId = null;
+    productToDeleteId =
+        null;
 }
 
-function showPageMessage(message, type) {
-    const container = document.getElementById(
-        "pageMessage"
+/* ========================================
+   GENERAL HELPERS
+======================================== */
+
+function getProductImageUrl(image) {
+    if (!image) {
+        return "";
+    }
+
+    if (
+        image.startsWith("http://") ||
+        image.startsWith("https://") ||
+        image.startsWith("data:") ||
+        image.startsWith("blob:")
+    ) {
+        return image;
+    }
+
+    const normalizedPath =
+        image.startsWith("/")
+            ? image
+            : `/${image}`;
+
+    return (
+        BACKEND_URL +
+        normalizedPath
     );
+}
+
+function updateProductCount(count) {
+    setText(
+        "productCount",
+        String(count)
+    );
+}
+
+function showPageMessage(
+    message,
+    type
+) {
+    const container =
+        document.getElementById(
+            "pageMessage"
+        );
+
+    if (!container) {
+        return;
+    }
 
     container.innerHTML = `
-        <div class="page-alert page-alert-${type}">
+        <div
+            class="page-alert page-alert-${escapeHtml(type)}"
+        >
             ${escapeHtml(message)}
         </div>
     `;
 
-    setTimeout(() => {
-        container.innerHTML = "";
-    }, 4000);
+    window.clearTimeout(
+        showPageMessage.timeoutId
+    );
+
+    showPageMessage.timeoutId =
+        window.setTimeout(() => {
+            container.innerHTML =
+                "";
+        }, 4000);
 }
 
-function shortenText(text, length) {
-    const cleanText = String(text || "");
+async function parseResponse(response) {
+    const contentType =
+        response.headers.get(
+            "content-type"
+        ) || "";
 
-    if (cleanText.length <= length) {
+    if (
+        contentType.includes(
+            "application/json"
+        )
+    ) {
+        return response.json();
+    }
+
+    const text =
+        await response.text();
+
+    return {
+        message:
+            text ||
+            `Server returned status ${response.status}.`
+    };
+}
+
+function formatCurrency(value) {
+    return Number(
+        value || 0
+    ).toLocaleString(
+        "en-LK",
+        {
+            style:
+                "currency",
+
+            currency:
+                "LKR",
+
+            minimumFractionDigits:
+                2
+        }
+    );
+}
+
+function shortenText(
+    text,
+    length
+) {
+    const cleanText =
+        String(text || "");
+
+    if (
+        cleanText.length <= length
+    ) {
         return cleanText;
     }
 
-    return cleanText.substring(0, length) + "...";
+    return (
+        cleanText.substring(
+            0,
+            length
+        ) + "..."
+    );
+}
+
+function getInputValue(id) {
+    return (
+        document.getElementById(id)
+            ?.value ?? ""
+    );
+}
+
+function setInputValue(
+    id,
+    value
+) {
+    const element =
+        document.getElementById(id);
+
+    if (element) {
+        element.value =
+            value ?? "";
+    }
+}
+
+function setText(
+    id,
+    value
+) {
+    const element =
+        document.getElementById(id);
+
+    if (element) {
+        element.textContent =
+            value ?? "";
+    }
 }
 
 function escapeHtml(value) {
-    return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+    return String(
+        value ?? ""
+    )
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
 }
 
-window.openEditModal = openEditModal;
-window.openDeleteModal = openDeleteModal;
+window.openEditModal =
+    openEditModal;
+
+window.openDeleteModal =
+    openDeleteModal;

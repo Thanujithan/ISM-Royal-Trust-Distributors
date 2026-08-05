@@ -269,17 +269,41 @@
                     </div>
 
                     <div class="form-group full-width">
+
                         <label for="productImage">
-                            Image URL
+                            Product Image
                         </label>
 
                         <input
-                            type="url"
+                            type="file"
                             id="productImage"
-                            placeholder="https://example.com/product.jpg"
+                            accept=".jpg,.jpeg,.png,.webp"
                         >
-                    </div>
 
+                        <small class="input-help">
+                            Supported: JPG, PNG, WEBP (Maximum 5 MB)
+                        </small>
+
+                        <div class="image-preview-wrapper">
+
+                            <img
+                                id="imagePreview"
+                                src=""
+                                alt="Product Preview"
+                                style="
+                                    display:none;
+                                    width:180px;
+                                    height:180px;
+                                    object-fit:cover;
+                                    border-radius:10px;
+                                    border:1px solid #ddd;
+                                    margin-top:15px;
+                                "
+                            >
+
+                        </div>
+
+                    </div>
                     <div class="form-group">
                         <label for="productStatus">
                             Product Status

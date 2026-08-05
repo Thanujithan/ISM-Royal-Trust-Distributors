@@ -1,82 +1,157 @@
 const mongoose = require("mongoose");
+const path = require("path");
+const fs = require("fs");
 const Product = require("../models/Product");
 
-/*
-========================================
-Get all products
-GET /api/products
-========================================
-*/
+/* ========================================
+   IMAGE HELPERS
+======================================== */
+
+function buildUploadedImagePath(file) {
+    if (!file) {
+        return "";
+    }
+
+    return `/uploads/products/${file.filename}`;
+}
+
+function getAbsoluteImagePath(imagePath) {
+    if (!imagePath) {
+        return null;
+    }
+
+    if (!imagePath.startsWith("/uploads/products/")) {
+        return null;
+    }
+
+    const fileName = path.basename(imagePath);
+
+    return path.join(
+        __dirname,
+        "../uploads/products",
+        fileName
+    );
+}
+
+function deleteUploadedImage(imagePath) {
+    const absolutePath =
+        getAbsoluteImagePath(imagePath);
+
+    if (!absolutePath) {
+        return;
+    }
+
+    fs.unlink(
+        absolutePath,
+        (error) => {
+            if (
+                error &&
+                error.code !== "ENOENT"
+            ) {
+                console.error(
+                    "Unable to delete product image:",
+                    error
+                );
+            }
+        }
+    );
+}
+
+/* ========================================
+   GET ALL PRODUCTS
+   GET /api/products
+======================================== */
+
 const getProducts = async (req, res) => {
     try {
-        const products = await Product.find().sort({
-            createdAt: -1
-        });
+        const products =
+            await Product.find().sort({
+                createdAt: -1
+            });
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             count: products.length,
             data: products
         });
     } catch (error) {
-        console.error("Get products error:", error);
+        console.error(
+            "Get products error:",
+            error
+        );
 
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
-            message: "Failed to fetch products.",
+            message:
+                "Failed to fetch products.",
             error: error.message
         });
     }
 };
 
-/*
-========================================
-Get a single product
-GET /api/products/:id
-========================================
-*/
-const getProductById = async (req, res) => {
+/* ========================================
+   GET SINGLE PRODUCT
+   GET /api/products/:id
+======================================== */
+
+const getProductById = async (
+    req,
+    res
+) => {
     try {
         const { id } = req.params;
 
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        if (
+            !mongoose.Types.ObjectId.isValid(
+                id
+            )
+        ) {
             return res.status(400).json({
                 success: false,
-                message: "Invalid product ID."
+                message:
+                    "Invalid product ID."
             });
         }
 
-        const product = await Product.findById(id);
+        const product =
+            await Product.findById(id);
 
         if (!product) {
             return res.status(404).json({
                 success: false,
-                message: "Product not found."
+                message:
+                    "Product not found."
             });
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             data: product
         });
     } catch (error) {
-        console.error("Get product error:", error);
+        console.error(
+            "Get product error:",
+            error
+        );
 
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
-            message: "Failed to fetch product.",
+            message:
+                "Failed to fetch product.",
             error: error.message
         });
     }
 };
 
-/*
-========================================
-Create a new product
-POST /api/products
-========================================
-*/
-const createProduct = async (req, res) => {
+/* ========================================
+   CREATE PRODUCT
+   POST /api/products
+======================================== */
+
+const createProduct = async (
+    req,
+    res
+) => {
     try {
         const {
             name,
@@ -84,23 +159,39 @@ const createProduct = async (req, res) => {
             brand,
             price,
             stock,
-            image,
             description,
             status,
             isAvailable
         } = req.body;
 
         if (!name || !name.trim()) {
+            deleteUploadedImage(
+                buildUploadedImagePath(
+                    req.file
+                )
+            );
+
             return res.status(400).json({
                 success: false,
-                message: "Product name is required."
+                message:
+                    "Product name is required."
             });
         }
 
-        if (!category || !category.trim()) {
+        if (
+            !category ||
+            !category.trim()
+        ) {
+            deleteUploadedImage(
+                buildUploadedImagePath(
+                    req.file
+                )
+            );
+
             return res.status(400).json({
                 success: false,
-                message: "Product category is required."
+                message:
+                    "Product category is required."
             });
         }
 
@@ -109,9 +200,16 @@ const createProduct = async (req, res) => {
             price === null ||
             price === ""
         ) {
+            deleteUploadedImage(
+                buildUploadedImagePath(
+                    req.file
+                )
+            );
+
             return res.status(400).json({
                 success: false,
-                message: "Product price is required."
+                message:
+                    "Product price is required."
             });
         }
 
@@ -120,116 +218,233 @@ const createProduct = async (req, res) => {
             stock === null ||
             stock === ""
         ) {
+            deleteUploadedImage(
+                buildUploadedImagePath(
+                    req.file
+                )
+            );
+
             return res.status(400).json({
                 success: false,
-                message: "Stock quantity is required."
+                message:
+                    "Stock quantity is required."
             });
         }
 
-        if (!description || !description.trim()) {
+        if (
+            !description ||
+            !description.trim()
+        ) {
+            deleteUploadedImage(
+                buildUploadedImagePath(
+                    req.file
+                )
+            );
+
             return res.status(400).json({
                 success: false,
-                message: "Product description is required."
+                message:
+                    "Product description is required."
             });
         }
 
-        const numericPrice = Number(price);
-        const numericStock = Number(stock);
-
-        if (Number.isNaN(numericPrice) || numericPrice < 0) {
+        if (!req.file) {
             return res.status(400).json({
                 success: false,
-                message: "Please enter a valid product price."
+                message:
+                    "Product image is required."
             });
         }
 
-        if (Number.isNaN(numericStock) || numericStock < 0) {
+        const numericPrice =
+            Number(price);
+
+        const numericStock =
+            Number(stock);
+
+        if (
+            Number.isNaN(
+                numericPrice
+            ) ||
+            numericPrice < 0
+        ) {
+            deleteUploadedImage(
+                buildUploadedImagePath(
+                    req.file
+                )
+            );
+
             return res.status(400).json({
                 success: false,
-                message: "Please enter a valid stock quantity."
+                message:
+                    "Please enter a valid product price."
+            });
+        }
+
+        if (
+            Number.isNaN(
+                numericStock
+            ) ||
+            numericStock < 0
+        ) {
+            deleteUploadedImage(
+                buildUploadedImagePath(
+                    req.file
+                )
+            );
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Please enter a valid stock quantity."
             });
         }
 
         const productStatus =
-            status === "inactive" ? "inactive" : "active";
+            status === "inactive"
+                ? "inactive"
+                : "active";
 
-        const product = await Product.create({
-            name: name.trim(),
-            category: category.trim(),
+        const uploadedImage =
+            buildUploadedImagePath(
+                req.file
+            );
 
-            brand:
-                brand && brand.trim()
-                    ? brand.trim()
-                    : "ISM Royal Trust",
+        const normalizedAvailability =
+            String(isAvailable) === "true"
+                ? true
+                : String(isAvailable) ===
+                  "false"
+                ? false
+                : productStatus ===
+                  "active";
 
-            price: numericPrice,
-            stock: numericStock,
+        const product =
+            await Product.create({
+                name:
+                    name.trim(),
 
-            image:
-                image && image.trim()
-                    ? image.trim()
-                    : "",
+                category:
+                    category.trim(),
 
-            description: description.trim(),
+                brand:
+                    brand &&
+                    String(brand).trim()
+                        ? String(
+                              brand
+                          ).trim()
+                        : "ISM Royal Trust",
 
-            status: productStatus,
+                price:
+                    numericPrice,
 
-            isAvailable:
-                typeof isAvailable === "boolean"
-                    ? isAvailable
-                    : productStatus === "active"
-        });
+                stock:
+                    numericStock,
 
-        res.status(201).json({
+                image:
+                    uploadedImage,
+
+                description:
+                    description.trim(),
+
+                status:
+                    productStatus,
+
+                isAvailable:
+                    normalizedAvailability
+            });
+
+        return res.status(201).json({
             success: true,
-            message: "Product created successfully.",
+            message:
+                "Product created successfully.",
             data: product
         });
     } catch (error) {
-        console.error("Create product error:", error);
+        deleteUploadedImage(
+            buildUploadedImagePath(
+                req.file
+            )
+        );
 
-        if (error.name === "ValidationError") {
-            const validationMessages = Object.values(
-                error.errors
-            ).map((item) => item.message);
+        console.error(
+            "Create product error:",
+            error
+        );
+
+        if (
+            error.name ===
+            "ValidationError"
+        ) {
+            const validationMessages =
+                Object.values(
+                    error.errors
+                ).map(
+                    (item) =>
+                        item.message
+                );
 
             return res.status(400).json({
                 success: false,
-                message: validationMessages.join(" ")
+                message:
+                    validationMessages.join(
+                        " "
+                    )
             });
         }
 
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
-            message: "Failed to create product.",
+            message:
+                "Failed to create product.",
             error: error.message
         });
     }
 };
+/* ========================================
+   UPDATE PRODUCT
+   PUT /api/products/:id
+======================================== */
 
-/*
-========================================
-Update product
-PUT /api/products/:id
-========================================
-*/
-const updateProduct = async (req, res) => {
+const updateProduct = async (
+    req,
+    res
+) => {
     try {
         const { id } = req.params;
 
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        if (
+            !mongoose.Types.ObjectId.isValid(
+                id
+            )
+        ) {
+            deleteUploadedImage(
+                buildUploadedImagePath(
+                    req.file
+                )
+            );
+
             return res.status(400).json({
                 success: false,
-                message: "Invalid product ID."
+                message:
+                    "Invalid product ID."
             });
         }
 
-        const existingProduct = await Product.findById(id);
+        const existingProduct =
+            await Product.findById(id);
 
         if (!existingProduct) {
+            deleteUploadedImage(
+                buildUploadedImagePath(
+                    req.file
+                )
+            );
+
             return res.status(404).json({
                 success: false,
-                message: "Product not found."
+                message:
+                    "Product not found."
             });
         }
 
@@ -239,7 +454,6 @@ const updateProduct = async (req, res) => {
             brand,
             price,
             stock,
-            image,
             description,
             status,
             isAvailable
@@ -247,82 +461,150 @@ const updateProduct = async (req, res) => {
 
         if (name !== undefined) {
             if (!String(name).trim()) {
+                deleteUploadedImage(
+                    buildUploadedImagePath(
+                        req.file
+                    )
+                );
+
                 return res.status(400).json({
                     success: false,
-                    message: "Product name cannot be empty."
+                    message:
+                        "Product name cannot be empty."
                 });
             }
 
-            existingProduct.name = String(name).trim();
+            existingProduct.name =
+                String(name).trim();
         }
 
-        if (category !== undefined) {
-            if (!String(category).trim()) {
+        if (
+            category !== undefined
+        ) {
+            if (
+                !String(
+                    category
+                ).trim()
+            ) {
+                deleteUploadedImage(
+                    buildUploadedImagePath(
+                        req.file
+                    )
+                );
+
                 return res.status(400).json({
                     success: false,
-                    message: "Product category cannot be empty."
+                    message:
+                        "Product category cannot be empty."
                 });
             }
 
             existingProduct.category =
-                String(category).trim();
+                String(
+                    category
+                ).trim();
         }
 
         if (brand !== undefined) {
             existingProduct.brand =
-                String(brand).trim() || "ISM Royal Trust";
+                String(brand).trim() ||
+                "ISM Royal Trust";
         }
 
         if (price !== undefined) {
-            const numericPrice = Number(price);
+            const numericPrice =
+                Number(price);
 
             if (
-                Number.isNaN(numericPrice) ||
+                Number.isNaN(
+                    numericPrice
+                ) ||
                 numericPrice < 0
             ) {
+                deleteUploadedImage(
+                    buildUploadedImagePath(
+                        req.file
+                    )
+                );
+
                 return res.status(400).json({
                     success: false,
-                    message: "Please enter a valid product price."
+                    message:
+                        "Please enter a valid product price."
                 });
             }
 
-            existingProduct.price = numericPrice;
+            existingProduct.price =
+                numericPrice;
         }
 
         if (stock !== undefined) {
-            const numericStock = Number(stock);
+            const numericStock =
+                Number(stock);
 
             if (
-                Number.isNaN(numericStock) ||
+                Number.isNaN(
+                    numericStock
+                ) ||
                 numericStock < 0
             ) {
+                deleteUploadedImage(
+                    buildUploadedImagePath(
+                        req.file
+                    )
+                );
+
                 return res.status(400).json({
                     success: false,
-                    message: "Please enter a valid stock quantity."
+                    message:
+                        "Please enter a valid stock quantity."
                 });
             }
 
-            existingProduct.stock = numericStock;
+            existingProduct.stock =
+                numericStock;
         }
 
-        if (image !== undefined) {
-            existingProduct.image = String(image).trim();
-        }
+        if (
+            description !== undefined
+        ) {
+            if (
+                !String(
+                    description
+                ).trim()
+            ) {
+                deleteUploadedImage(
+                    buildUploadedImagePath(
+                        req.file
+                    )
+                );
 
-        if (description !== undefined) {
-            if (!String(description).trim()) {
                 return res.status(400).json({
                     success: false,
-                    message: "Product description cannot be empty."
+                    message:
+                        "Product description cannot be empty."
                 });
             }
 
             existingProduct.description =
-                String(description).trim();
+                String(
+                    description
+                ).trim();
         }
 
         if (status !== undefined) {
-            if (!["active", "inactive"].includes(status)) {
+            if (
+                ![
+                    "active",
+                    "inactive"
+                ].includes(status)
+            ) {
+                deleteUploadedImage(
+                    buildUploadedImagePath(
+                        req.file
+                    )
+                );
+
                 return res.status(400).json({
                     success: false,
                     message:
@@ -330,7 +612,9 @@ const updateProduct = async (req, res) => {
                 });
             }
 
-            existingProduct.status = status;
+            existingProduct.status =
+                status;
+
             existingProduct.isAvailable =
                 status === "active";
         }
@@ -339,89 +623,163 @@ const updateProduct = async (req, res) => {
             isAvailable !== undefined &&
             status === undefined
         ) {
-            existingProduct.isAvailable =
-                Boolean(isAvailable);
+            const normalizedAvailability =
+                String(isAvailable) ===
+                "true";
 
-            existingProduct.status = Boolean(isAvailable)
-                ? "active"
-                : "inactive";
+            existingProduct.isAvailable =
+                normalizedAvailability;
+
+            existingProduct.status =
+                normalizedAvailability
+                    ? "active"
+                    : "inactive";
+        }
+
+        const oldImagePath =
+            existingProduct.image;
+
+        if (req.file) {
+            existingProduct.image =
+                buildUploadedImagePath(
+                    req.file
+                );
         }
 
         const updatedProduct =
             await existingProduct.save();
 
-        res.status(200).json({
+        if (
+            req.file &&
+            oldImagePath &&
+            oldImagePath !==
+                updatedProduct.image
+        ) {
+            deleteUploadedImage(
+                oldImagePath
+            );
+        }
+
+        return res.status(200).json({
             success: true,
-            message: "Product updated successfully.",
+            message:
+                "Product updated successfully.",
             data: updatedProduct
         });
     } catch (error) {
-        console.error("Update product error:", error);
+        deleteUploadedImage(
+            buildUploadedImagePath(
+                req.file
+            )
+        );
 
-        if (error.name === "ValidationError") {
-            const validationMessages = Object.values(
-                error.errors
-            ).map((item) => item.message);
+        console.error(
+            "Update product error:",
+            error
+        );
+
+        if (
+            error.name ===
+            "ValidationError"
+        ) {
+            const validationMessages =
+                Object.values(
+                    error.errors
+                ).map(
+                    (item) =>
+                        item.message
+                );
 
             return res.status(400).json({
                 success: false,
-                message: validationMessages.join(" ")
+                message:
+                    validationMessages.join(
+                        " "
+                    )
             });
         }
 
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
-            message: "Failed to update product.",
+            message:
+                "Failed to update product.",
             error: error.message
         });
     }
 };
+/* ========================================
+   DELETE PRODUCT
+   DELETE /api/products/:id
+======================================== */
 
-/*
-========================================
-Delete product
-DELETE /api/products/:id
-========================================
-*/
-const deleteProduct = async (req, res) => {
+const deleteProduct = async (
+    req,
+    res
+) => {
     try {
         const { id } = req.params;
 
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        if (
+            !mongoose.Types.ObjectId.isValid(
+                id
+            )
+        ) {
             return res.status(400).json({
                 success: false,
-                message: "Invalid product ID."
+                message:
+                    "Invalid product ID."
             });
         }
 
-        const deletedProduct =
-            await Product.findByIdAndDelete(id);
+        const product =
+            await Product.findById(id);
 
-        if (!deletedProduct) {
+        if (!product) {
             return res.status(404).json({
                 success: false,
-                message: "Product not found."
+                message:
+                    "Product not found."
             });
         }
 
-        res.status(200).json({
+        const productImagePath =
+            product.image;
+
+        await product.deleteOne();
+
+        if (productImagePath) {
+            deleteUploadedImage(
+                productImagePath
+            );
+        }
+
+        return res.status(200).json({
             success: true,
-            message: "Product deleted successfully.",
+            message:
+                "Product deleted successfully.",
             data: {
-                id: deletedProduct._id,
-                name: deletedProduct.name
+                id: product._id,
+                name: product.name
             }
         });
     } catch (error) {
-        console.error("Delete product error:", error);
+        console.error(
+            "Delete product error:",
+            error
+        );
 
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
-            message: "Failed to delete product.",
+            message:
+                "Failed to delete product.",
             error: error.message
         });
     }
 };
+
+/* ========================================
+   EXPORTS
+======================================== */
 
 module.exports = {
     getProducts,
