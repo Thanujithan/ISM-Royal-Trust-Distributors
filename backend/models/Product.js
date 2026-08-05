@@ -26,15 +26,55 @@ const productSchema = new mongoose.Schema(
             default: "ISM Royal Trust"
         },
 
+        /*
+        ========================================
+        LEGACY PRICE
+
+        Existing frontend/backend functions
+        இன்னும் price field use செய்யலாம்.
+
+        retailPrice update ஆகும்போது price-மும்
+        அதே retail price ஆக automatic update ஆகும்.
+        ========================================
+        */
+
         price: {
             type: Number,
-            required: [
-                true,
-                "Product price is required"
-            ],
             min: [
                 0,
                 "Price cannot be negative"
+            ],
+            default: 0
+        },
+
+        /*
+        ========================================
+        RETAIL AND WHOLESALE PRICES
+        ========================================
+        */
+
+        retailPrice: {
+            type: Number,
+            min: [
+                0,
+                "Retail price cannot be negative"
+            ]
+        },
+
+        wholesalePrice: {
+            type: Number,
+            min: [
+                0,
+                "Wholesale price cannot be negative"
+            ]
+        },
+
+        wholesaleMinimumQuantity: {
+            type: Number,
+            default: 20,
+            min: [
+                1,
+                "Wholesale minimum quantity must be at least 1"
             ]
         },
 
@@ -84,6 +124,93 @@ const productSchema = new mongoose.Schema(
         timestamps: true
     }
 );
+
+/*
+========================================
+PRICE COMPATIBILITY
+
+Old products:
+    price only
+
+New products:
+    retailPrice
+    wholesalePrice
+    wholesaleMinimumQuantity
+
+இந்த hook பழைய products break ஆகாமல்
+prices automatic normalize பண்ணும்.
+========================================
+*/
+
+productSchema.pre(
+    "validate",
+    function () {
+        const legacyPrice =
+            Number(this.price || 0);
+
+        const retailPrice =
+            this.retailPrice !== undefined &&
+            this.retailPrice !== null
+                ? Number(this.retailPrice)
+                : legacyPrice;
+
+        const wholesalePrice =
+            this.wholesalePrice !== undefined &&
+            this.wholesalePrice !== null
+                ? Number(this.wholesalePrice)
+                : retailPrice;
+
+        const minimumQuantity =
+            Number(
+                this.wholesaleMinimumQuantity || 20
+            );
+
+        this.retailPrice =
+            Number.isNaN(retailPrice)
+                ? 0
+                : retailPrice;
+
+        this.wholesalePrice =
+            Number.isNaN(wholesalePrice)
+                ? this.retailPrice
+                : wholesalePrice;
+
+        this.wholesaleMinimumQuantity =
+            Number.isInteger(minimumQuantity) &&
+            minimumQuantity >= 1
+                ? minimumQuantity
+                : 20;
+
+        /*
+        Existing functions price field use பண்ணினாலும்
+        retail price கிடைக்கும்.
+        */
+
+        this.price =
+            this.retailPrice;
+
+        /*
+        Wholesale price retail price-ஐ விட அதிகமாக
+        இருக்கக்கூடாது.
+        */
+
+        if (
+            this.wholesalePrice >
+            this.retailPrice
+        ) {
+            this.invalidate(
+                "wholesalePrice",
+                "Wholesale price cannot be greater than retail price"
+            );
+        }
+    }
+);
+
+/*
+========================================
+STATUS AND AVAILABILITY
+========================================
+*/
 
 productSchema.pre(
     "save",

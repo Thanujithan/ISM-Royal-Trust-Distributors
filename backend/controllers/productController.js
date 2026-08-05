@@ -1,7 +1,21 @@
 const mongoose = require("mongoose");
 const path = require("path");
 const fs = require("fs");
+
 const Product = require("../models/Product");
+
+/* ========================================
+   CONSTANTS
+======================================== */
+
+const ALLOWED_CATEGORIES = [
+    "juice",
+    "bites",
+    "bottled-water",
+    "sweets"
+];
+
+const DEFAULT_WHOLESALE_MINIMUM = 20;
 
 /* ========================================
    IMAGE HELPERS
@@ -20,11 +34,16 @@ function getAbsoluteImagePath(imagePath) {
         return null;
     }
 
-    if (!imagePath.startsWith("/uploads/products/")) {
+    if (
+        !String(imagePath).startsWith(
+            "/uploads/products/"
+        )
+    ) {
         return null;
     }
 
-    const fileName = path.basename(imagePath);
+    const fileName =
+        path.basename(imagePath);
 
     return path.join(
         __dirname,
@@ -57,12 +76,141 @@ function deleteUploadedImage(imagePath) {
     );
 }
 
+function deleteCurrentUploadedFile(req) {
+    if (!req.file) {
+        return;
+    }
+
+    deleteUploadedImage(
+        buildUploadedImagePath(
+            req.file
+        )
+    );
+}
+
+/* ========================================
+   VALUE HELPERS
+======================================== */
+
+function normalizeCategory(value) {
+    return String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "-");
+}
+
+function normalizeStatus(value) {
+    return String(value || "")
+        .trim()
+        .toLowerCase() === "inactive"
+        ? "inactive"
+        : "active";
+}
+
+function normalizeBoolean(
+    value,
+    fallback
+) {
+    if (
+        value === true ||
+        String(value).toLowerCase() === "true"
+    ) {
+        return true;
+    }
+
+    if (
+        value === false ||
+        String(value).toLowerCase() === "false"
+    ) {
+        return false;
+    }
+
+    return fallback;
+}
+
+function getNumericValue(value) {
+    if (
+        value === undefined ||
+        value === null ||
+        value === ""
+    ) {
+        return null;
+    }
+
+    const numberValue =
+        Number(value);
+
+    return Number.isNaN(numberValue)
+        ? null
+        : numberValue;
+}
+
+function validatePricing({
+    retailPrice,
+    wholesalePrice,
+    wholesaleMinimumQuantity
+}) {
+    if (
+        retailPrice === null ||
+        retailPrice < 0
+    ) {
+        return {
+            valid: false,
+            message:
+                "Please enter a valid retail price."
+        };
+    }
+
+    if (
+        wholesalePrice === null ||
+        wholesalePrice < 0
+    ) {
+        return {
+            valid: false,
+            message:
+                "Please enter a valid wholesale price."
+        };
+    }
+
+    if (
+        wholesalePrice >
+        retailPrice
+    ) {
+        return {
+            valid: false,
+            message:
+                "Wholesale price cannot be greater than retail price."
+        };
+    }
+
+    if (
+        wholesaleMinimumQuantity === null ||
+        !Number.isInteger(
+            wholesaleMinimumQuantity
+        ) ||
+        wholesaleMinimumQuantity < 1
+    ) {
+        return {
+            valid: false,
+            message:
+                "Wholesale minimum quantity must be at least 1."
+        };
+    }
+
+    return {
+        valid: true
+    };
+}
+
 /* ========================================
    GET ALL PRODUCTS
    GET /api/products
 ======================================== */
 
-const getProducts = async (req, res) => {
+const getProducts = async (
+    req,
+    res
+) => {
     try {
         const products =
             await Product.find().sort({
@@ -158,18 +306,20 @@ const createProduct = async (
             category,
             brand,
             price,
+            retailPrice,
+            wholesalePrice,
+            wholesaleMinimumQuantity,
             stock,
             description,
             status,
             isAvailable
         } = req.body;
 
-        if (!name || !name.trim()) {
-            deleteUploadedImage(
-                buildUploadedImagePath(
-                    req.file
-                )
-            );
+        if (
+            !name ||
+            !String(name).trim()
+        ) {
+            deleteCurrentUploadedFile(req);
 
             return res.status(400).json({
                 success: false,
@@ -178,68 +328,28 @@ const createProduct = async (
             });
         }
 
+        const normalizedCategory =
+            normalizeCategory(category);
+
         if (
-            !category ||
-            !category.trim()
+            !ALLOWED_CATEGORIES.includes(
+                normalizedCategory
+            )
         ) {
-            deleteUploadedImage(
-                buildUploadedImagePath(
-                    req.file
-                )
-            );
+            deleteCurrentUploadedFile(req);
 
             return res.status(400).json({
                 success: false,
                 message:
-                    "Product category is required."
-            });
-        }
-
-        if (
-            price === undefined ||
-            price === null ||
-            price === ""
-        ) {
-            deleteUploadedImage(
-                buildUploadedImagePath(
-                    req.file
-                )
-            );
-
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Product price is required."
-            });
-        }
-
-        if (
-            stock === undefined ||
-            stock === null ||
-            stock === ""
-        ) {
-            deleteUploadedImage(
-                buildUploadedImagePath(
-                    req.file
-                )
-            );
-
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Stock quantity is required."
+                    "Category must be juice, bites, bottled-water or sweets."
             });
         }
 
         if (
             !description ||
-            !description.trim()
+            !String(description).trim()
         ) {
-            deleteUploadedImage(
-                buildUploadedImagePath(
-                    req.file
-                )
-            );
+            deleteCurrentUploadedFile(req);
 
             return res.status(400).json({
                 success: false,
@@ -256,42 +366,62 @@ const createProduct = async (
             });
         }
 
-        const numericPrice =
-            Number(price);
+        /*
+        Old frontend price field அனுப்பினாலும்
+        retail price ஆக பயன்படுத்தப்படும்.
+        */
 
-        const numericStock =
-            Number(stock);
-
-        if (
-            Number.isNaN(
-                numericPrice
-            ) ||
-            numericPrice < 0
-        ) {
-            deleteUploadedImage(
-                buildUploadedImagePath(
-                    req.file
-                )
+        const normalizedRetailPrice =
+            getNumericValue(
+                retailPrice ?? price
             );
+
+        const normalizedWholesalePrice =
+            getNumericValue(
+                wholesalePrice ??
+                retailPrice ??
+                price
+            );
+
+        const normalizedMinimumQuantity =
+            getNumericValue(
+                wholesaleMinimumQuantity ??
+                DEFAULT_WHOLESALE_MINIMUM
+            );
+
+        const pricingValidation =
+            validatePricing({
+                retailPrice:
+                    normalizedRetailPrice,
+
+                wholesalePrice:
+                    normalizedWholesalePrice,
+
+                wholesaleMinimumQuantity:
+                    normalizedMinimumQuantity
+            });
+
+        if (!pricingValidation.valid) {
+            deleteCurrentUploadedFile(req);
 
             return res.status(400).json({
                 success: false,
                 message:
-                    "Please enter a valid product price."
+                    pricingValidation.message
             });
         }
 
+        const numericStock =
+            getNumericValue(stock);
+
         if (
-            Number.isNaN(
+            numericStock === null ||
+            !Number.isInteger(
                 numericStock
             ) ||
             numericStock < 0
         ) {
-            deleteUploadedImage(
-                buildUploadedImagePath(
-                    req.file
-                )
-            );
+            deleteCurrentUploadedFile(req);
 
             return res.status(400).json({
                 success: false,
@@ -301,9 +431,7 @@ const createProduct = async (
         }
 
         const productStatus =
-            status === "inactive"
-                ? "inactive"
-                : "active";
+            normalizeStatus(status);
 
         const uploadedImage =
             buildUploadedImagePath(
@@ -311,21 +439,18 @@ const createProduct = async (
             );
 
         const normalizedAvailability =
-            String(isAvailable) === "true"
-                ? true
-                : String(isAvailable) ===
-                  "false"
-                ? false
-                : productStatus ===
-                  "active";
+            normalizeBoolean(
+                isAvailable,
+                productStatus === "active"
+            );
 
         const product =
             await Product.create({
                 name:
-                    name.trim(),
+                    String(name).trim(),
 
                 category:
-                    category.trim(),
+                    normalizedCategory,
 
                 brand:
                     brand &&
@@ -335,8 +460,22 @@ const createProduct = async (
                           ).trim()
                         : "ISM Royal Trust",
 
+                /*
+                Backward compatibility:
+                price = retail price
+                */
+
                 price:
-                    numericPrice,
+                    normalizedRetailPrice,
+
+                retailPrice:
+                    normalizedRetailPrice,
+
+                wholesalePrice:
+                    normalizedWholesalePrice,
+
+                wholesaleMinimumQuantity:
+                    normalizedMinimumQuantity,
 
                 stock:
                     numericStock,
@@ -345,7 +484,9 @@ const createProduct = async (
                     uploadedImage,
 
                 description:
-                    description.trim(),
+                    String(
+                        description
+                    ).trim(),
 
                 status:
                     productStatus,
@@ -361,11 +502,7 @@ const createProduct = async (
             data: product
         });
     } catch (error) {
-        deleteUploadedImage(
-            buildUploadedImagePath(
-                req.file
-            )
-        );
+        deleteCurrentUploadedFile(req);
 
         console.error(
             "Create product error:",
@@ -418,11 +555,7 @@ const updateProduct = async (
                 id
             )
         ) {
-            deleteUploadedImage(
-                buildUploadedImagePath(
-                    req.file
-                )
-            );
+            deleteCurrentUploadedFile(req);
 
             return res.status(400).json({
                 success: false,
@@ -435,11 +568,7 @@ const updateProduct = async (
             await Product.findById(id);
 
         if (!existingProduct) {
-            deleteUploadedImage(
-                buildUploadedImagePath(
-                    req.file
-                )
-            );
+            deleteCurrentUploadedFile(req);
 
             return res.status(404).json({
                 success: false,
@@ -453,6 +582,9 @@ const updateProduct = async (
             category,
             brand,
             price,
+            retailPrice,
+            wholesalePrice,
+            wholesaleMinimumQuantity,
             stock,
             description,
             status,
@@ -461,11 +593,7 @@ const updateProduct = async (
 
         if (name !== undefined) {
             if (!String(name).trim()) {
-                deleteUploadedImage(
-                    buildUploadedImagePath(
-                        req.file
-                    )
-                );
+                deleteCurrentUploadedFile(req);
 
                 return res.status(400).json({
                     success: false,
@@ -478,31 +606,26 @@ const updateProduct = async (
                 String(name).trim();
         }
 
-        if (
-            category !== undefined
-        ) {
+        if (category !== undefined) {
+            const normalizedCategory =
+                normalizeCategory(category);
+
             if (
-                !String(
-                    category
-                ).trim()
+                !ALLOWED_CATEGORIES.includes(
+                    normalizedCategory
+                )
             ) {
-                deleteUploadedImage(
-                    buildUploadedImagePath(
-                        req.file
-                    )
-                );
+                deleteCurrentUploadedFile(req);
 
                 return res.status(400).json({
                     success: false,
                     message:
-                        "Product category cannot be empty."
+                        "Category must be juice, bites, bottled-water or sweets."
                 });
             }
 
             existingProduct.category =
-                String(
-                    category
-                ).trim();
+                normalizedCategory;
         }
 
         if (brand !== undefined) {
@@ -511,48 +634,153 @@ const updateProduct = async (
                 "ISM Royal Trust";
         }
 
-        if (price !== undefined) {
-            const numericPrice =
-                Number(price);
+        /*
+        Retail price update:
+        new retailPrice இல்லையென்றால்
+        old price field fallback.
+        */
+
+        if (
+            retailPrice !== undefined ||
+            price !== undefined
+        ) {
+            const normalizedRetailPrice =
+                getNumericValue(
+                    retailPrice ?? price
+                );
 
             if (
-                Number.isNaN(
-                    numericPrice
-                ) ||
-                numericPrice < 0
+                normalizedRetailPrice === null ||
+                normalizedRetailPrice < 0
             ) {
-                deleteUploadedImage(
-                    buildUploadedImagePath(
-                        req.file
-                    )
-                );
+                deleteCurrentUploadedFile(req);
 
                 return res.status(400).json({
                     success: false,
                     message:
-                        "Please enter a valid product price."
+                        "Please enter a valid retail price."
                 });
             }
 
+            existingProduct.retailPrice =
+                normalizedRetailPrice;
+
             existingProduct.price =
-                numericPrice;
+                normalizedRetailPrice;
+        }
+
+        if (wholesalePrice !== undefined) {
+            const normalizedWholesalePrice =
+                getNumericValue(
+                    wholesalePrice
+                );
+
+            if (
+                normalizedWholesalePrice === null ||
+                normalizedWholesalePrice < 0
+            ) {
+                deleteCurrentUploadedFile(req);
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Please enter a valid wholesale price."
+                });
+            }
+
+            existingProduct.wholesalePrice =
+                normalizedWholesalePrice;
+        }
+
+        if (
+            wholesaleMinimumQuantity !==
+            undefined
+        ) {
+            const normalizedMinimumQuantity =
+                getNumericValue(
+                    wholesaleMinimumQuantity
+                );
+
+            if (
+                normalizedMinimumQuantity === null ||
+                !Number.isInteger(
+                    normalizedMinimumQuantity
+                ) ||
+                normalizedMinimumQuantity < 1
+            ) {
+                deleteCurrentUploadedFile(req);
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Wholesale minimum quantity must be at least 1."
+                });
+            }
+
+            existingProduct
+                .wholesaleMinimumQuantity =
+                    normalizedMinimumQuantity;
+        }
+
+        /*
+        Final pricing validation:
+        wholesale > retail ஆகக்கூடாது.
+        */
+
+        const finalRetailPrice =
+            Number(
+                existingProduct.retailPrice ??
+                existingProduct.price ??
+                0
+            );
+
+        const finalWholesalePrice =
+            Number(
+                existingProduct.wholesalePrice ??
+                finalRetailPrice
+            );
+
+        const finalMinimumQuantity =
+            Number(
+                existingProduct
+                    .wholesaleMinimumQuantity ??
+                DEFAULT_WHOLESALE_MINIMUM
+            );
+
+        const pricingValidation =
+            validatePricing({
+                retailPrice:
+                    finalRetailPrice,
+
+                wholesalePrice:
+                    finalWholesalePrice,
+
+                wholesaleMinimumQuantity:
+                    finalMinimumQuantity
+            });
+
+        if (!pricingValidation.valid) {
+            deleteCurrentUploadedFile(req);
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    pricingValidation.message
+            });
         }
 
         if (stock !== undefined) {
             const numericStock =
-                Number(stock);
+                getNumericValue(stock);
 
             if (
-                Number.isNaN(
+                numericStock === null ||
+                !Number.isInteger(
                     numericStock
                 ) ||
                 numericStock < 0
             ) {
-                deleteUploadedImage(
-                    buildUploadedImagePath(
-                        req.file
-                    )
-                );
+                deleteCurrentUploadedFile(req);
 
                 return res.status(400).json({
                     success: false,
@@ -573,11 +801,7 @@ const updateProduct = async (
                     description
                 ).trim()
             ) {
-                deleteUploadedImage(
-                    buildUploadedImagePath(
-                        req.file
-                    )
-                );
+                deleteCurrentUploadedFile(req);
 
                 return res.status(400).json({
                     success: false,
@@ -593,30 +817,15 @@ const updateProduct = async (
         }
 
         if (status !== undefined) {
-            if (
-                ![
-                    "active",
-                    "inactive"
-                ].includes(status)
-            ) {
-                deleteUploadedImage(
-                    buildUploadedImagePath(
-                        req.file
-                    )
-                );
-
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Status must be active or inactive."
-                });
-            }
+            const normalizedProductStatus =
+                normalizeStatus(status);
 
             existingProduct.status =
-                status;
+                normalizedProductStatus;
 
             existingProduct.isAvailable =
-                status === "active";
+                normalizedProductStatus ===
+                "active";
         }
 
         if (
@@ -624,8 +833,10 @@ const updateProduct = async (
             status === undefined
         ) {
             const normalizedAvailability =
-                String(isAvailable) ===
-                "true";
+                normalizeBoolean(
+                    isAvailable,
+                    existingProduct.isAvailable
+                );
 
             existingProduct.isAvailable =
                 normalizedAvailability;
@@ -667,11 +878,7 @@ const updateProduct = async (
             data: updatedProduct
         });
     } catch (error) {
-        deleteUploadedImage(
-            buildUploadedImagePath(
-                req.file
-            )
-        );
+        deleteCurrentUploadedFile(req);
 
         console.error(
             "Update product error:",

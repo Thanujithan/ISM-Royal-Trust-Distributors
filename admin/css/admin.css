@@ -1979,6 +1979,43 @@ a {
     background: #083354;
 }
 
+.wholesale-table-price {
+    color: #15803d;
+}
+
+.minimum-quantity-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    border-radius: 20px;
+    background: #fff7ed;
+    color: #c2410c;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.input-help {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.image-preview-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+#imagePreview {
+    width: 180px;
+    height: 180px;
+    object-fit: contain;
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 8px;
+}
+
 @media (max-width: 580px) {
     .invoice-actions {
         justify-content: stretch;

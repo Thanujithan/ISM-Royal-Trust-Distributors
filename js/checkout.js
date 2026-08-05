@@ -1,5 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const CART_STORAGE_KEYS = ["ismCart", "cart"];
+    const CART_STORAGE_KEYS = [
+        "ismCart",
+        "cart"
+    ];
+
+    const DEFAULT_WHOLESALE_MINIMUM = 20;
+    const DELIVERY_FEE = 0;
 
     const checkoutForm =
         document.getElementById("checkoutForm");
@@ -55,11 +61,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const deliveryNote =
         document.getElementById("deliveryNote");
 
-    const DELIVERY_FEE = 0;
-
     let cart = [];
 
     initializeCheckout();
+
+    /* ========================================
+       INITIALIZE
+    ======================================== */
 
     function initializeCheckout() {
         cart = getCart();
@@ -75,48 +83,30 @@ document.addEventListener("DOMContentLoaded", () => {
         setupPaymentMethods();
     }
 
+    /* ========================================
+       GET AND NORMALIZE CART
+    ======================================== */
+
     function getCart() {
         for (const key of CART_STORAGE_KEYS) {
             try {
+                const storedValue =
+                    localStorage.getItem(key);
+
+                if (!storedValue) {
+                    continue;
+                }
+
                 const storedCart =
-                    JSON.parse(localStorage.getItem(key));
+                    JSON.parse(storedValue);
 
                 if (
                     Array.isArray(storedCart) &&
                     storedCart.length
                 ) {
-                    return storedCart.map((item) => ({
-                        _id:
-                            item._id ||
-                            item.id ||
-                            item.productId,
-
-                        name:
-                            item.name ||
-                            item.productName ||
-                            "Product",
-
-                        price:
-                            Number(item.price) || 0,
-
-                        quantity:
-                            Math.max(
-                                1,
-                                Number(item.quantity) || 1
-                            ),
-
-                        image:
-                            item.image ||
-                            item.imageUrl ||
-                            "images/logo.png",
-
-                        category:
-                            item.category ||
-                            "General",
-
-                        stock:
-                            Number(item.stock) || 0
-                    }));
+                    return storedCart.map(
+                        normalizeCartItem
+                    );
                 }
             } catch (error) {
                 console.error(
@@ -129,6 +119,103 @@ document.addEventListener("DOMContentLoaded", () => {
         return [];
     }
 
+    function normalizeCartItem(item) {
+        const retailPrice =
+            getValidNumber(
+                item.retailPrice ??
+                item.price ??
+                0,
+                0
+            );
+
+        const wholesalePrice =
+            getValidNumber(
+                item.wholesalePrice ??
+                retailPrice,
+                retailPrice
+            );
+
+        const wholesaleMinimumQuantity =
+            getValidInteger(
+                item.wholesaleMinimumQuantity ??
+                DEFAULT_WHOLESALE_MINIMUM,
+                DEFAULT_WHOLESALE_MINIMUM
+            );
+
+        const quantity =
+            Math.max(
+                1,
+                getValidInteger(
+                    item.quantity,
+                    1
+                )
+            );
+
+        const isWholesale =
+            quantity >=
+            wholesaleMinimumQuantity;
+
+        const appliedPrice =
+            isWholesale
+                ? wholesalePrice
+                : retailPrice;
+
+        return {
+            ...item,
+
+            _id:
+                item._id ||
+                item.id ||
+                item.productId,
+
+            id:
+                item.id ||
+                item._id ||
+                item.productId,
+
+            name:
+                item.name ||
+                item.productName ||
+                "Product",
+
+            category:
+                item.category ||
+                "General",
+
+            image:
+                getProductImage(
+                    item.image ||
+                    item.imageUrl ||
+                    ""
+                ),
+
+            stock:
+                getValidInteger(
+                    item.stock,
+                    0
+                ),
+
+            retailPrice,
+            wholesalePrice,
+            wholesaleMinimumQuantity,
+            quantity,
+
+            price:
+                appliedPrice,
+
+            appliedPrice,
+
+            priceType:
+                isWholesale
+                    ? "wholesale"
+                    : "retail"
+        };
+    }
+
+    /* ========================================
+       LOAD USER
+    ======================================== */
+
     function loadStoredUser() {
         const storedUser =
             localStorage.getItem("user") ||
@@ -139,16 +226,23 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            const user = JSON.parse(storedUser);
+            const user =
+                JSON.parse(storedUser);
 
-            customerName.value =
-                user.name || "";
+            if (customerName) {
+                customerName.value =
+                    user.name || "";
+            }
 
-            customerEmail.value =
-                user.email || "";
+            if (customerEmail) {
+                customerEmail.value =
+                    user.email || "";
+            }
 
-            customerPhone.value =
-                user.phone || "";
+            if (customerPhone) {
+                customerPhone.value =
+                    user.phone || "";
+            }
         } catch (error) {
             console.error(
                 "Unable to load stored user:",
@@ -157,69 +251,179 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    /* ========================================
+       RENDER CHECKOUT ITEMS
+    ======================================== */
+
     function renderCheckoutItems() {
-        checkoutItems.innerHTML = cart
-            .map((item) => {
-                const itemTotal =
-                    item.price * item.quantity;
+        if (!checkoutItems) {
+            return;
+        }
 
-                return `
-                    <article class="checkout-item">
+        checkoutItems.innerHTML =
+            cart
+                .map((item) => {
+                    const itemTotal =
+                        Number(item.price) *
+                        Number(item.quantity);
 
-                        <div class="checkout-item-image">
-                            <img
-                                src="${escapeHTML(item.image)}"
-                                alt="${escapeHTML(item.name)}"
-                                onerror="
-                                    this.onerror=null;
-                                    this.src='images/logo.png';
-                                "
-                            >
-                        </div>
+                    const isWholesale =
+                        item.priceType ===
+                        "wholesale";
 
-                        <div class="checkout-item-details">
-                            <h3>
-                                ${escapeHTML(item.name)}
-                            </h3>
+                    return `
+                        <article class="checkout-item">
 
-                            <p>
-                                ${escapeHTML(item.category)}
-                                · Qty ${item.quantity}
-                            </p>
-                        </div>
+                            <div class="checkout-item-image">
 
-                        <strong class="checkout-item-price">
-                            ${formatPrice(itemTotal)}
-                        </strong>
+                                <img
+                                    src="${escapeHTML(
+                                        item.image
+                                    )}"
+                                    alt="${escapeHTML(
+                                        item.name
+                                    )}"
+                                    onerror="
+                                        this.onerror=null;
+                                        this.src='images/product-placeholder.png';
+                                    "
+                                >
 
-                    </article>
-                `;
-            })
-            .join("");
+                            </div>
+
+
+                            <div class="checkout-item-details">
+
+                                <h3>
+                                    ${escapeHTML(
+                                        item.name
+                                    )}
+                                </h3>
+
+                                <p>
+                                    ${escapeHTML(
+                                        formatCategory(
+                                            item.category
+                                        )
+                                    )}
+                                    · Qty ${item.quantity}
+                                </p>
+
+                                <div class="checkout-price-information">
+
+                                    <small>
+                                        Retail:
+                                        ${formatPrice(
+                                            item.retailPrice
+                                        )}
+                                    </small>
+
+                                    <small>
+                                        Wholesale:
+                                        ${formatPrice(
+                                            item.wholesalePrice
+                                        )}
+                                    </small>
+
+                                    <small>
+                                        Wholesale from
+                                        ${item.wholesaleMinimumQuantity}
+                                        pieces
+                                    </small>
+
+                                </div>
+
+                                <span
+                                    class="checkout-price-badge ${
+                                        isWholesale
+                                            ? "wholesale"
+                                            : "retail"
+                                    }"
+                                >
+                                    <i class="fas ${
+                                        isWholesale
+                                            ? "fa-boxes-stacked"
+                                            : "fa-tag"
+                                    }"></i>
+
+                                    ${
+                                        isWholesale
+                                            ? "Wholesale price applied"
+                                            : "Retail price applied"
+                                    }
+                                </span>
+
+                                <p class="checkout-unit-price">
+                                    Unit Price:
+                                    <strong>
+                                        ${formatPrice(
+                                            item.price
+                                        )}
+                                    </strong>
+                                </p>
+
+                            </div>
+
+
+                            <strong class="checkout-item-price">
+                                ${formatPrice(
+                                    itemTotal
+                                )}
+                            </strong>
+
+                        </article>
+                    `;
+                })
+                .join("");
     }
+
+    /* ========================================
+       SUMMARY
+    ======================================== */
 
     function updateSummary() {
-        const subtotal = cart.reduce(
-            (total, item) =>
-                total +
-                item.price * item.quantity,
-            0
-        );
+        const subtotal =
+            cart.reduce(
+                (
+                    total,
+                    item
+                ) => {
+                    return (
+                        total +
+                        Number(item.price) *
+                        Number(item.quantity)
+                    );
+                },
+                0
+            );
 
         const total =
-            subtotal + DELIVERY_FEE;
+            subtotal +
+            DELIVERY_FEE;
 
-        checkoutSubtotal.textContent =
-            formatPrice(subtotal);
+        if (checkoutSubtotal) {
+            checkoutSubtotal.textContent =
+                formatPrice(subtotal);
+        }
 
-        checkoutDeliveryFee.textContent =
-            DELIVERY_FEE === 0
-                ? "Free"
-                : formatPrice(DELIVERY_FEE);
+        if (checkoutDeliveryFee) {
+            checkoutDeliveryFee.textContent =
+                DELIVERY_FEE === 0
+                    ? "Free"
+                    : formatPrice(
+                          DELIVERY_FEE
+                      );
+        }
 
-        checkoutTotal.textContent =
-            formatPrice(total);
+        if (checkoutTotal) {
+            checkoutTotal.textContent =
+                formatPrice(total);
+        }
     }
+
+    /* ========================================
+       PAYMENT METHODS
+    ======================================== */
 
     function setupPaymentMethods() {
         document
@@ -227,113 +431,174 @@ document.addEventListener("DOMContentLoaded", () => {
                 'input[name="paymentMethod"]'
             )
             .forEach((radio) => {
-                radio.addEventListener("change", () => {
-                    bankDetails.classList.toggle(
-                        "show",
-                        radio.value === "bank_transfer" &&
-                        radio.checked
-                    );
-                });
+                radio.addEventListener(
+                    "change",
+                    updateBankDetailsVisibility
+                );
             });
+
+        updateBankDetailsVisibility();
     }
 
-    checkoutForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
+    function updateBankDetailsVisibility() {
+        const selectedMethod =
+            document.querySelector(
+                'input[name="paymentMethod"]:checked'
+            )?.value;
 
-        clearErrors();
+        bankDetails?.classList.toggle(
+            "show",
+            selectedMethod ===
+                "bank_transfer"
+        );
+    }
 
-        const formData = collectCheckoutData();
-        const valid = validateCheckoutData(formData);
+    /* ========================================
+       SUBMIT ORDER
+    ======================================== */
 
-        if (!valid) {
-            showMessage(
-                "Please correct the highlighted fields.",
-                "error"
-            );
+    checkoutForm?.addEventListener(
+        "submit",
+        async (event) => {
+            event.preventDefault();
 
-            return;
-        }
+            clearErrors();
 
-        const token = getToken();
+            cart = getCart();
 
-        if (!token) {
-            showMessage(
-                "Please login before placing your order.",
-                "error"
-            );
-
-            localStorage.setItem(
-                "redirectAfterLogin",
-                "checkout.html"
-            );
-
-            setTimeout(() => {
-                window.location.href = "login.html";
-            }, 1200);
-
-            return;
-        }
-
-        const orderData = createOrderPayload(formData);
-
-        placeOrderButton.disabled = true;
-
-        placeOrderButton.innerHTML = `
-            <i class="fas fa-spinner fa-spin"></i>
-            Placing Order...
-        `;
-
-        try {
-            const response = await fetch(
-                "http://localhost:5000/api/orders",
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`
-                    },
-
-                    body: JSON.stringify(orderData)
-                }
-            );
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(
-                    result.message ||
-                    "Unable to place order."
+            if (!cart.length) {
+                showMessage(
+                    "Your shopping cart is empty.",
+                    "error"
                 );
+
+                return;
             }
 
-            const order = result.data;
+            const formData =
+                collectCheckoutData();
 
-            successOrderNumber.textContent =
-                order.orderNumber || order._id;
+            const valid =
+                validateCheckoutData(
+                    formData
+                );
 
-            clearCartStorage();
+            if (!valid) {
+                showMessage(
+                    "Please correct the highlighted fields.",
+                    "error"
+                );
 
-            successModal.classList.add("show");
+                return;
+            }
 
-        } catch (error) {
-            console.error("Checkout error:", error);
+            const token =
+                getToken();
 
-            showMessage(
-                error.message ||
-                "Unable to place order. Please try again.",
-                "error"
-            );
+            if (!token) {
+                showMessage(
+                    "Please login before placing your order.",
+                    "error"
+                );
 
-        } finally {
-            placeOrderButton.disabled = false;
+                localStorage.setItem(
+                    "redirectAfterLogin",
+                    "checkout.html"
+                );
 
-            placeOrderButton.innerHTML = `
-                <span>Place Order</span>
-                <i class="fas fa-check"></i>
-            `;
+                window.setTimeout(() => {
+                    window.location.href =
+                        "login.html";
+                }, 1200);
+
+                return;
+            }
+
+            const orderData =
+                createOrderPayload(
+                    formData
+                );
+
+            setPlaceOrderLoading(true);
+
+            try {
+                const response =
+                    await fetch(
+                        "http://localhost:5000/api/orders",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json",
+
+                                Authorization:
+                                    `Bearer ${token}`
+                            },
+
+                            body:
+                                JSON.stringify(
+                                    orderData
+                                )
+                        }
+                    );
+
+                const result =
+                    await parseResponse(
+                        response
+                    );
+
+                if (
+                    response.status === 401 ||
+                    response.status === 403
+                ) {
+                    throw new Error(
+                        "Your login session has expired. Please login again."
+                    );
+                }
+
+                if (!response.ok) {
+                    throw new Error(
+                        result.message ||
+                        "Unable to place order."
+                    );
+                }
+
+                const order =
+                    result.data;
+
+                if (successOrderNumber) {
+                    successOrderNumber.textContent =
+                        order.orderNumber ||
+                        order._id ||
+                        generateTemporaryOrderNumber();
+                }
+
+                clearCartStorage();
+
+                successModal?.classList.add(
+                    "show"
+                );
+            } catch (error) {
+                console.error(
+                    "Checkout error:",
+                    error
+                );
+
+                showMessage(
+                    error.message ||
+                    "Unable to place order. Please try again.",
+                    "error"
+                );
+            } finally {
+                setPlaceOrderLoading(false);
+            }
         }
-    });
+    );
+
+    /* ========================================
+       COLLECT CHECKOUT DATA
+    ======================================== */
 
     function collectCheckoutData() {
         const paymentMethod =
@@ -343,34 +608,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
         return {
             customerName:
-                customerName.value.trim(),
+                customerName?.value
+                    .trim() || "",
 
             customerEmail:
-                customerEmail.value
+                customerEmail?.value
                     .trim()
-                    .toLowerCase(),
+                    .toLowerCase() || "",
 
             customerPhone:
-                customerPhone.value.trim(),
+                customerPhone?.value
+                    .trim() || "",
 
             streetAddress:
-                streetAddress.value.trim(),
+                streetAddress?.value
+                    .trim() || "",
 
             city:
-                city.value.trim(),
+                city?.value
+                    .trim() || "",
 
             district:
-                district.value,
+                district?.value || "",
 
             postalCode:
-                postalCode.value.trim(),
+                postalCode?.value
+                    .trim() || "",
 
             deliveryNote:
-                deliveryNote.value.trim(),
+                deliveryNote?.value
+                    .trim() || "",
 
             paymentMethod
         };
     }
+
+    /* ========================================
+       VALIDATION
+    ======================================== */
 
     function validateCheckoutData(data) {
         let valid = true;
@@ -391,9 +666,10 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
             valid = false;
-
         } else if (
-            !validateEmail(data.customerEmail)
+            !validateEmail(
+                data.customerEmail
+            )
         ) {
             showError(
                 "customerEmail",
@@ -410,7 +686,6 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
             valid = false;
-
         } else if (
             !/^[0-9+\s-]{9,15}$/.test(
                 data.customerPhone
@@ -472,38 +747,68 @@ document.addEventListener("DOMContentLoaded", () => {
         return valid;
     }
 
+    /* ========================================
+       ORDER PAYLOAD
+
+       முக்கியம்:
+       Frontend price அனுப்பாது.
+       Product ID + quantity மட்டும் அனுப்பும்.
+       Backend final retail/wholesale price
+       database-லிருந்து calculate செய்யும்.
+    ======================================== */
+
     function createOrderPayload(formData) {
         return {
             customer: {
-                name: formData.customerName,
-                email: formData.customerEmail,
-                phone: formData.customerPhone
+                name:
+                    formData.customerName,
+
+                email:
+                    formData.customerEmail,
+
+                phone:
+                    formData.customerPhone
             },
 
             deliveryAddress: {
-                streetAddress: formData.streetAddress,
-                city: formData.city,
-                district: formData.district,
-                postalCode: formData.postalCode
+                streetAddress:
+                    formData.streetAddress,
+
+                city:
+                    formData.city,
+
+                district:
+                    formData.district,
+
+                postalCode:
+                    formData.postalCode
             },
 
             deliveryNote:
-                formData.deliveryNote || "",
+                formData.deliveryNote ||
+                "",
 
             paymentMethod:
                 formData.paymentMethod,
 
-            items: cart.map((item) => ({
-                product:
-                    item._id ||
-                    item.id ||
-                    item.productId,
+            items:
+                cart.map((item) => ({
+                    product:
+                        item._id ||
+                        item.id ||
+                        item.productId,
 
-                quantity:
-                    Number(item.quantity)
-            }))
+                    quantity:
+                        Number(
+                            item.quantity
+                        )
+                }))
         };
     }
+
+    /* ========================================
+       ERROR HELPERS
+    ======================================== */
 
     function showError(id, text) {
         const input =
@@ -514,41 +819,64 @@ document.addEventListener("DOMContentLoaded", () => {
                 `${id}Error`
             );
 
-        if (input) {
-            const inputBox =
-                input.closest(".input-box");
+        const inputBox =
+            input?.closest(
+                ".input-box"
+            );
 
-            if (inputBox) {
-                inputBox.classList.add("error");
-            }
-        }
+        inputBox?.classList.add(
+            "error"
+        );
 
         if (error) {
-            error.textContent = text;
+            error.textContent =
+                text;
         }
     }
 
     function clearErrors() {
         document
-            .querySelectorAll(".input-box")
+            .querySelectorAll(
+                ".input-box"
+            )
             .forEach((box) => {
-                box.classList.remove("error");
+                box.classList.remove(
+                    "error"
+                );
             });
 
         document
-            .querySelectorAll(".error-message")
+            .querySelectorAll(
+                ".error-message"
+            )
             .forEach((error) => {
-                error.textContent = "";
+                error.textContent =
+                    "";
             });
 
-        checkoutMessage.className =
-            "checkout-message";
+        if (checkoutMessage) {
+            checkoutMessage.className =
+                "checkout-message";
 
-        checkoutMessage.textContent = "";
+            checkoutMessage.textContent =
+                "";
+        }
     }
 
-    function showMessage(text, type) {
-        checkoutMessage.textContent = text;
+    function showMessage(
+        text,
+        type
+    ) {
+        if (!checkoutMessage) {
+            console.log(
+                `${type}: ${text}`
+            );
+
+            return;
+        }
+
+        checkoutMessage.textContent =
+            text;
 
         checkoutMessage.className =
             `checkout-message ${type} show`;
@@ -559,10 +887,145 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    /* ========================================
+       BUTTON LOADING
+    ======================================== */
+
+    function setPlaceOrderLoading(
+        loading
+    ) {
+        if (!placeOrderButton) {
+            return;
+        }
+
+        placeOrderButton.disabled =
+            loading;
+
+        placeOrderButton.innerHTML =
+            loading
+                ? `
+                    <i class="fas fa-spinner fa-spin"></i>
+                    Placing Order...
+                  `
+                : `
+                    <span>Place Order</span>
+                    <i class="fas fa-check"></i>
+                  `;
+    }
+
+    /* ========================================
+       STORAGE / TOKEN
+    ======================================== */
+
     function clearCartStorage() {
-        CART_STORAGE_KEYS.forEach((key) => {
-            localStorage.removeItem(key);
-        });
+        CART_STORAGE_KEYS.forEach(
+            (key) => {
+                localStorage.removeItem(
+                    key
+                );
+            }
+        );
+    }
+
+    function getToken() {
+        return (
+            localStorage.getItem(
+                "token"
+            ) ||
+            sessionStorage.getItem(
+                "token"
+            ) ||
+            localStorage.getItem(
+                "adminToken"
+            ) ||
+            sessionStorage.getItem(
+                "adminToken"
+            )
+        );
+    }
+
+    /* ========================================
+       IMAGE PATH
+    ======================================== */
+
+    function getProductImage(image) {
+        if (!image) {
+            return (
+                "images/" +
+                "product-placeholder.png"
+            );
+        }
+
+        if (
+            image.startsWith(
+                "http://"
+            ) ||
+            image.startsWith(
+                "https://"
+            ) ||
+            image.startsWith(
+                "data:"
+            ) ||
+            image.startsWith(
+                "images/"
+            )
+        ) {
+            return image;
+        }
+
+        if (
+            image.startsWith(
+                "/uploads/"
+            )
+        ) {
+            return (
+                "http://localhost:5000" +
+                image
+            );
+        }
+
+        if (
+            image.startsWith(
+                "uploads/"
+            )
+        ) {
+            return (
+                "http://localhost:5000/" +
+                image
+            );
+        }
+
+        return image;
+    }
+
+    /* ========================================
+       HELPERS
+    ======================================== */
+
+    async function parseResponse(
+        response
+    ) {
+        const contentType =
+            response.headers.get(
+                "content-type"
+            ) || "";
+
+        if (
+            contentType.includes(
+                "application/json"
+            )
+        ) {
+            return response.json();
+        }
+
+        const text =
+            await response.text();
+
+        return {
+            message:
+                text ||
+                `Server returned status ${response.status}.`
+        };
     }
 
     function generateTemporaryOrderNumber() {
@@ -574,21 +1037,75 @@ document.addEventListener("DOMContentLoaded", () => {
         return `ISM-${timestamp}`;
     }
 
-    function getToken() {
+    function formatPrice(amount) {
+        return `LKR ${Number(
+            amount || 0
+        ).toLocaleString(
+            "en-LK",
+            {
+                minimumFractionDigits:
+                    2,
+
+                maximumFractionDigits:
+                    2
+            }
+        )}`;
+    }
+
+    function formatCategory(
+        category
+    ) {
+        const labels = {
+            juice:
+                "Juice Items",
+
+            bites:
+                "Bites Items",
+
+            "bottled-water":
+                "Bottled Water",
+
+            sweets:
+                "Sweet Items"
+        };
+
         return (
-            localStorage.getItem("token") ||
-            sessionStorage.getItem("token")
+            labels[
+                String(
+                    category || ""
+                ).toLowerCase()
+            ] ||
+            category ||
+            "General"
         );
     }
 
-    function formatPrice(amount) {
-        return `LKR ${Number(amount).toLocaleString(
-            "en-LK",
-            {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }
-        )}`;
+    function getValidNumber(
+        value,
+        fallback
+    ) {
+        const number =
+            Number(value);
+
+        return Number.isNaN(
+            number
+        )
+            ? fallback
+            : number;
+    }
+
+    function getValidInteger(
+        value,
+        fallback
+    ) {
+        const number =
+            Number(value);
+
+        return Number.isInteger(
+            number
+        )
+            ? number
+            : fallback;
     }
 
     function validateEmail(email) {
@@ -598,11 +1115,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function escapeHTML(value) {
-        return String(value ?? "")
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;")
-            .replaceAll("'", "&#039;");
+        return String(
+            value ?? ""
+        )
+            .replaceAll(
+                "&",
+                "&amp;"
+            )
+            .replaceAll(
+                "<",
+                "&lt;"
+            )
+            .replaceAll(
+                ">",
+                "&gt;"
+            )
+            .replaceAll(
+                '"',
+                "&quot;"
+            )
+            .replaceAll(
+                "'",
+                "&#039;"
+            );
     }
 });

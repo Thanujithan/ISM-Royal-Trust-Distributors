@@ -149,7 +149,7 @@ async function loadProducts() {
     tableBody.innerHTML = `
         <tr>
             <td
-                colspan="7"
+                colspan="9"
                 class="table-message"
             >
                 Loading products...
@@ -191,17 +191,15 @@ async function loadProducts() {
         );
 
         tableBody.innerHTML = `
-            <tr>
-                <td
-                    colspan="7"
-                    class="table-message error-text"
-                >
-                    ${escapeHtml(
-                        error.message
-                    )}
-                </td>
-            </tr>
-        `;
+        <tr>
+            <td
+                colspan="9"
+                class="table-message error-text"
+            >
+                ${escapeHtml(error.message)}
+            </td>
+        </tr>
+    `;
     }
 }
 
@@ -247,7 +245,7 @@ function renderProducts(products) {
         tableBody.innerHTML = `
             <tr>
                 <td
-                    colspan="7"
+                    colspan="9"
                     class="table-message"
                 >
                     No products found.
@@ -274,9 +272,25 @@ function renderProducts(products) {
                     product.category ||
                     "Uncategorized";
 
-                const price =
+                const retailPrice =
                     formatCurrency(
-                        product.price
+                        product.retailPrice ??
+                        product.price ??
+                        0
+                    );
+
+                const wholesalePrice =
+                    formatCurrency(
+                        product.wholesalePrice ??
+                        product.retailPrice ??
+                        product.price ??
+                        0
+                    );
+
+                const minimumQuantity =
+                    Number(
+                        product.wholesaleMinimumQuantity ??
+                        20
                     );
 
                 const stock =
@@ -355,14 +369,30 @@ function renderProducts(products) {
 
 
                         <td>
-                            ${escapeHtml(category)}
+                            ${escapeHtml(
+                                formatCategory(category)
+                            )}
                         </td>
 
 
                         <td>
                             <strong>
-                                ${price}
+                                ${retailPrice}
                             </strong>
+                        </td>
+
+
+                        <td>
+                            <strong class="wholesale-table-price">
+                                ${wholesalePrice}
+                            </strong>
+                        </td>
+
+
+                        <td>
+                            <span class="minimum-quantity-badge">
+                                ${minimumQuantity} pcs
+                            </span>
                         </td>
 
 
@@ -446,6 +476,21 @@ function openAddModal() {
         "active"
     );
 
+    setInputValue(
+    "productRetailPrice",
+    ""
+    );
+
+    setInputValue(
+        "productWholesalePrice",
+        ""
+    );
+
+    setInputValue(
+        "wholesaleMinimumQuantity",
+        20
+    );
+
     setText(
         "modalTitle",
         "Add Product"
@@ -519,10 +564,25 @@ function openEditModal(productId) {
     );
 
     setInputValue(
-        "productPrice",
-        product.price ?? ""
+    "productRetailPrice",
+    product.retailPrice ??
+    product.price ??
+    ""
     );
 
+    setInputValue(
+        "productWholesalePrice",
+        product.wholesalePrice ??
+        product.retailPrice ??
+        product.price ??
+        ""
+    );
+
+    setInputValue(
+        "wholesaleMinimumQuantity",
+        product.wholesaleMinimumQuantity ??
+        20
+    );
     setInputValue(
         "productStock",
         product.stock ??
@@ -705,10 +765,24 @@ async function saveProduct(event) {
             "productCategory"
         ).trim();
 
-    const price =
+    const retailPrice =
         Number(
             getInputValue(
-                "productPrice"
+                "productRetailPrice"
+            )
+        );
+
+    const wholesalePrice =
+        Number(
+            getInputValue(
+                "productWholesalePrice"
+            )
+        );
+
+    const wholesaleMinimumQuantity =
+        Number(
+            getInputValue(
+                "wholesaleMinimumQuantity"
             )
         );
 
@@ -741,9 +815,17 @@ async function saveProduct(event) {
     if (
         !name ||
         !category ||
-        Number.isNaN(price) ||
-        price < 0 ||
+        Number.isNaN(retailPrice) ||
+        retailPrice < 0 ||
+        Number.isNaN(wholesalePrice) ||
+        wholesalePrice < 0 ||
+        Number.isNaN(wholesaleMinimumQuantity) ||
+        !Number.isInteger(
+            wholesaleMinimumQuantity
+        ) ||
+        wholesaleMinimumQuantity < 1 ||
         Number.isNaN(stock) ||
+        !Number.isInteger(stock) ||
         stock < 0 ||
         !description
     ) {
@@ -755,10 +837,18 @@ async function saveProduct(event) {
         return;
     }
 
-    /*
-       Add product செய்யும்போது image required.
-       Edit product செய்யும்போது புதிய image optional.
-    */
+    if (
+        wholesalePrice >
+        retailPrice
+    ) {
+        showPageMessage(
+            "Wholesale price cannot be greater than retail price.",
+            "error"
+        );
+
+        return;
+    }
+
     if (
         !productId &&
         !imageFile
@@ -784,9 +874,31 @@ async function saveProduct(event) {
         category
     );
 
+    /*
+    Backward compatibility:
+    price = retail price
+    */
+
     formData.append(
         "price",
-        String(price)
+        String(retailPrice)
+    );
+
+    formData.append(
+        "retailPrice",
+        String(retailPrice)
+    );
+
+    formData.append(
+        "wholesalePrice",
+        String(wholesalePrice)
+    );
+
+    formData.append(
+        "wholesaleMinimumQuantity",
+        String(
+            wholesaleMinimumQuantity
+        )
     );
 
     formData.append(
@@ -1367,6 +1479,32 @@ function escapeHtml(value) {
             "'",
             "&#039;"
         );
+}
+
+function formatCategory(category) {
+    const categoryLabels = {
+        juice:
+            "Juice Items",
+
+        bites:
+            "Bites Items",
+
+        "bottled-water":
+            "Bottled Water",
+
+        sweets:
+            "Sweet Items"
+    };
+
+    return (
+        categoryLabels[
+            String(
+                category || ""
+            ).toLowerCase()
+        ] ||
+        category ||
+        "Uncategorized"
+    );
 }
 
 window.openEditModal =

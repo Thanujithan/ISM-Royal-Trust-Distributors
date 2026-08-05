@@ -8,21 +8,30 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Manage Products | ISM Admin</title>
+    <title>
+        Manage Products | ISM Admin
+    </title>
 
     <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     >
 
-    <link rel="stylesheet" href="css/admin.css">
+    <link
+        rel="stylesheet"
+        href="css/admin.css"
+    >
 </head>
 
 <body>
+
     <div class="admin-layout">
 
         <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
+        <aside
+            class="sidebar"
+            id="sidebar"
+        >
 
             <div class="sidebar-header">
                 <h2>ISM Admin</h2>
@@ -36,9 +45,17 @@
                     <span>Dashboard</span>
                 </a>
 
-                <a href="products.html" class="active">
+                <a
+                    href="products.html"
+                    class="active"
+                >
                     <i class="fas fa-box"></i>
                     <span>Products</span>
+                </a>
+
+                <a href="orders.html">
+                    <i class="fas fa-cart-shopping"></i>
+                    <span>Orders</span>
                 </a>
 
                 <a href="messages.html">
@@ -58,12 +75,17 @@
 
             </nav>
 
-            <button class="logout-btn" id="logoutButton">
+            <button
+                type="button"
+                class="logout-btn"
+                id="logoutButton"
+            >
                 <i class="fas fa-right-from-bracket"></i>
                 Logout
             </button>
 
         </aside>
+
 
         <!-- Main Content -->
         <main class="main-content">
@@ -71,16 +93,20 @@
             <header class="topbar">
 
                 <button
+                    type="button"
                     class="menu-button"
                     id="menuButton"
-                    type="button"
+                    aria-label="Open menu"
                 >
                     <i class="fas fa-bars"></i>
                 </button>
 
                 <div>
                     <h1>Manage Products</h1>
-                    <p>Add, edit and delete company products</p>
+
+                    <p>
+                        Add, edit and delete company products
+                    </p>
                 </div>
 
                 <div class="admin-profile">
@@ -90,13 +116,19 @@
                     </div>
 
                     <div>
-                        <strong id="adminName">Admin</strong>
-                        <small id="adminEmail">Administrator</small>
+                        <strong id="adminName">
+                            Admin
+                        </strong>
+
+                        <small id="adminEmail">
+                            Administrator
+                        </small>
                     </div>
 
                 </div>
 
             </header>
+
 
             <section class="dashboard-content">
 
@@ -105,16 +137,19 @@
 
                     <div>
                         <h2>Product List</h2>
+
                         <p>
                             Total Products:
-                            <strong id="productCount">0</strong>
+                            <strong id="productCount">
+                                0
+                            </strong>
                         </p>
                     </div>
 
                     <button
+                        type="button"
                         class="primary-button"
                         id="openAddProductButton"
-                        type="button"
                     >
                         <i class="fas fa-plus"></i>
                         Add Product
@@ -122,10 +157,12 @@
 
                 </div>
 
-                <!-- Search -->
+
+                <!-- Search and Filter -->
                 <div class="search-card">
 
                     <div class="search-box">
+
                         <i class="fas fa-search"></i>
 
                         <input
@@ -133,16 +170,39 @@
                             id="productSearch"
                             placeholder="Search by product name or category"
                         >
+
                     </div>
 
                     <select id="categoryFilter">
-                        <option value="">All Categories</option>
+
+                        <option value="">
+                            All Categories
+                        </option>
+
+                        <option value="juice">
+                            Juice Items
+                        </option>
+
+                        <option value="bites">
+                            Bites Items
+                        </option>
+
+                        <option value="bottled-water">
+                            Bottled Water
+                        </option>
+
+                        <option value="sweets">
+                            Sweet Items
+                        </option>
+
                     </select>
 
                 </div>
 
-                <!-- Message -->
+
+                <!-- Page Message -->
                 <div id="pageMessage"></div>
+
 
                 <!-- Products Table -->
                 <div class="table-card">
@@ -152,21 +212,36 @@
                         <table class="admin-table">
 
                             <thead>
+
                                 <tr>
                                     <th>Image</th>
+
                                     <th>Product</th>
+
                                     <th>Category</th>
-                                    <th>Price</th>
+
+                                    <th>Retail Price</th>
+
+                                    <th>Wholesale Price</th>
+
+                                    <th>Minimum Qty</th>
+
                                     <th>Stock</th>
+
                                     <th>Status</th>
+
                                     <th>Actions</th>
                                 </tr>
+
                             </thead>
 
                             <tbody id="productTableBody">
 
                                 <tr>
-                                    <td colspan="7" class="table-message">
+                                    <td
+                                        colspan="9"
+                                        class="table-message"
+                                    >
                                         Loading products...
                                     </td>
                                 </tr>
@@ -185,35 +260,55 @@
 
     </div>
 
+
     <!-- Product Modal -->
-    <div class="modal-overlay" id="productModal">
+    <div
+        class="modal-overlay"
+        id="productModal"
+    >
 
         <div class="modal-box">
 
             <div class="modal-header">
 
                 <div>
-                    <h2 id="modalTitle">Add Product</h2>
-                    <p>Enter the product information</p>
+                    <h2 id="modalTitle">
+                        Add Product
+                    </h2>
+
+                    <p>
+                        Enter the product information
+                    </p>
                 </div>
 
                 <button
+                    type="button"
                     class="modal-close-button"
                     id="closeModalButton"
-                    type="button"
+                    aria-label="Close product modal"
                 >
                     <i class="fas fa-times"></i>
                 </button>
 
             </div>
 
-            <form id="productForm">
 
-                <input type="hidden" id="productId">
+            <form
+                id="productForm"
+                enctype="multipart/form-data"
+            >
+
+                <input
+                    type="hidden"
+                    id="productId"
+                >
+
 
                 <div class="form-grid">
 
+                    <!-- Product Name -->
                     <div class="form-group">
+
                         <label for="productName">
                             Product Name
                         </label>
@@ -224,37 +319,115 @@
                             required
                             placeholder="Enter product name"
                         >
+
                     </div>
 
+
+                    <!-- Category -->
                     <div class="form-group">
+
                         <label for="productCategory">
                             Category
                         </label>
 
-                        <input
-                            type="text"
+                        <select
                             id="productCategory"
                             required
-                            placeholder="Enter category"
                         >
+
+                            <option value="">
+                                Select Category
+                            </option>
+
+                            <option value="juice">
+                                Juice Items
+                            </option>
+
+                            <option value="bites">
+                                Bites Items
+                            </option>
+
+                            <option value="bottled-water">
+                                Bottled Water
+                            </option>
+
+                            <option value="sweets">
+                                Sweet Items
+                            </option>
+
+                        </select>
+
                     </div>
 
+
+                    <!-- Retail Price -->
                     <div class="form-group">
-                        <label for="productPrice">
-                            Price (LKR)
+
+                        <label for="productRetailPrice">
+                            Retail Price (LKR)
                         </label>
 
                         <input
                             type="number"
-                            id="productPrice"
+                            id="productRetailPrice"
                             min="0"
                             step="0.01"
                             required
-                            placeholder="Enter product price"
+                            placeholder="Enter retail price"
                         >
+
                     </div>
 
+
+                    <!-- Wholesale Price -->
                     <div class="form-group">
+
+                        <label for="productWholesalePrice">
+                            Wholesale Price (LKR)
+                        </label>
+
+                        <input
+                            type="number"
+                            id="productWholesalePrice"
+                            min="0"
+                            step="0.01"
+                            required
+                            placeholder="Enter wholesale price"
+                        >
+
+                        <small class="input-help">
+                            Wholesale price should not be greater than retail price.
+                        </small>
+
+                    </div>
+
+
+                    <!-- Wholesale Minimum Quantity -->
+                    <div class="form-group">
+
+                        <label for="wholesaleMinimumQuantity">
+                            Wholesale Minimum Quantity
+                        </label>
+
+                        <input
+                            type="number"
+                            id="wholesaleMinimumQuantity"
+                            min="1"
+                            step="1"
+                            value="20"
+                            required
+                        >
+
+                        <small class="input-help">
+                            Wholesale price will apply from this quantity.
+                        </small>
+
+                    </div>
+
+
+                    <!-- Stock -->
+                    <div class="form-group">
+
                         <label for="productStock">
                             Stock Quantity
                         </label>
@@ -263,11 +436,37 @@
                             type="number"
                             id="productStock"
                             min="0"
+                            step="1"
                             required
                             placeholder="Enter stock quantity"
                         >
+
                     </div>
 
+
+                    <!-- Product Status -->
+                    <div class="form-group">
+
+                        <label for="productStatus">
+                            Product Status
+                        </label>
+
+                        <select id="productStatus">
+
+                            <option value="active">
+                                Active
+                            </option>
+
+                            <option value="inactive">
+                                Inactive
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Product Image -->
                     <div class="form-group full-width">
 
                         <label for="productImage">
@@ -281,7 +480,7 @@
                         >
 
                         <small class="input-help">
-                            Supported: JPG, PNG, WEBP (Maximum 5 MB)
+                            Supported: JPG, PNG, WEBP. Maximum size: 5 MB.
                         </small>
 
                         <div class="image-preview-wrapper">
@@ -291,36 +490,24 @@
                                 src=""
                                 alt="Product Preview"
                                 style="
-                                    display:none;
-                                    width:180px;
-                                    height:180px;
-                                    object-fit:cover;
-                                    border-radius:10px;
-                                    border:1px solid #ddd;
-                                    margin-top:15px;
+                                    display: none;
+                                    width: 180px;
+                                    height: 180px;
+                                    object-fit: cover;
+                                    border-radius: 10px;
+                                    border: 1px solid #dddddd;
+                                    margin-top: 15px;
                                 "
                             >
 
                         </div>
 
                     </div>
-                    <div class="form-group">
-                        <label for="productStatus">
-                            Product Status
-                        </label>
 
-                        <select id="productStatus">
-                            <option value="active">
-                                Active
-                            </option>
 
-                            <option value="inactive">
-                                Inactive
-                            </option>
-                        </select>
-                    </div>
-
+                    <!-- Description -->
                     <div class="form-group full-width">
+
                         <label for="productDescription">
                             Description
                         </label>
@@ -331,24 +518,26 @@
                             required
                             placeholder="Enter product description"
                         ></textarea>
+
                     </div>
 
                 </div>
 
+
                 <div class="modal-actions">
 
                     <button
+                        type="button"
                         class="secondary-button"
                         id="cancelProductButton"
-                        type="button"
                     >
                         Cancel
                     </button>
 
                     <button
+                        type="submit"
                         class="primary-button"
                         id="saveProductButton"
-                        type="submit"
                     >
                         <i class="fas fa-save"></i>
                         Save Product
@@ -362,8 +551,12 @@
 
     </div>
 
+
     <!-- Delete Confirmation Modal -->
-    <div class="modal-overlay" id="deleteModal">
+    <div
+        class="modal-overlay"
+        id="deleteModal"
+    >
 
         <div class="modal-box small-modal">
 
@@ -381,17 +574,17 @@
             <div class="modal-actions center-actions">
 
                 <button
+                    type="button"
                     class="secondary-button"
                     id="cancelDeleteButton"
-                    type="button"
                 >
                     Cancel
                 </button>
 
                 <button
+                    type="button"
                     class="danger-button"
                     id="confirmDeleteButton"
-                    type="button"
                 >
                     <i class="fas fa-trash"></i>
                     Delete
@@ -403,7 +596,9 @@
 
     </div>
 
+
     <script src="js/admin-auth.js"></script>
     <script src="js/products.js"></script>
+
 </body>
 </html>

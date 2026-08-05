@@ -672,6 +672,608 @@ footer{
     background: #dc3545;
 }
 
+/* =========================================
+   PRODUCT CARD SPACING FIX
+========================================= */
+
+.product-card {
+    min-height: 100%;
+}
+
+.product-details {
+    padding: 26px;
+    gap: 0;
+}
+
+.product-brand {
+    margin-bottom: 8px;
+}
+
+.product-name {
+    margin-bottom: 12px;
+}
+
+.product-description {
+    margin-bottom: 20px;
+}
+
+.product-stock {
+    margin-bottom: 22px;
+}
+
+/* Price boxes */
+
+.product-pricing {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.price-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 12px;
+}
+
+.retail-price-row {
+    background: #eef5ff;
+    border: 1px solid #cfe1ff;
+}
+
+.wholesale-price-row {
+    background: #ecfdf3;
+    border: 1px solid #bbf7d0;
+}
+
+.price-row span {
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.price-row strong {
+    font-size: 17px;
+    white-space: nowrap;
+}
+
+.retail-price-row strong {
+    color: #123f84;
+}
+
+.wholesale-price-row strong {
+    color: #15803d;
+}
+
+/* Wholesale information */
+
+.wholesale-note {
+    margin: 0;
+    padding: 11px 14px;
+    border-radius: 10px;
+    background: #fff7ed;
+    color: #c2410c;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+/* Quantity selector */
+
+.product-quantity-selector {
+    display: grid;
+    grid-template-columns: 42px 70px 42px;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0 18px;
+}
+
+.quantity-button {
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 10px;
+    background: #123f84;
+    color: #ffffff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.quantity-button:hover {
+    background: #0b306a;
+    transform: translateY(-1px);
+}
+
+.quantity-button:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.product-quantity-input {
+    width: 70px;
+    height: 42px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+    outline: none;
+}
+
+.product-quantity-input:focus {
+    border-color: #123f84;
+    box-shadow: 0 0 0 3px rgba(18, 63, 132, 0.12);
+}
+
+/* Current selected price */
+
+.selected-price-box {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 18px;
+    padding: 15px 16px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+.selected-price-box span {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.selected-price-box strong {
+    color: #123f84;
+    font-size: 20px;
+}
+
+.selected-price-box small {
+    line-height: 1.5;
+    font-size: 12px;
+}
+
+.retail-applied {
+    color: #2563eb;
+}
+
+.wholesale-applied {
+    color: #15803d;
+    font-weight: 700;
+}
+
+/* Add to cart */
+
+.add-cart-button {
+    width: 100%;
+    min-height: 50px;
+    margin-top: auto;
+    border-radius: 12px;
+    font-size: 15px;
+}
+
+/* Better image area */
+
+.product-image-container {
+    height: 260px;
+}
+
+.product-image {
+    object-fit: contain;
+    padding: 8px;
+    background: #f8fafc;
+}
+/* =========================================
+   COMPACT PRODUCT CARD - ONE SCREEN VIEW
+========================================= */
+
+.product-grid,
+#productContainer,
+#productsContainer {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+    align-items: stretch;
+}
+
+.product-card {
+    min-height: 0;
+    height: auto;
+    border-radius: 16px;
+}
+
+.product-image-container {
+    height: 180px;
+}
+
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 6px;
+}
+
+.product-category {
+    top: 10px;
+    left: 10px;
+    padding: 5px 11px;
+    font-size: 11px;
+}
+
+.product-details {
+    padding: 16px;
+}
+
+.product-brand {
+    margin-bottom: 4px;
+    font-size: 11px;
+}
+
+.product-name {
+    margin-bottom: 5px;
+    font-size: 18px;
+}
+
+.product-description {
+    margin-bottom: 9px;
+    font-size: 13px;
+    line-height: 1.4;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.product-stock {
+    margin-bottom: 10px;
+}
+
+.in-stock,
+.out-of-stock {
+    padding: 4px 9px;
+    font-size: 11px;
+}
+
+/* Price boxes side by side */
+
+.product-pricing {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 9px;
+}
+
+.price-row {
+    min-width: 0;
+    padding: 9px 10px;
+    border-radius: 9px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.price-row span {
+    font-size: 10px;
+}
+
+.price-row strong {
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.wholesale-note {
+    grid-column: 1 / -1;
+    padding: 7px 9px;
+    font-size: 10px;
+    text-align: center;
+}
+
+/* Quantity and current price same row */
+
+.product-quantity-selector {
+    display: grid;
+    grid-template-columns: 32px 52px 32px;
+    justify-content: start;
+    align-items: center;
+    gap: 5px;
+    margin: 0;
+}
+
+.quantity-button {
+    width: 32px;
+    height: 32px;
+    border-radius: 7px;
+    font-size: 11px;
+}
+
+.product-quantity-input {
+    width: 52px;
+    height: 32px;
+    border-radius: 7px;
+    font-size: 13px;
+}
+
+.selected-price-box {
+    margin: 0;
+    padding: 8px 10px;
+    border-radius: 9px;
+    gap: 1px;
+}
+
+.selected-price-box span {
+    font-size: 9px;
+}
+
+.selected-price-box strong {
+    font-size: 15px;
+}
+
+.selected-price-box small {
+    font-size: 9px;
+    line-height: 1.3;
+}
+
+/* Quantity + selected price side by side */
+
+.product-details {
+    position: relative;
+}
+
+.product-quantity-selector,
+.selected-price-box {
+    width: 48%;
+    display: inline-grid;
+    vertical-align: middle;
+}
+
+.selected-price-box {
+    margin-left: 2%;
+}
+
+/* Compact button */
+
+.add-cart-button {
+    min-height: 40px;
+    margin-top: 10px;
+    padding: 9px 14px;
+    border-radius: 9px;
+    font-size: 13px;
+}
+/* =========================================
+   FINAL QUANTITY + CURRENT PRICE LAYOUT
+========================================= */
+
+/* Quantity selector */
+.product-quantity-selector {
+    width: 100%;
+    margin: 16px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+}
+
+.quantity-button {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 10px;
+    background: #123f84;
+    color: #ffffff;
+    font-size: 15px;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.quantity-button:hover {
+    background: #0b306a;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(18, 63, 132, 0.2);
+}
+
+.quantity-button:active {
+    transform: translateY(0);
+}
+
+.quantity-button:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.product-quantity-input {
+    width: 110px;
+    height: 44px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #0f172a;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+    outline: none;
+}
+
+.product-quantity-input:focus {
+    border-color: #123f84;
+    box-shadow: 0 0 0 3px rgba(18, 63, 132, 0.12);
+}
+
+/* Remove number input arrows */
+.product-quantity-input::-webkit-inner-spin-button,
+.product-quantity-input::-webkit-outer-spin-button {
+    margin: 0;
+    appearance: none;
+}
+
+.product-quantity-input {
+    -moz-appearance: textfield;
+}
+
+/* Current unit price box */
+.selected-price-box {
+    width: 100%;
+    margin: 18px 0 0;
+    padding: 15px 18px;
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    border: 1px solid #cfe1ff;
+    border-radius: 12px;
+    background: #f8fafc;
+    text-align: center;
+}
+
+.selected-price-box span {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+}
+
+.selected-price-box strong {
+    color: #123f84;
+    font-size: 21px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.selected-price-box small {
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.retail-applied {
+    color: #2563eb;
+}
+
+.wholesale-applied {
+    color: #15803d;
+    font-weight: 700;
+}
+
+/* Add to cart button spacing */
+.add-cart-button {
+    width: 100%;
+    min-height: 48px;
+    margin-top: 16px;
+}
+
+/* Important:
+   old inline-grid / 48% rules override ஆகாமல் இருக்க */
+.product-quantity-selector,
+.selected-price-box {
+    display: flex;
+}
+
+.selected-price-box {
+    flex-direction: column;
+}
+
+/* Mobile */
+@media screen and (max-width: 650px) {
+    .product-quantity-selector {
+        gap: 10px;
+    }
+
+    .quantity-button {
+        width: 42px;
+        height: 42px;
+    }
+
+    .product-quantity-input {
+        width: 95px;
+        height: 42px;
+    }
+
+    .selected-price-box {
+        margin-top: 16px;
+        padding: 14px;
+    }
+}
+
+/* Large screens */
+
+@media screen and (min-width: 1200px) {
+    .product-grid,
+    #productContainer,
+    #productsContainer {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        max-width: 1400px;
+    }
+}
+
+/* Tablet */
+
+@media screen and (max-width: 992px) {
+    .product-grid,
+    #productContainer,
+    #productsContainer {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Mobile */
+
+@media screen and (max-width: 650px) {
+    .product-grid,
+    #productContainer,
+    #productsContainer {
+        grid-template-columns: 1fr;
+    }
+
+    .product-image-container {
+        height: 170px;
+    }
+
+    .product-quantity-selector,
+    .selected-price-box {
+        width: 100%;
+        display: grid;
+        margin-left: 0;
+    }
+
+    .selected-price-box {
+        margin-top: 8px;
+    }
+}
+
+/* Mobile */
+
+@media screen and (max-width: 650px) {
+    .product-details {
+        padding: 20px;
+    }
+
+    .product-image-container {
+        height: 220px;
+    }
+
+    .price-row {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .product-quantity-selector {
+        grid-template-columns: 44px 80px 44px;
+    }
+}
+
 
 /* ================================
    RESPONSIVE DESIGN
