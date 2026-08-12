@@ -1,8 +1,10 @@
 const mongoose = require("mongoose");
+
 const Order = require("../models/order");
 const Product = require("../models/Product");
 
 const DEFAULT_WHOLESALE_MINIMUM = 20;
+
 
 /* ========================================
    PRICE HELPERS
@@ -20,6 +22,7 @@ function getProductRetailPrice(product) {
         : retailPrice;
 }
 
+
 function getProductWholesalePrice(
     product,
     retailPrice
@@ -34,6 +37,7 @@ function getProductWholesalePrice(
         : wholesalePrice;
 }
 
+
 function getWholesaleMinimumQuantity(product) {
     const minimumQuantity = Number(
         product.wholesaleMinimumQuantity ??
@@ -47,6 +51,7 @@ function getWholesaleMinimumQuantity(product) {
         ? minimumQuantity
         : DEFAULT_WHOLESALE_MINIMUM;
 }
+
 
 function calculateProductPricing(
     product,
@@ -80,12 +85,14 @@ function calculateProductPricing(
         wholesalePrice,
         wholesaleMinimumQuantity,
         appliedPrice,
+
         priceType:
             isWholesale
                 ? "wholesale"
                 : "retail"
     };
 }
+
 
 /* ========================================
    CREATE ORDER
@@ -105,6 +112,11 @@ const createOrder = async (
             paymentMethod
         } = req.body;
 
+
+        /* -------------------------------
+           CUSTOMER VALIDATION
+        -------------------------------- */
+
         if (
             !customer?.name ||
             !customer?.email ||
@@ -116,6 +128,11 @@ const createOrder = async (
                     "Customer details are required"
             });
         }
+
+
+        /* -------------------------------
+           ADDRESS VALIDATION
+        -------------------------------- */
 
         if (
             !deliveryAddress?.streetAddress ||
@@ -130,6 +147,11 @@ const createOrder = async (
             });
         }
 
+
+        /* -------------------------------
+           ITEM VALIDATION
+        -------------------------------- */
+
         if (
             !Array.isArray(items) ||
             items.length === 0
@@ -140,6 +162,11 @@ const createOrder = async (
                     "Order must contain at least one product"
             });
         }
+
+
+        /* -------------------------------
+           PAYMENT METHOD
+        -------------------------------- */
 
         if (
             ![
@@ -154,10 +181,22 @@ const createOrder = async (
             });
         }
 
+
         const orderItems = [];
+
         let subtotal = 0;
 
+
+        /* ========================================
+           BUILD ORDER ITEMS
+        ======================================== */
+
         for (const item of items) {
+
+            /* -------------------------------
+               PRODUCT ID
+            -------------------------------- */
+
             if (
                 !item.product ||
                 !mongoose.Types.ObjectId.isValid(
@@ -170,6 +209,11 @@ const createOrder = async (
                         "Invalid product ID"
                 });
             }
+
+
+            /* -------------------------------
+               QUANTITY
+            -------------------------------- */
 
             const quantity =
                 Number(item.quantity);
@@ -185,6 +229,11 @@ const createOrder = async (
                 });
             }
 
+
+            /* -------------------------------
+               LOAD PRODUCT
+            -------------------------------- */
+
             const product =
                 await Product.findById(
                     item.product
@@ -198,6 +247,11 @@ const createOrder = async (
                 });
             }
 
+
+            /* -------------------------------
+               AVAILABILITY
+            -------------------------------- */
+
             if (
                 product.isAvailable === false ||
                 product.status === "inactive"
@@ -209,6 +263,11 @@ const createOrder = async (
                 });
             }
 
+
+            /* -------------------------------
+               STOCK
+            -------------------------------- */
+
             if (
                 Number(product.stock) <
                 quantity
@@ -219,6 +278,11 @@ const createOrder = async (
                         `Only ${product.stock} ${product.name} items are available`
                 });
             }
+
+
+            /* -------------------------------
+               RETAIL / WHOLESALE PRICE
+            -------------------------------- */
 
             const pricing =
                 calculateProductPricing(
@@ -238,11 +302,26 @@ const createOrder = async (
                 });
             }
 
+
+            /* -------------------------------
+               ITEM TOTAL
+            -------------------------------- */
+
             const itemTotal =
                 pricing.appliedPrice *
                 quantity;
 
-            subtotal += itemTotal;
+            subtotal +=
+                itemTotal;
+
+
+            /* ========================================
+               ORDER ITEM SNAPSHOT
+
+               Important:
+               product name, image, net content
+               and prices are copied into order.
+            ======================================== */
 
             orderItems.push({
                 product:
@@ -252,12 +331,25 @@ const createOrder = async (
                     product.name,
 
                 image:
-                    product.image,
+                    product.image || "",
+
+                /*
+                ========================================
+                NET CONTENT SNAPSHOT
+                ========================================
+                */
+
+                netContent:
+                    product.netContent
+                        ? String(
+                              product.netContent
+                          ).trim()
+                        : "",
 
                 /*
                 Existing admin invoice,
-                My Orders மற்றும் பழைய UI
-                price field use செய்யலாம்.
+                My Orders and old UI may
+                still use price.
                 */
 
                 price:
@@ -283,11 +375,21 @@ const createOrder = async (
             });
         }
 
+
+        /* ========================================
+           ORDER TOTALS
+        ======================================== */
+
         const deliveryFee = 0;
 
         const totalAmount =
             subtotal +
             deliveryFee;
+
+
+        /* ========================================
+           CREATE ORDER
+        ======================================== */
 
         const order =
             await Order.create({
@@ -349,7 +451,9 @@ const createOrder = async (
                     orderItems,
 
                 subtotal,
+
                 deliveryFee,
+
                 totalAmount,
 
                 paymentMethod,
@@ -360,6 +464,11 @@ const createOrder = async (
                 orderStatus:
                     "pending"
             });
+
+
+        /* ========================================
+           REDUCE PRODUCT STOCK
+        ======================================== */
 
         for (
             const item of orderItems
@@ -375,13 +484,16 @@ const createOrder = async (
             );
         }
 
+
         return res.status(201).json({
             success: true,
             message:
                 "Order placed successfully",
+
             data:
                 order
         });
+
     } catch (error) {
         console.error(
             "Create order error:",
@@ -390,13 +502,17 @@ const createOrder = async (
 
         return res.status(500).json({
             success: false,
+
             message:
                 "Unable to place order",
+
             error:
                 error.message
         });
     }
 };
+
+
 /* ========================================
    GET LOGGED-IN USER ORDERS
    GET /api/orders/my-orders
@@ -418,6 +534,7 @@ const getMyOrders = async (
                         "name",
                         "image",
                         "category",
+                        "netContent",
                         "price",
                         "retailPrice",
                         "wholesalePrice",
@@ -428,13 +545,17 @@ const getMyOrders = async (
                     createdAt: -1
                 });
 
+
         return res.status(200).json({
             success: true,
+
             count:
                 orders.length,
+
             data:
                 orders
         });
+
     } catch (error) {
         console.error(
             "Get my orders error:",
@@ -443,13 +564,16 @@ const getMyOrders = async (
 
         return res.status(500).json({
             success: false,
+
             message:
                 "Unable to load your orders",
+
             error:
                 error.message
         });
     }
 };
+
 
 /* ========================================
    GET SINGLE ORDER
@@ -464,6 +588,7 @@ const getOrderById = async (
         const { id } =
             req.params;
 
+
         if (
             !mongoose.Types.ObjectId.isValid(
                 id
@@ -476,6 +601,7 @@ const getOrderById = async (
             });
         }
 
+
         const order =
             await Order.findById(id)
                 .populate(
@@ -484,6 +610,7 @@ const getOrderById = async (
                         "name",
                         "image",
                         "category",
+                        "netContent",
                         "price",
                         "retailPrice",
                         "wholesalePrice",
@@ -495,6 +622,7 @@ const getOrderById = async (
                     "name email role"
                 );
 
+
         if (!order) {
             return res.status(404).json({
                 success: false,
@@ -503,19 +631,23 @@ const getOrderById = async (
             });
         }
 
+
         const orderUserId =
             order.user?._id ||
             order.user;
 
+
         const isOwner =
             String(orderUserId) ===
             String(req.user.id);
+
 
         const isAdmin =
             String(
                 req.user.role || ""
             ).toLowerCase() ===
             "admin";
+
 
         if (
             !isOwner &&
@@ -528,11 +660,14 @@ const getOrderById = async (
             });
         }
 
+
         return res.status(200).json({
             success: true,
+
             data:
                 order
         });
+
     } catch (error) {
         console.error(
             "Get order error:",
@@ -541,13 +676,16 @@ const getOrderById = async (
 
         return res.status(500).json({
             success: false,
+
             message:
                 "Unable to load order",
+
             error:
                 error.message
         });
     }
 };
+
 
 /* ========================================
    GET ALL ORDERS - ADMIN
@@ -571,6 +709,7 @@ const getAllOrders = async (
                         "name",
                         "image",
                         "category",
+                        "netContent",
                         "price",
                         "retailPrice",
                         "wholesalePrice",
@@ -581,13 +720,17 @@ const getAllOrders = async (
                     createdAt: -1
                 });
 
+
         return res.status(200).json({
             success: true,
+
             count:
                 orders.length,
+
             data:
                 orders
         });
+
     } catch (error) {
         console.error(
             "Get all orders error:",
@@ -596,13 +739,17 @@ const getAllOrders = async (
 
         return res.status(500).json({
             success: false,
+
             message:
                 "Unable to load orders",
+
             error:
                 error.message
         });
     }
 };
+
+
 /* ========================================
    UPDATE ORDER STATUS - ADMIN
    PUT /api/orders/:id/status
@@ -616,10 +763,16 @@ const updateOrderStatus = async (
         const { id } =
             req.params;
 
+
         const {
             orderStatus,
             paymentStatus
         } = req.body;
+
+
+        /* -------------------------------
+           ID
+        -------------------------------- */
 
         if (
             !mongoose.Types.ObjectId.isValid(
@@ -633,6 +786,11 @@ const updateOrderStatus = async (
             });
         }
 
+
+        /* -------------------------------
+           VALID STATUS VALUES
+        -------------------------------- */
+
         const allowedOrderStatuses = [
             "pending",
             "confirmed",
@@ -642,11 +800,13 @@ const updateOrderStatus = async (
             "cancelled"
         ];
 
+
         const allowedPaymentStatuses = [
             "pending",
             "paid",
             "failed"
         ];
+
 
         if (
             orderStatus &&
@@ -661,6 +821,7 @@ const updateOrderStatus = async (
             });
         }
 
+
         if (
             paymentStatus &&
             !allowedPaymentStatuses.includes(
@@ -674,8 +835,14 @@ const updateOrderStatus = async (
             });
         }
 
+
+        /* -------------------------------
+           FIND ORDER
+        -------------------------------- */
+
         const order =
             await Order.findById(id);
+
 
         if (!order) {
             return res.status(404).json({
@@ -685,6 +852,11 @@ const updateOrderStatus = async (
             });
         }
 
+
+        /* -------------------------------
+           UPDATE ORDER STATUS
+        -------------------------------- */
+
         if (
             orderStatus &&
             orderStatus !==
@@ -692,6 +864,7 @@ const updateOrderStatus = async (
         ) {
             order.orderStatus =
                 orderStatus;
+
 
             order.statusHistory.push({
                 status:
@@ -702,20 +875,32 @@ const updateOrderStatus = async (
             });
         }
 
-        if (paymentStatus) {
+
+        /* -------------------------------
+           PAYMENT STATUS
+        -------------------------------- */
+
+        if (
+            paymentStatus
+        ) {
             order.paymentStatus =
                 paymentStatus;
         }
 
+
         await order.save();
+
 
         return res.status(200).json({
             success: true,
+
             message:
                 "Order updated successfully",
+
             data:
                 order
         });
+
     } catch (error) {
         console.error(
             "Update order error:",
@@ -724,13 +909,16 @@ const updateOrderStatus = async (
 
         return res.status(500).json({
             success: false,
+
             message:
                 "Unable to update order",
+
             error:
                 error.message
         });
     }
 };
+
 
 /* ========================================
    CANCEL USER ORDER
@@ -745,6 +933,7 @@ const cancelMyOrder = async (
         const { id } =
             req.params;
 
+
         if (
             !mongoose.Types.ObjectId.isValid(
                 id
@@ -757,6 +946,11 @@ const cancelMyOrder = async (
             });
         }
 
+
+        /* -------------------------------
+           FIND USER ORDER
+        -------------------------------- */
+
         const order =
             await Order.findOne({
                 _id:
@@ -766,6 +960,7 @@ const cancelMyOrder = async (
                     req.user.id
             });
 
+
         if (!order) {
             return res.status(404).json({
                 success: false,
@@ -773,6 +968,11 @@ const cancelMyOrder = async (
                     "Order not found"
             });
         }
+
+
+        /* -------------------------------
+           CANCELLATION RULE
+        -------------------------------- */
 
         if (
             ![
@@ -784,13 +984,20 @@ const cancelMyOrder = async (
         ) {
             return res.status(400).json({
                 success: false,
+
                 message:
                     "This order can no longer be cancelled"
             });
         }
 
+
+        /* -------------------------------
+           CANCEL ORDER
+        -------------------------------- */
+
         order.orderStatus =
             "cancelled";
+
 
         order.statusHistory.push({
             status:
@@ -800,12 +1007,16 @@ const cancelMyOrder = async (
                 new Date()
         });
 
+
         await order.save();
 
-        /*
-        Cancel செய்த order stock-ஐ
-        மீண்டும் product stock-க்கு add பண்ணும்.
-        */
+
+        /* ========================================
+           RESTORE STOCK
+
+           Cancel செய்த order stock-ஐ
+           product stock-க்கு மீண்டும் add பண்ணும்.
+        ======================================== */
 
         for (
             const item of order.items
@@ -824,13 +1035,17 @@ const cancelMyOrder = async (
             );
         }
 
+
         return res.status(200).json({
             success: true,
+
             message:
                 "Order cancelled successfully",
+
             data:
                 order
         });
+
     } catch (error) {
         console.error(
             "Cancel order error:",
@@ -839,13 +1054,16 @@ const cancelMyOrder = async (
 
         return res.status(500).json({
             success: false,
+
             message:
                 "Unable to cancel order",
+
             error:
                 error.message
         });
     }
 };
+
 
 /* ========================================
    EXPORTS

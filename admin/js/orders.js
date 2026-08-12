@@ -975,22 +975,38 @@ function createInfoItem(label, value) {
 }
 
 function createModalOrderItem(item) {
+
     const name =
         item.name ||
         item.product?.name ||
         "Product";
 
+
+    const netContent =
+        item.netContent ||
+        item.product?.netContent ||
+        "";
+
+
     const image =
         getProductImage(item);
 
+
     const price =
-        Number(item.price || 0);
+        Number(
+            item.price || 0
+        );
+
 
     const quantity =
-        Number(item.quantity || 1);
+        Number(
+            item.quantity || 1
+        );
+
 
     const itemTotal =
         price * quantity;
+
 
     return `
         <div class="admin-modal-order-item">
@@ -998,14 +1014,34 @@ function createModalOrderItem(item) {
             <img
                 src="${escapeHTML(image)}"
                 alt="${escapeHTML(name)}"
-                onerror="this.src='../images/placeholder-product.png'"
+                onerror="
+                    this.onerror=null;
+                    this.src='../images/placeholder-product.png';
+                "
             >
 
-            <div>
 
-                <h4>
-                    ${escapeHTML(name)}
-                </h4>
+            <div class="admin-order-product-details">
+
+                <div class="admin-product-title-row">
+
+                    <h4>
+                        ${escapeHTML(name)}
+                    </h4>
+
+
+                    ${
+                        netContent
+                            ? `
+                                <span class="admin-net-content">
+                                    ${escapeHTML(netContent)}
+                                </span>
+                              `
+                            : ""
+                    }
+
+                </div>
+
 
                 <p>
                     ${quantity}
@@ -1014,6 +1050,7 @@ function createModalOrderItem(item) {
                 </p>
 
             </div>
+
 
             <strong>
                 ${formatCurrency(itemTotal)}
@@ -1399,149 +1436,279 @@ function initializeInvoiceButton(order) {
 ========================================= */
 
 function printInvoice(order) {
-    const invoiceWindow = window.open(
-        "",
-        "_blank",
-        "width=1000,height=800"
-    );
+
+    const invoiceWindow =
+        window.open(
+            "",
+            "_blank",
+            "width=1000,height=800"
+        );
+
 
     if (!invoiceWindow) {
+
         showAlert(
             "Pop-up blocked. Please allow pop-ups and try again.",
             "error"
         );
+
         return;
     }
 
+
     const orderId =
-        String(order._id || "");
+        String(
+            order._id || ""
+        );
+
 
     const orderNumber =
         order.orderNumber ||
-        `#${orderId.slice(-8).toUpperCase()}`;
+        `#${orderId
+            .slice(-8)
+            .toUpperCase()}`;
+
 
     const customerName =
         order.customer?.name ||
         order.user?.name ||
         "Not available";
 
+
     const customerEmail =
         order.customer?.email ||
         order.user?.email ||
         "Not available";
 
+
     const customerPhone =
         order.customer?.phone ||
         "Not available";
 
+
     const items =
-        Array.isArray(order.items)
+        Array.isArray(
+            order.items
+        )
             ? order.items
             : [];
 
+
+    /* =========================================
+       INVOICE PRODUCT ROWS
+    ========================================= */
+
     const invoiceItemsHTML =
         items.length > 0
+
             ? items
-                .map((item, index) => {
-                    const name =
-                        item.name ||
-                        item.product?.name ||
-                        "Product";
+                .map(
+                    (
+                        item,
+                        index
+                    ) => {
 
-                    const quantity =
-                        Number(
-                            item.quantity || 1
-                        );
+                        const name =
+                            item.name ||
+                            item.product?.name ||
+                            "Product";
 
-                    const price =
-                        Number(
-                            item.price || 0
-                        );
 
-                    const total =
-                        quantity * price;
+                        /*
+                        =================================
+                        NET CONTENT
+                        =================================
+                        */
 
-                    return `
-                        <tr>
-                            <td>
-                                ${index + 1}
-                            </td>
+                        const netContent =
+                            item.netContent ||
+                            item.product?.netContent ||
+                            "";
 
-                            <td>
-                                ${escapeHTML(name)}
-                            </td>
 
-                            <td class="text-center">
-                                ${quantity}
-                            </td>
+                        const quantity =
+                            Number(
+                                item.quantity ||
+                                1
+                            );
 
-                            <td class="text-right">
-                                ${formatCurrency(price)}
-                            </td>
 
-                            <td class="text-right">
-                                ${formatCurrency(total)}
-                            </td>
-                        </tr>
-                    `;
-                })
+                        const price =
+                            Number(
+                                item.price ||
+                                item.appliedPrice ||
+                                0
+                            );
+
+
+                        const total =
+                            quantity *
+                            price;
+
+
+                        return `
+                            <tr>
+
+                                <td>
+                                    ${index + 1}
+                                </td>
+
+
+                                <td class="product-name-cell">
+
+                                    <strong>
+                                        ${escapeHTML(name)}
+                                    </strong>
+
+                                </td>
+
+
+                                <td class="net-content-cell">
+
+                                    ${
+                                        netContent
+                                            ? escapeHTML(
+                                                netContent
+                                            )
+                                            : "-"
+                                    }
+
+                                </td>
+
+
+                                <td class="text-center">
+
+                                    ${quantity}
+
+                                </td>
+
+
+                                <td class="text-right">
+
+                                    ${formatCurrency(
+                                        price
+                                    )}
+
+                                </td>
+
+
+                                <td class="text-right">
+
+                                    <strong>
+                                        ${formatCurrency(
+                                            total
+                                        )}
+                                    </strong>
+
+                                </td>
+
+                            </tr>
+                        `;
+                    }
+                )
                 .join("")
+
             : `
                 <tr>
+
                     <td
-                        colspan="5"
+                        colspan="6"
                         class="text-center"
                     >
                         No product information available.
                     </td>
+
                 </tr>
             `;
 
+
+    /* =========================================
+       TOTALS
+    ========================================= */
+
     const subtotal =
-        Number(order.subtotal || 0);
+        Number(
+            order.subtotal ||
+            0
+        );
+
 
     const deliveryFee =
-        Number(order.deliveryFee || 0);
+        Number(
+            order.deliveryFee ||
+            0
+        );
+
 
     const totalAmount =
-        Number(order.totalAmount || 0);
+        Number(
+            order.totalAmount ||
+            0
+        );
+
+
+    /* =========================================
+       ORDER STATUS
+    ========================================= */
 
     const orderStatus =
         formatStatus(
-            order.orderStatus || "pending"
+            order.orderStatus ||
+            "pending"
         );
+
 
     const paymentStatus =
         formatStatus(
-            order.paymentStatus || "pending"
+            order.paymentStatus ||
+            "pending"
         );
+
 
     const paymentMethod =
         formatPaymentMethod(
             order.paymentMethod
         );
 
+
     const deliveryAddress =
         formatAddress(
             order.deliveryAddress
         );
+
 
     const invoiceDate =
         formatDate(
             order.createdAt
         );
 
+
     const printDate =
-        new Date().toLocaleString(
-            "en-LK",
-            {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit"
-            }
-        );
+        new Date()
+            .toLocaleString(
+                "en-LK",
+                {
+                    year:
+                        "numeric",
+
+                    month:
+                        "short",
+
+                    day:
+                        "numeric",
+
+                    hour:
+                        "2-digit",
+
+                    minute:
+                        "2-digit"
+                }
+            );
+
+
+    /* =========================================
+       INVOICE HTML
+    ========================================= */
 
     const invoiceHTML = `
         <!DOCTYPE html>
@@ -1557,9 +1724,11 @@ function printInvoice(order) {
                 content="width=device-width, initial-scale=1.0"
             >
 
+
             <title>
                 Invoice ${escapeHTML(orderNumber)}
             </title>
+
 
             <style>
 
@@ -1569,309 +1738,551 @@ function printInvoice(order) {
                     box-sizing: border-box;
                 }
 
+
                 body {
                     padding: 30px;
+
                     color: #1f2937;
                     background: #ffffff;
+
                     font-family:
                         Arial,
                         Helvetica,
                         sans-serif;
                 }
 
+
                 .invoice {
                     width: 100%;
                     max-width: 900px;
+
                     margin: 0 auto;
                 }
 
+
+                /* =================================
+                   HEADER
+                ================================= */
+
                 .invoice-header {
                     padding-bottom: 22px;
+
                     display: flex;
+
                     align-items: flex-start;
-                    justify-content: space-between;
+
+                    justify-content:
+                        space-between;
+
                     gap: 30px;
-                    border-bottom: 3px solid #0f4c81;
+
+                    border-bottom:
+                        3px solid #0f4c81;
                 }
+
 
                 .company {
                     display: flex;
+
                     align-items: center;
+
                     gap: 16px;
                 }
+
 
                 .company img {
                     width: 78px;
                     height: 78px;
+
                     object-fit: contain;
                 }
 
+
                 .company h1 {
                     margin-bottom: 7px;
+
                     color: #0f4c81;
+
                     font-size: 24px;
                 }
 
+
                 .company p {
                     margin-bottom: 4px;
+
                     color: #4b5563;
+
                     font-size: 13px;
+
                     line-height: 1.5;
                 }
+
 
                 .invoice-title {
                     text-align: right;
                 }
 
+
                 .invoice-title h2 {
                     margin-bottom: 10px;
+
                     color: #f59e0b;
+
                     font-size: 30px;
+
                     letter-spacing: 1px;
                 }
 
+
                 .invoice-title p {
                     margin-bottom: 6px;
+
                     color: #4b5563;
+
                     font-size: 13px;
                 }
+
+
+                /* =================================
+                   SECTIONS
+                ================================= */
 
                 .invoice-section {
                     margin-top: 28px;
                 }
 
+
                 .section-title {
                     margin-bottom: 14px;
+
                     padding-bottom: 8px;
+
                     color: #0f4c81;
-                    border-bottom: 1px solid #d1d5db;
+
+                    border-bottom:
+                        1px solid #d1d5db;
+
                     font-size: 17px;
                 }
 
+
+                /* =================================
+                   CUSTOMER DETAILS
+                ================================= */
+
                 .details-grid {
                     display: grid;
+
                     grid-template-columns:
-                        repeat(2, minmax(0, 1fr));
+                        repeat(
+                            2,
+                            minmax(0, 1fr)
+                        );
+
                     gap: 15px;
                 }
 
+
                 .detail-box {
                     padding: 14px;
+
                     background: #f8fafc;
-                    border: 1px solid #e5e7eb;
+
+                    border:
+                        1px solid #e5e7eb;
+
                     border-radius: 8px;
                 }
 
+
                 .detail-box span {
                     display: block;
+
                     margin-bottom: 6px;
+
                     color: #6b7280;
+
                     font-size: 11px;
+
                     font-weight: 700;
-                    text-transform: uppercase;
+
+                    text-transform:
+                        uppercase;
                 }
+
 
                 .detail-box strong {
                     color: #1f2937;
+
                     font-size: 13px;
+
                     line-height: 1.5;
                 }
 
+
+                /* =================================
+                   PRODUCT TABLE
+                ================================= */
+
                 table {
                     width: 100%;
+
                     margin-top: 12px;
-                    border-collapse: collapse;
+
+                    border-collapse:
+                        collapse;
                 }
+
 
                 th {
-                    padding: 12px 10px;
+                    padding: 12px 9px;
+
                     color: #ffffff;
-                    background: #0f4c81;
+
+                    background:
+                        #0f4c81;
+
                     font-size: 12px;
+
                     text-align: left;
+
+                    white-space: nowrap;
                 }
 
+
                 td {
-                    padding: 12px 10px;
+                    padding: 12px 9px;
+
                     border-bottom:
                         1px solid #e5e7eb;
-                    font-size: 13px;
+
+                    font-size: 12px;
+
+                    vertical-align: middle;
                 }
+
 
                 tbody tr:nth-child(even) {
                     background: #f8fafc;
                 }
 
+
+                .product-name-cell {
+                    color: #1f2937;
+                }
+
+
+                /*
+                =================================
+                NET CONTENT
+                =================================
+                */
+
+                .net-content-cell {
+                    color: #0f4c81;
+
+                    font-weight: 700;
+
+                    white-space: nowrap;
+                }
+
+
                 .text-center {
                     text-align: center;
                 }
+
 
                 .text-right {
                     text-align: right;
                 }
 
+
+                /* =================================
+                   TOTALS
+                ================================= */
+
                 .totals-wrapper {
                     margin-top: 20px;
+
                     display: flex;
-                    justify-content: flex-end;
+
+                    justify-content:
+                        flex-end;
                 }
+
 
                 .totals {
                     width: 100%;
+
                     max-width: 360px;
                 }
 
+
                 .total-row {
                     padding: 10px 0;
+
                     display: flex;
+
                     align-items: center;
-                    justify-content: space-between;
+
+                    justify-content:
+                        space-between;
+
                     gap: 20px;
+
                     border-bottom:
                         1px solid #e5e7eb;
+
                     font-size: 14px;
                 }
 
+
                 .total-row.grand-total {
                     padding-top: 14px;
+
                     color: #0f4c81;
+
                     border-bottom: none;
+
                     font-size: 18px;
+
                     font-weight: 800;
                 }
 
+
+                /* =================================
+                   STATUS
+                ================================= */
+
                 .status-section {
                     margin-top: 25px;
+
                     display: grid;
+
                     grid-template-columns:
-                        repeat(3, minmax(0, 1fr));
+                        repeat(
+                            3,
+                            minmax(0, 1fr)
+                        );
+
                     gap: 14px;
                 }
 
+
                 .status-box {
                     padding: 14px;
+
                     text-align: center;
+
                     background: #f8fafc;
-                    border: 1px solid #e5e7eb;
+
+                    border:
+                        1px solid #e5e7eb;
+
                     border-radius: 8px;
                 }
 
+
                 .status-box span {
                     display: block;
+
                     margin-bottom: 6px;
+
                     color: #6b7280;
+
                     font-size: 11px;
+
                     font-weight: 700;
-                    text-transform: uppercase;
+
+                    text-transform:
+                        uppercase;
                 }
+
 
                 .status-box strong {
                     color: #0f4c81;
+
                     font-size: 13px;
                 }
+
+
+                /* =================================
+                   NOTE
+                ================================= */
 
                 .invoice-note {
                     margin-top: 28px;
+
                     padding: 16px;
+
                     color: #4b5563;
+
                     background: #fff7ed;
-                    border-left: 4px solid #f59e0b;
+
+                    border-left:
+                        4px solid #f59e0b;
+
                     font-size: 13px;
+
                     line-height: 1.6;
                 }
 
+
+                /* =================================
+                   FOOTER
+                ================================= */
+
                 .invoice-footer {
                     margin-top: 35px;
+
                     padding-top: 18px;
+
                     color: #6b7280;
+
                     text-align: center;
-                    border-top: 1px solid #d1d5db;
+
+                    border-top:
+                        1px solid #d1d5db;
+
                     font-size: 12px;
+
                     line-height: 1.6;
                 }
+
+
+                /* =================================
+                   PRINT BUTTONS
+                ================================= */
 
                 .print-actions {
                     width: 100%;
                     max-width: 900px;
-                    margin: 20px auto 0;
+
+                    margin:
+                        20px auto 0;
+
                     display: flex;
-                    justify-content: flex-end;
+
+                    justify-content:
+                        flex-end;
+
                     gap: 12px;
                 }
 
+
                 .print-actions button {
-                    padding: 11px 18px;
+                    padding:
+                        11px 18px;
+
                     color: #ffffff;
+
                     background: #0f4c81;
+
                     border: none;
+
                     border-radius: 7px;
+
                     cursor: pointer;
+
                     font-size: 13px;
+
                     font-weight: 700;
                 }
+
 
                 .print-actions button:hover {
                     background: #083354;
                 }
 
+
                 .print-actions .close-button {
                     color: #1f2937;
+
                     background: #e5e7eb;
                 }
 
-                .print-actions .close-button:hover {
+
+                .print-actions
+                .close-button:hover {
                     background: #d1d5db;
                 }
+
+
+                /* =================================
+                   PRINT / PDF
+                ================================= */
 
                 @media print {
 
                     @page {
                         size: A4;
+
                         margin: 15mm;
                     }
+
 
                     body {
                         padding: 0;
                     }
 
+
                     .print-actions {
                         display: none;
                     }
+
 
                     .invoice {
                         max-width: none;
                     }
 
+
                     .invoice-section,
                     table,
                     .detail-box,
                     .status-box {
-                        break-inside: avoid;
+
+                        break-inside:
+                            avoid;
                     }
                 }
 
-                @media (max-width: 650px) {
+
+                /* =================================
+                   MOBILE
+                ================================= */
+
+                @media (
+                    max-width: 650px
+                ) {
 
                     body {
                         padding: 18px;
                     }
 
+
                     .invoice-header {
-                        flex-direction: column;
+                        flex-direction:
+                            column;
                     }
+
 
                     .invoice-title {
                         text-align: left;
                     }
 
+
                     .details-grid,
                     .status-section {
-                        grid-template-columns: 1fr;
+
+                        grid-template-columns:
+                            1fr;
                     }
 
+
                     table {
-                        min-width: 650px;
+                        min-width: 720px;
                     }
+
 
                     .invoice-section {
                         overflow-x: auto;
@@ -1882,236 +2293,439 @@ function printInvoice(order) {
 
         </head>
 
+
         <body>
+
 
             <main class="invoice">
 
+
+                <!-- =============================
+                     INVOICE HEADER
+                ============================== -->
+
                 <header class="invoice-header">
 
+
                     <div class="company">
+
 
                         <img
                             src="../images/logo.png"
                             alt="ISM Logo"
                         >
 
+
                         <div>
+
 
                             <h1>
                                 ISM ROYAL TRUST DISTRIBUTORS
                             </h1>
+
 
                             <p>
                                 No. 29, Korakkovil Road,
                                 Sammanthurai, Sri Lanka
                             </p>
 
+
                             <p>
-                                Phone: +94 75 769 3155
+                                Phone:
+                                +94 75 769 3155
                             </p>
+
 
                             <p>
                                 Email:
                                 ismdistributors1030@gmail.com
                             </p>
 
+
                         </div>
 
+
                     </div>
+
 
 
                     <div class="invoice-title">
 
-                        <h2>INVOICE</h2>
+
+                        <h2>
+                            INVOICE
+                        </h2>
+
 
                         <p>
-                            <strong>Order:</strong>
-                            ${escapeHTML(orderNumber)}
+
+                            <strong>
+                                Order:
+                            </strong>
+
+                            ${escapeHTML(
+                                orderNumber
+                            )}
+
                         </p>
 
-                        <p>
-                            <strong>Order Date:</strong>
-                            ${escapeHTML(invoiceDate)}
-                        </p>
 
                         <p>
-                            <strong>Printed:</strong>
-                            ${escapeHTML(printDate)}
+
+                            <strong>
+                                Order Date:
+                            </strong>
+
+                            ${escapeHTML(
+                                invoiceDate
+                            )}
+
                         </p>
+
+
+                        <p>
+
+                            <strong>
+                                Printed:
+                            </strong>
+
+                            ${escapeHTML(
+                                printDate
+                            )}
+
+                        </p>
+
 
                     </div>
+
 
                 </header>
 
 
+
+                <!-- =============================
+                     CUSTOMER INFORMATION
+                ============================== -->
+
                 <section class="invoice-section">
+
 
                     <h3 class="section-title">
                         Customer Information
                     </h3>
 
+
                     <div class="details-grid">
 
-                        <div class="detail-box">
-                            <span>Customer Name</span>
-
-                            <strong>
-                                ${escapeHTML(customerName)}
-                            </strong>
-                        </div>
 
                         <div class="detail-box">
-                            <span>Email Address</span>
+
+                            <span>
+                                Customer Name
+                            </span>
 
                             <strong>
-                                ${escapeHTML(customerEmail)}
+                                ${escapeHTML(
+                                    customerName
+                                )}
                             </strong>
+
                         </div>
+
 
                         <div class="detail-box">
-                            <span>Phone Number</span>
+
+                            <span>
+                                Email Address
+                            </span>
 
                             <strong>
-                                ${escapeHTML(customerPhone)}
+                                ${escapeHTML(
+                                    customerEmail
+                                )}
                             </strong>
+
                         </div>
+
 
                         <div class="detail-box">
-                            <span>Delivery Address</span>
+
+                            <span>
+                                Phone Number
+                            </span>
 
                             <strong>
-                                ${escapeHTML(deliveryAddress)}
+                                ${escapeHTML(
+                                    customerPhone
+                                )}
                             </strong>
+
                         </div>
+
+
+                        <div class="detail-box">
+
+                            <span>
+                                Delivery Address
+                            </span>
+
+                            <strong>
+                                ${escapeHTML(
+                                    deliveryAddress
+                                )}
+                            </strong>
+
+                        </div>
+
 
                     </div>
+
 
                 </section>
 
 
+
+                <!-- =============================
+                     PRODUCTS
+                ============================== -->
+
                 <section class="invoice-section">
+
 
                     <h3 class="section-title">
                         Ordered Products
                     </h3>
 
+
                     <table>
+
 
                         <thead>
 
+
                             <tr>
-                                <th>#</th>
-                                <th>Product</th>
+
+
+                                <th>
+                                    #
+                                </th>
+
+
+                                <th>
+                                    Product
+                                </th>
+
+
+                                <th>
+                                    Net Content
+                                </th>
+
+
                                 <th class="text-center">
                                     Qty
                                 </th>
+
+
                                 <th class="text-right">
                                     Unit Price
                                 </th>
+
+
                                 <th class="text-right">
                                     Total
                                 </th>
+
+
                             </tr>
+
 
                         </thead>
 
+
                         <tbody>
+
                             ${invoiceItemsHTML}
+
                         </tbody>
+
 
                     </table>
 
+
+
+                    <!-- TOTALS -->
+
                     <div class="totals-wrapper">
+
 
                         <div class="totals">
 
-                            <div class="total-row">
-                                <span>Subtotal</span>
-
-                                <strong>
-                                    ${formatCurrency(subtotal)}
-                                </strong>
-                            </div>
 
                             <div class="total-row">
-                                <span>Delivery Fee</span>
+
+                                <span>
+                                    Subtotal
+                                </span>
 
                                 <strong>
-                                    ${formatCurrency(deliveryFee)}
+                                    ${formatCurrency(
+                                        subtotal
+                                    )}
                                 </strong>
+
                             </div>
 
-                            <div class="total-row grand-total">
-                                <span>Total Amount</span>
+
+                            <div class="total-row">
+
+                                <span>
+                                    Delivery Fee
+                                </span>
 
                                 <strong>
-                                    ${formatCurrency(totalAmount)}
+                                    ${deliveryFee === 0
+                                        ? "Free"
+                                        : formatCurrency(
+                                            deliveryFee
+                                        )}
                                 </strong>
+
                             </div>
+
+
+                            <div
+                                class="total-row grand-total"
+                            >
+
+                                <span>
+                                    Total Amount
+                                </span>
+
+                                <strong>
+                                    ${formatCurrency(
+                                        totalAmount
+                                    )}
+                                </strong>
+
+                            </div>
+
 
                         </div>
 
+
                     </div>
+
 
                 </section>
 
+
+
+                <!-- =============================
+                     ORDER / PAYMENT STATUS
+                ============================== -->
 
                 <section class="status-section">
 
-                    <div class="status-box">
-                        <span>Order Status</span>
-
-                        <strong>
-                            ${escapeHTML(orderStatus)}
-                        </strong>
-                    </div>
 
                     <div class="status-box">
-                        <span>Payment Method</span>
+
+                        <span>
+                            Order Status
+                        </span>
 
                         <strong>
-                            ${escapeHTML(paymentMethod)}
+                            ${escapeHTML(
+                                orderStatus
+                            )}
                         </strong>
+
                     </div>
+
 
                     <div class="status-box">
-                        <span>Payment Status</span>
+
+                        <span>
+                            Payment Method
+                        </span>
 
                         <strong>
-                            ${escapeHTML(paymentStatus)}
+                            ${escapeHTML(
+                                paymentMethod
+                            )}
                         </strong>
+
                     </div>
+
+
+                    <div class="status-box">
+
+                        <span>
+                            Payment Status
+                        </span>
+
+                        <strong>
+                            ${escapeHTML(
+                                paymentStatus
+                            )}
+                        </strong>
+
+                    </div>
+
 
                 </section>
 
+
+
+                <!-- =============================
+                     NOTE
+                ============================== -->
 
                 <div class="invoice-note">
 
                     Thank you for choosing
                     ISM Royal Trust Distributors.
-                    This invoice was generated electronically
-                    and is valid without a signature.
+
+                    This invoice was generated
+                    electronically and is valid
+                    without a signature.
 
                 </div>
 
 
+
+                <!-- =============================
+                     FOOTER
+                ============================== -->
+
                 <footer class="invoice-footer">
 
-                    <p>
-                        ISM ROYAL TRUST DISTRIBUTORS (PVT) LTD
-                    </p>
 
                     <p>
-                        Quality Products · Reliable Distribution ·
+                        ISM ROYAL TRUST
+                        DISTRIBUTORS (PVT) LTD
+                    </p>
+
+
+                    <p>
+                        Quality Products ·
+                        Reliable Distribution ·
                         Trusted Service
                     </p>
 
+
                 </footer>
+
 
             </main>
 
 
+
+            <!-- =============================
+                 PRINT ACTIONS
+            ============================== -->
+
             <div class="print-actions">
+
 
                 <button
                     type="button"
@@ -2121,6 +2735,7 @@ function printInvoice(order) {
                     Close
                 </button>
 
+
                 <button
                     type="button"
                     onclick="window.print()"
@@ -2128,18 +2743,31 @@ function printInvoice(order) {
                     Print / Save as PDF
                 </button>
 
+
             </div>
 
+
         </body>
+
 
         </html>
     `;
 
+
+    /* =========================================
+       OPEN INVOICE
+    ========================================= */
+
     invoiceWindow.document.open();
+
+
     invoiceWindow.document.write(
         invoiceHTML
     );
+
+
     invoiceWindow.document.close();
+
 
     invoiceWindow.focus();
 }

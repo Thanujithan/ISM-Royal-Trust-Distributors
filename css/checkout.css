@@ -676,6 +676,409 @@ footer {
     border-top: 1px solid rgba(255, 255, 255, 0.15);
 }
 
+/* ==================================================
+   FINAL CHECKOUT PRODUCT DESIGN
+   - Full product image
+   - Product Name + Net Content same row
+   - Retail / Wholesale details
+   - Compact responsive design
+================================================== */
+
+
+/* =========================================
+   CHECKOUT ITEMS AREA
+========================================= */
+
+.checkout-items {
+    max-height: 420px;
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+
+/* =========================================
+   CHECKOUT PRODUCT CARD
+========================================= */
+
+.checkout-item {
+    width: 100%;
+
+    padding: 14px 0;
+
+    display: grid;
+
+    grid-template-columns:
+        72px
+        minmax(0, 1fr)
+        auto;
+
+    gap: 14px;
+
+    align-items: center;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.checkout-item:last-child {
+    border-bottom: none;
+}
+
+
+/* =========================================
+   PRODUCT IMAGE
+========================================= */
+
+.checkout-item-image {
+    width: 72px !important;
+    height: 82px !important;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 4px;
+
+    overflow: hidden;
+
+    background: #f7f9fc;
+
+    border: 1px solid #edf0f5;
+    border-radius: 10px;
+}
+
+
+/* IMPORTANT:
+   contain = full bottle/product visible
+*/
+
+.checkout-item-image img {
+    width: 100% !important;
+    height: 100% !important;
+
+    object-fit: contain !important;
+    object-position: center center !important;
+
+    display: block;
+
+    margin: 0;
+    padding: 0;
+}
+
+
+/* =========================================
+   PRODUCT DETAILS
+========================================= */
+
+.checkout-item-details {
+    min-width: 0;
+}
+
+
+/* =========================================
+   PRODUCT NAME + NET CONTENT SAME ROW
+========================================= */
+
+.checkout-product-title-row {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    margin-bottom: 5px;
+}
+
+
+/* Product name */
+
+.checkout-product-title-row h3 {
+    flex: 1;
+
+    min-width: 0;
+
+    margin: 0 !important;
+
+    color: var(--primary);
+
+    font-size: 15px !important;
+    font-weight: 800;
+
+    line-height: 1.25;
+}
+
+
+/* Net Content */
+
+.checkout-net-content {
+    flex-shrink: 0;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 4px 8px;
+
+    color: #123f84;
+
+    background: #eef5ff;
+
+    border: 1px solid #cfe1ff;
+    border-radius: 7px;
+
+    font-size: 10px;
+    font-weight: 800;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================
+   CATEGORY + QUANTITY
+========================================= */
+
+.checkout-item-meta {
+    margin: 0 0 5px !important;
+
+    color: var(--muted) !important;
+
+    font-size: 11px !important;
+
+    line-height: 1.35;
+}
+
+
+/* =========================================
+   RETAIL / WHOLESALE INFORMATION
+========================================= */
+
+.checkout-price-information {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 3px 8px;
+
+    margin: 4px 0 6px;
+}
+
+.checkout-price-information small {
+    color: #6b7280;
+
+    font-size: 9px;
+
+    line-height: 1.35;
+}
+
+.checkout-price-information small:nth-child(1),
+.checkout-price-information small:nth-child(2) {
+    font-weight: 600;
+}
+
+
+/* =========================================
+   PRICE TYPE BADGE
+========================================= */
+
+.checkout-price-badge {
+    width: fit-content;
+
+    display: inline-flex;
+    align-items: center;
+
+    gap: 5px;
+
+    margin-bottom: 5px;
+
+    padding: 4px 7px;
+
+    border-radius: 6px;
+
+    font-size: 9px;
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+
+/* Retail */
+
+.checkout-price-badge.retail {
+    color: #123f84;
+
+    background: #eef5ff;
+
+    border: 1px solid #cfe1ff;
+}
+
+
+/* Wholesale */
+
+.checkout-price-badge.wholesale {
+    color: #166534;
+
+    background: #dcfce7;
+
+    border: 1px solid #86efac;
+}
+
+
+/* =========================================
+   CURRENT UNIT PRICE
+========================================= */
+
+.checkout-unit-price {
+    margin: 0 !important;
+
+    color: var(--muted) !important;
+
+    font-size: 10px !important;
+}
+
+.checkout-unit-price strong {
+    color: var(--primary);
+
+    font-size: 11px;
+
+    font-weight: 800;
+}
+
+
+/* =========================================
+   ITEM TOTAL
+========================================= */
+
+.checkout-item-price {
+    align-self: center;
+
+    color: var(--secondary) !important;
+
+    font-size: 14px !important;
+    font-weight: 800;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================
+   SCROLLBAR
+========================================= */
+
+.checkout-items::-webkit-scrollbar {
+    width: 5px;
+}
+
+.checkout-items::-webkit-scrollbar-track {
+    background: #f1f3f6;
+    border-radius: 10px;
+}
+
+.checkout-items::-webkit-scrollbar-thumb {
+    background: #c5cad3;
+    border-radius: 10px;
+}
+
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media screen and (max-width: 720px) {
+
+    .checkout-item {
+        grid-template-columns:
+            65px
+            minmax(0, 1fr)
+            auto;
+
+        gap: 10px;
+    }
+
+    .checkout-item-image {
+        width: 65px !important;
+        height: 75px !important;
+    }
+
+    .checkout-product-title-row {
+        gap: 8px;
+    }
+
+    .checkout-product-title-row h3 {
+        font-size: 14px !important;
+    }
+
+    .checkout-net-content {
+        padding: 3px 6px;
+
+        font-size: 9px;
+    }
+
+    .checkout-item-price {
+        font-size: 12px !important;
+    }
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media screen and (max-width: 480px) {
+
+    .checkout-item {
+        grid-template-columns:
+            60px
+            minmax(0, 1fr) !important;
+
+        align-items: start;
+    }
+
+    .checkout-item-image {
+        width: 60px !important;
+        height: 72px !important;
+    }
+
+    .checkout-item-details {
+        width: 100%;
+    }
+
+    .checkout-product-title-row {
+        width: 100%;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+    }
+
+    .checkout-product-title-row h3 {
+        font-size: 13px !important;
+    }
+
+    .checkout-net-content {
+        font-size: 8px;
+
+        padding: 3px 5px;
+    }
+
+    .checkout-price-information {
+        gap: 2px 6px;
+    }
+
+    .checkout-price-information small {
+        font-size: 8px;
+    }
+
+    .checkout-item-price {
+        grid-column: 2;
+
+        margin-top: 4px;
+
+        font-size: 12px !important;
+    }
+}
+
 /* Responsive */
 
 @media (max-width: 1000px) {

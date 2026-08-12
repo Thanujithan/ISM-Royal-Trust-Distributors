@@ -4,18 +4,21 @@ const fs = require("fs");
 
 const Product = require("../models/Product");
 
+
 /* ========================================
    CONSTANTS
 ======================================== */
 
 const ALLOWED_CATEGORIES = [
     "juice",
+    "sweets",
     "bites",
     "bottled-water",
-    "sweets"
+    "rice"
 ];
 
 const DEFAULT_WHOLESALE_MINIMUM = 20;
+
 
 /* ========================================
    IMAGE HELPERS
@@ -28,6 +31,7 @@ function buildUploadedImagePath(file) {
 
     return `/uploads/products/${file.filename}`;
 }
+
 
 function getAbsoluteImagePath(imagePath) {
     if (!imagePath) {
@@ -52,9 +56,12 @@ function getAbsoluteImagePath(imagePath) {
     );
 }
 
+
 function deleteUploadedImage(imagePath) {
     const absolutePath =
-        getAbsoluteImagePath(imagePath);
+        getAbsoluteImagePath(
+            imagePath
+        );
 
     if (!absolutePath) {
         return;
@@ -76,6 +83,7 @@ function deleteUploadedImage(imagePath) {
     );
 }
 
+
 function deleteCurrentUploadedFile(req) {
     if (!req.file) {
         return;
@@ -88,6 +96,7 @@ function deleteCurrentUploadedFile(req) {
     );
 }
 
+
 /* ========================================
    VALUE HELPERS
 ======================================== */
@@ -99,13 +108,16 @@ function normalizeCategory(value) {
         .replace(/\s+/g, "-");
 }
 
+
 function normalizeStatus(value) {
     return String(value || "")
         .trim()
-        .toLowerCase() === "inactive"
+        .toLowerCase() ===
+        "inactive"
         ? "inactive"
         : "active";
 }
+
 
 function normalizeBoolean(
     value,
@@ -113,20 +125,23 @@ function normalizeBoolean(
 ) {
     if (
         value === true ||
-        String(value).toLowerCase() === "true"
+        String(value).toLowerCase() ===
+            "true"
     ) {
         return true;
     }
 
     if (
         value === false ||
-        String(value).toLowerCase() === "false"
+        String(value).toLowerCase() ===
+            "false"
     ) {
         return false;
     }
 
     return fallback;
 }
+
 
 function getNumericValue(value) {
     if (
@@ -140,10 +155,29 @@ function getNumericValue(value) {
     const numberValue =
         Number(value);
 
-    return Number.isNaN(numberValue)
+    return Number.isNaN(
+        numberValue
+    )
         ? null
         : numberValue;
 }
+
+
+function normalizeNetContent(value) {
+    if (
+        value === undefined ||
+        value === null
+    ) {
+        return "";
+    }
+
+    return String(value).trim();
+}
+
+
+/* ========================================
+   PRICING VALIDATION
+======================================== */
 
 function validatePricing({
     retailPrice,
@@ -184,7 +218,8 @@ function validatePricing({
     }
 
     if (
-        wholesaleMinimumQuantity === null ||
+        wholesaleMinimumQuantity ===
+            null ||
         !Number.isInteger(
             wholesaleMinimumQuantity
         ) ||
@@ -201,6 +236,7 @@ function validatePricing({
         valid: true
     };
 }
+
 
 /* ========================================
    GET ALL PRODUCTS
@@ -237,6 +273,7 @@ const getProducts = async (
     }
 };
 
+
 /* ========================================
    GET SINGLE PRODUCT
    GET /api/products/:id
@@ -250,46 +287,55 @@ const getProductById = async (
         const { id } = req.params;
 
         if (
-            !mongoose.Types.ObjectId.isValid(
-                id
-            )
+            !mongoose.Types.ObjectId
+                .isValid(id)
         ) {
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Invalid product ID."
-            });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    message:
+                        "Invalid product ID."
+                });
         }
 
         const product =
             await Product.findById(id);
 
         if (!product) {
-            return res.status(404).json({
-                success: false,
-                message:
-                    "Product not found."
-            });
+            return res
+                .status(404)
+                .json({
+                    success: false,
+                    message:
+                        "Product not found."
+                });
         }
 
-        return res.status(200).json({
-            success: true,
-            data: product
-        });
+        return res
+            .status(200)
+            .json({
+                success: true,
+                data: product
+            });
     } catch (error) {
         console.error(
             "Get product error:",
             error
         );
 
-        return res.status(500).json({
-            success: false,
-            message:
-                "Failed to fetch product.",
-            error: error.message
-        });
+        return res
+            .status(500)
+            .json({
+                success: false,
+                message:
+                    "Failed to fetch product.",
+                error:
+                    error.message
+            });
     }
 };
+
 
 /* ========================================
    CREATE PRODUCT
@@ -305,6 +351,7 @@ const createProduct = async (
             name,
             category,
             brand,
+            netContent,
             price,
             retailPrice,
             wholesalePrice,
@@ -315,65 +362,111 @@ const createProduct = async (
             isAvailable
         } = req.body;
 
+
+        /* -------------------------------
+           PRODUCT NAME
+        -------------------------------- */
+
         if (
             !name ||
             !String(name).trim()
         ) {
-            deleteCurrentUploadedFile(req);
+            deleteCurrentUploadedFile(
+                req
+            );
 
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Product name is required."
-            });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    message:
+                        "Product name is required."
+                });
         }
 
+
+        /* -------------------------------
+           CATEGORY
+        -------------------------------- */
+
         const normalizedCategory =
-            normalizeCategory(category);
+            normalizeCategory(
+                category
+            );
 
         if (
             !ALLOWED_CATEGORIES.includes(
                 normalizedCategory
             )
         ) {
-            deleteCurrentUploadedFile(req);
+            deleteCurrentUploadedFile(
+                req
+            );
 
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Category must be juice, bites, bottled-water or sweets."
-            });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    message:
+                        "Category must be juice, sweets, bites, bottled-water or rice."
+                });
         }
+
+
+        /* -------------------------------
+           DESCRIPTION
+        -------------------------------- */
 
         if (
             !description ||
-            !String(description).trim()
+            !String(
+                description
+            ).trim()
         ) {
-            deleteCurrentUploadedFile(req);
+            deleteCurrentUploadedFile(
+                req
+            );
 
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Product description is required."
-            });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    message:
+                        "Product description is required."
+                });
         }
+
+
+        /* -------------------------------
+           IMAGE
+        -------------------------------- */
 
         if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Product image is required."
-            });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    message:
+                        "Product image is required."
+                });
         }
 
-        /*
-        Old frontend price field அனுப்பினாலும்
-        retail price ஆக பயன்படுத்தப்படும்.
-        */
+
+        /* -------------------------------
+           PRICE NORMALIZATION
+
+           Old frontend:
+           price
+
+           New frontend:
+           retailPrice
+           wholesalePrice
+        -------------------------------- */
 
         const normalizedRetailPrice =
             getNumericValue(
-                retailPrice ?? price
+                retailPrice ??
+                price
             );
 
         const normalizedWholesalePrice =
@@ -389,6 +482,7 @@ const createProduct = async (
                 DEFAULT_WHOLESALE_MINIMUM
             );
 
+
         const pricingValidation =
             validatePricing({
                 retailPrice:
@@ -401,18 +495,33 @@ const createProduct = async (
                     normalizedMinimumQuantity
             });
 
-        if (!pricingValidation.valid) {
-            deleteCurrentUploadedFile(req);
 
-            return res.status(400).json({
-                success: false,
-                message:
-                    pricingValidation.message
-            });
+        if (
+            !pricingValidation.valid
+        ) {
+            deleteCurrentUploadedFile(
+                req
+            );
+
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    message:
+                        pricingValidation
+                            .message
+                });
         }
 
+
+        /* -------------------------------
+           STOCK
+        -------------------------------- */
+
         const numericStock =
-            getNumericValue(stock);
+            getNumericValue(
+                stock
+            );
 
         if (
             numericStock === null ||
@@ -421,44 +530,75 @@ const createProduct = async (
             ) ||
             numericStock < 0
         ) {
-            deleteCurrentUploadedFile(req);
+            deleteCurrentUploadedFile(
+                req
+            );
 
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Please enter a valid stock quantity."
-            });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    message:
+                        "Please enter a valid stock quantity."
+                });
         }
 
+
+        /* -------------------------------
+           STATUS
+        -------------------------------- */
+
         const productStatus =
-            normalizeStatus(status);
+            normalizeStatus(
+                status
+            );
+
+        const normalizedAvailability =
+            normalizeBoolean(
+                isAvailable,
+                productStatus ===
+                    "active"
+            );
+
+
+        /* -------------------------------
+           IMAGE PATH
+        -------------------------------- */
 
         const uploadedImage =
             buildUploadedImagePath(
                 req.file
             );
 
-        const normalizedAvailability =
-            normalizeBoolean(
-                isAvailable,
-                productStatus === "active"
-            );
+
+        /* -------------------------------
+           CREATE PRODUCT
+        -------------------------------- */
 
         const product =
             await Product.create({
                 name:
-                    String(name).trim(),
+                    String(
+                        name
+                    ).trim(),
 
                 category:
                     normalizedCategory,
 
                 brand:
                     brand &&
-                    String(brand).trim()
+                    String(
+                        brand
+                    ).trim()
                         ? String(
                               brand
                           ).trim()
                         : "ISM Royal Trust",
+
+                netContent:
+                    normalizeNetContent(
+                        netContent
+                    ),
 
                 /*
                 Backward compatibility:
@@ -495,14 +635,20 @@ const createProduct = async (
                     normalizedAvailability
             });
 
-        return res.status(201).json({
-            success: true,
-            message:
-                "Product created successfully.",
-            data: product
-        });
+
+        return res
+            .status(201)
+            .json({
+                success: true,
+                message:
+                    "Product created successfully.",
+                data: product
+            });
+
     } catch (error) {
-        deleteCurrentUploadedFile(req);
+        deleteCurrentUploadedFile(
+            req
+        );
 
         console.error(
             "Create product error:",
@@ -521,23 +667,29 @@ const createProduct = async (
                         item.message
                 );
 
-            return res.status(400).json({
-                success: false,
-                message:
-                    validationMessages.join(
-                        " "
-                    )
-            });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    message:
+                        validationMessages
+                            .join(" ")
+                });
         }
 
-        return res.status(500).json({
-            success: false,
-            message:
-                "Failed to create product.",
-            error: error.message
-        });
+        return res
+            .status(500)
+            .json({
+                success: false,
+                message:
+                    "Failed to create product.",
+                error:
+                    error.message
+            });
     }
 };
+
+
 /* ========================================
    UPDATE PRODUCT
    PUT /api/products/:id
@@ -550,37 +702,58 @@ const updateProduct = async (
     try {
         const { id } = req.params;
 
-        if (
-            !mongoose.Types.ObjectId.isValid(
-                id
-            )
-        ) {
-            deleteCurrentUploadedFile(req);
 
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Invalid product ID."
-            });
+        /* -------------------------------
+           VALIDATE ID
+        -------------------------------- */
+
+        if (
+            !mongoose.Types.ObjectId
+                .isValid(id)
+        ) {
+            deleteCurrentUploadedFile(
+                req
+            );
+
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    message:
+                        "Invalid product ID."
+                });
         }
+
+
+        /* -------------------------------
+           FIND PRODUCT
+        -------------------------------- */
 
         const existingProduct =
-            await Product.findById(id);
+            await Product.findById(
+                id
+            );
 
         if (!existingProduct) {
-            deleteCurrentUploadedFile(req);
+            deleteCurrentUploadedFile(
+                req
+            );
 
-            return res.status(404).json({
-                success: false,
-                message:
-                    "Product not found."
-            });
+            return res
+                .status(404)
+                .json({
+                    success: false,
+                    message:
+                        "Product not found."
+                });
         }
+
 
         const {
             name,
             category,
             brand,
+            netContent,
             price,
             retailPrice,
             wholesalePrice,
@@ -591,106 +764,191 @@ const updateProduct = async (
             isAvailable
         } = req.body;
 
-        if (name !== undefined) {
-            if (!String(name).trim()) {
-                deleteCurrentUploadedFile(req);
 
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Product name cannot be empty."
-                });
+        /* -------------------------------
+           NAME
+        -------------------------------- */
+
+        if (
+            name !== undefined
+        ) {
+            if (
+                !String(
+                    name
+                ).trim()
+            ) {
+                deleteCurrentUploadedFile(
+                    req
+                );
+
+                return res
+                    .status(400)
+                    .json({
+                        success: false,
+                        message:
+                            "Product name cannot be empty."
+                    });
             }
 
             existingProduct.name =
-                String(name).trim();
+                String(
+                    name
+                ).trim();
         }
 
-        if (category !== undefined) {
+
+        /* -------------------------------
+           CATEGORY
+        -------------------------------- */
+
+        if (
+            category !== undefined
+        ) {
             const normalizedCategory =
-                normalizeCategory(category);
+                normalizeCategory(
+                    category
+                );
 
             if (
-                !ALLOWED_CATEGORIES.includes(
-                    normalizedCategory
-                )
+                !ALLOWED_CATEGORIES
+                    .includes(
+                        normalizedCategory
+                    )
             ) {
-                deleteCurrentUploadedFile(req);
+                deleteCurrentUploadedFile(
+                    req
+                );
 
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Category must be juice, bites, bottled-water or sweets."
-                });
+                return res
+                    .status(400)
+                    .json({
+                        success: false,
+                        message:
+                            "Category must be juice, sweets, bites, bottled-water or rice."
+                    });
             }
 
             existingProduct.category =
                 normalizedCategory;
         }
 
-        if (brand !== undefined) {
+
+        /* -------------------------------
+           BRAND
+        -------------------------------- */
+
+        if (
+            brand !== undefined
+        ) {
             existingProduct.brand =
-                String(brand).trim() ||
+                String(
+                    brand
+                ).trim() ||
                 "ISM Royal Trust";
         }
 
-        /*
-        Retail price update:
-        new retailPrice இல்லையென்றால்
-        old price field fallback.
-        */
+
+        /* -------------------------------
+           NET CONTENT
+        -------------------------------- */
 
         if (
-            retailPrice !== undefined ||
+            netContent !== undefined
+        ) {
+            existingProduct.netContent =
+                normalizeNetContent(
+                    netContent
+                );
+        }
+
+
+        /* -------------------------------
+           RETAIL PRICE
+        -------------------------------- */
+
+        if (
+            retailPrice !==
+                undefined ||
             price !== undefined
         ) {
             const normalizedRetailPrice =
                 getNumericValue(
-                    retailPrice ?? price
+                    retailPrice ??
+                    price
                 );
 
             if (
-                normalizedRetailPrice === null ||
+                normalizedRetailPrice ===
+                    null ||
                 normalizedRetailPrice < 0
             ) {
-                deleteCurrentUploadedFile(req);
+                deleteCurrentUploadedFile(
+                    req
+                );
 
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Please enter a valid retail price."
-                });
+                return res
+                    .status(400)
+                    .json({
+                        success: false,
+                        message:
+                            "Please enter a valid retail price."
+                    });
             }
 
             existingProduct.retailPrice =
                 normalizedRetailPrice;
 
+            /*
+            Existing old functions
+            price use செய்தாலும்
+            retail price கிடைக்கும்.
+            */
+
             existingProduct.price =
                 normalizedRetailPrice;
         }
 
-        if (wholesalePrice !== undefined) {
+
+        /* -------------------------------
+           WHOLESALE PRICE
+        -------------------------------- */
+
+        if (
+            wholesalePrice !==
+            undefined
+        ) {
             const normalizedWholesalePrice =
                 getNumericValue(
                     wholesalePrice
                 );
 
             if (
-                normalizedWholesalePrice === null ||
+                normalizedWholesalePrice ===
+                    null ||
                 normalizedWholesalePrice < 0
             ) {
-                deleteCurrentUploadedFile(req);
+                deleteCurrentUploadedFile(
+                    req
+                );
 
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Please enter a valid wholesale price."
-                });
+                return res
+                    .status(400)
+                    .json({
+                        success: false,
+                        message:
+                            "Please enter a valid wholesale price."
+                    });
             }
 
-            existingProduct.wholesalePrice =
-                normalizedWholesalePrice;
+            existingProduct
+                .wholesalePrice =
+                    normalizedWholesalePrice;
         }
+
+
+        /* -------------------------------
+           WHOLESALE MINIMUM QUANTITY
+        -------------------------------- */
 
         if (
             wholesaleMinimumQuantity !==
@@ -702,19 +960,25 @@ const updateProduct = async (
                 );
 
             if (
-                normalizedMinimumQuantity === null ||
+                normalizedMinimumQuantity ===
+                    null ||
                 !Number.isInteger(
                     normalizedMinimumQuantity
                 ) ||
-                normalizedMinimumQuantity < 1
+                normalizedMinimumQuantity <
+                    1
             ) {
-                deleteCurrentUploadedFile(req);
+                deleteCurrentUploadedFile(
+                    req
+                );
 
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Wholesale minimum quantity must be at least 1."
-                });
+                return res
+                    .status(400)
+                    .json({
+                        success: false,
+                        message:
+                            "Wholesale minimum quantity must be at least 1."
+                    });
             }
 
             existingProduct
@@ -722,21 +986,24 @@ const updateProduct = async (
                     normalizedMinimumQuantity;
         }
 
-        /*
-        Final pricing validation:
-        wholesale > retail ஆகக்கூடாது.
-        */
+
+        /* -------------------------------
+           FINAL PRICE VALIDATION
+        -------------------------------- */
 
         const finalRetailPrice =
             Number(
-                existingProduct.retailPrice ??
-                existingProduct.price ??
+                existingProduct
+                    .retailPrice ??
+                existingProduct
+                    .price ??
                 0
             );
 
         const finalWholesalePrice =
             Number(
-                existingProduct.wholesalePrice ??
+                existingProduct
+                    .wholesalePrice ??
                 finalRetailPrice
             );
 
@@ -746,6 +1013,7 @@ const updateProduct = async (
                     .wholesaleMinimumQuantity ??
                 DEFAULT_WHOLESALE_MINIMUM
             );
+
 
         const pricingValidation =
             validatePricing({
@@ -759,19 +1027,36 @@ const updateProduct = async (
                     finalMinimumQuantity
             });
 
-        if (!pricingValidation.valid) {
-            deleteCurrentUploadedFile(req);
 
-            return res.status(400).json({
-                success: false,
-                message:
-                    pricingValidation.message
-            });
+        if (
+            !pricingValidation.valid
+        ) {
+            deleteCurrentUploadedFile(
+                req
+            );
+
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    message:
+                        pricingValidation
+                            .message
+                });
         }
 
-        if (stock !== undefined) {
+
+        /* -------------------------------
+           STOCK
+        -------------------------------- */
+
+        if (
+            stock !== undefined
+        ) {
             const numericStock =
-                getNumericValue(stock);
+                getNumericValue(
+                    stock
+                );
 
             if (
                 numericStock === null ||
@@ -780,34 +1065,48 @@ const updateProduct = async (
                 ) ||
                 numericStock < 0
             ) {
-                deleteCurrentUploadedFile(req);
+                deleteCurrentUploadedFile(
+                    req
+                );
 
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Please enter a valid stock quantity."
-                });
+                return res
+                    .status(400)
+                    .json({
+                        success: false,
+                        message:
+                            "Please enter a valid stock quantity."
+                    });
             }
 
             existingProduct.stock =
                 numericStock;
         }
 
+
+        /* -------------------------------
+           DESCRIPTION
+        -------------------------------- */
+
         if (
-            description !== undefined
+            description !==
+            undefined
         ) {
             if (
                 !String(
                     description
                 ).trim()
             ) {
-                deleteCurrentUploadedFile(req);
+                deleteCurrentUploadedFile(
+                    req
+                );
 
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Product description cannot be empty."
-                });
+                return res
+                    .status(400)
+                    .json({
+                        success: false,
+                        message:
+                            "Product description cannot be empty."
+                    });
             }
 
             existingProduct.description =
@@ -816,9 +1115,18 @@ const updateProduct = async (
                 ).trim();
         }
 
-        if (status !== undefined) {
+
+        /* -------------------------------
+           STATUS
+        -------------------------------- */
+
+        if (
+            status !== undefined
+        ) {
             const normalizedProductStatus =
-                normalizeStatus(status);
+                normalizeStatus(
+                    status
+                );
 
             existingProduct.status =
                 normalizedProductStatus;
@@ -828,14 +1136,21 @@ const updateProduct = async (
                 "active";
         }
 
+
+        /* -------------------------------
+           AVAILABILITY
+        -------------------------------- */
+
         if (
-            isAvailable !== undefined &&
+            isAvailable !==
+                undefined &&
             status === undefined
         ) {
             const normalizedAvailability =
                 normalizeBoolean(
                     isAvailable,
-                    existingProduct.isAvailable
+                    existingProduct
+                        .isAvailable
                 );
 
             existingProduct.isAvailable =
@@ -847,6 +1162,11 @@ const updateProduct = async (
                     : "inactive";
         }
 
+
+        /* -------------------------------
+           IMAGE UPDATE
+        -------------------------------- */
+
         const oldImagePath =
             existingProduct.image;
 
@@ -857,8 +1177,20 @@ const updateProduct = async (
                 );
         }
 
+
+        /* -------------------------------
+           SAVE
+        -------------------------------- */
+
         const updatedProduct =
-            await existingProduct.save();
+            await existingProduct
+                .save();
+
+
+        /*
+        New image successfully saved
+        ஆன பிறகு மட்டும் old image delete.
+        */
 
         if (
             req.file &&
@@ -871,14 +1203,21 @@ const updateProduct = async (
             );
         }
 
-        return res.status(200).json({
-            success: true,
-            message:
-                "Product updated successfully.",
-            data: updatedProduct
-        });
+
+        return res
+            .status(200)
+            .json({
+                success: true,
+                message:
+                    "Product updated successfully.",
+                data:
+                    updatedProduct
+            });
+
     } catch (error) {
-        deleteCurrentUploadedFile(req);
+        deleteCurrentUploadedFile(
+            req
+        );
 
         console.error(
             "Update product error:",
@@ -897,23 +1236,29 @@ const updateProduct = async (
                         item.message
                 );
 
-            return res.status(400).json({
-                success: false,
-                message:
-                    validationMessages.join(
-                        " "
-                    )
-            });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    message:
+                        validationMessages
+                            .join(" ")
+                });
         }
 
-        return res.status(500).json({
-            success: false,
-            message:
-                "Failed to update product.",
-            error: error.message
-        });
+        return res
+            .status(500)
+            .json({
+                success: false,
+                message:
+                    "Failed to update product.",
+                error:
+                    error.message
+            });
     }
 };
+
+
 /* ========================================
    DELETE PRODUCT
    DELETE /api/products/:id
@@ -924,65 +1269,89 @@ const deleteProduct = async (
     res
 ) => {
     try {
-        const { id } = req.params;
+        const { id } =
+            req.params;
 
         if (
-            !mongoose.Types.ObjectId.isValid(
-                id
-            )
+            !mongoose.Types.ObjectId
+                .isValid(id)
         ) {
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Invalid product ID."
-            });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    message:
+                        "Invalid product ID."
+                });
         }
+
 
         const product =
-            await Product.findById(id);
+            await Product.findById(
+                id
+            );
 
         if (!product) {
-            return res.status(404).json({
-                success: false,
-                message:
-                    "Product not found."
-            });
+            return res
+                .status(404)
+                .json({
+                    success: false,
+                    message:
+                        "Product not found."
+                });
         }
+
 
         const productImagePath =
             product.image;
 
+
         await product.deleteOne();
 
-        if (productImagePath) {
+
+        if (
+            productImagePath
+        ) {
             deleteUploadedImage(
                 productImagePath
             );
         }
 
-        return res.status(200).json({
-            success: true,
-            message:
-                "Product deleted successfully.",
-            data: {
-                id: product._id,
-                name: product.name
-            }
-        });
+
+        return res
+            .status(200)
+            .json({
+                success: true,
+                message:
+                    "Product deleted successfully.",
+
+                data: {
+                    id:
+                        product._id,
+
+                    name:
+                        product.name
+                }
+            });
+
     } catch (error) {
         console.error(
             "Delete product error:",
             error
         );
 
-        return res.status(500).json({
-            success: false,
-            message:
-                "Failed to delete product.",
-            error: error.message
-        });
+        return res
+            .status(500)
+            .json({
+                success: false,
+                message:
+                    "Failed to delete product.",
+                error:
+                    error.message
+            });
     }
 };
+
 
 /* ========================================
    EXPORTS

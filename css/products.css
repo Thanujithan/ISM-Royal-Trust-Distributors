@@ -1184,6 +1184,392 @@ footer{
     flex-direction: column;
 }
 
+/* =========================================
+   FINAL PRODUCT CARD FIX
+   - Full product image
+   - Name + Net Content same row
+   - Compact card height
+========================================= */
+
+/* -------------------------------
+   PRODUCT CARD
+-------------------------------- */
+
+.product-card {
+    width: 100%;
+    max-width: 390px;
+    min-height: 0 !important;
+    height: auto !important;
+
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+
+/* -------------------------------
+   FULL PRODUCT IMAGE
+-------------------------------- */
+
+.product-image-container {
+    position: relative;
+
+    width: 100%;
+    height: 190px !important;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 8px !important;
+
+    background: #f8fafc;
+    overflow: hidden;
+}
+
+.product-image {
+    width: 100% !important;
+    height: 100% !important;
+
+    object-fit: contain !important;
+    object-position: center center !important;
+
+    padding: 0 !important;
+    margin: 0 !important;
+
+    display: block;
+}
+
+
+/* Category badge */
+
+.product-category {
+    position: absolute;
+
+    top: 10px;
+    left: 10px;
+
+    z-index: 2;
+}
+
+
+/* -------------------------------
+   PRODUCT DETAILS
+-------------------------------- */
+
+.product-details {
+    padding: 15px 18px 17px !important;
+}
+
+
+/* Brand */
+
+.product-brand {
+    margin: 0 0 5px !important;
+
+    font-size: 11px !important;
+}
+
+
+/* -------------------------------
+   PRODUCT NAME + NET CONTENT
+   SAME ROW
+-------------------------------- */
+
+.product-name-row {
+    width: 100%;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+
+    gap: 12px;
+
+    margin: 0 0 5px !important;
+}
+
+.product-name {
+    flex: 1;
+
+    margin: 0 !important;
+
+    color: #123f84;
+
+    font-size: 18px !important;
+    font-weight: 800;
+
+    line-height: 1.2;
+}
+
+.product-net-content {
+    flex-shrink: 0;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 4px 9px;
+
+    border-radius: 8px;
+
+    background: #eef5ff;
+    border: 1px solid #cfe1ff;
+
+    color: #123f84;
+
+    font-size: 11px;
+    font-weight: 800;
+
+    white-space: nowrap;
+}
+
+
+/* -------------------------------
+   DESCRIPTION
+-------------------------------- */
+
+.product-description {
+    margin: 0 0 9px !important;
+
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+
+    overflow: hidden;
+}
+
+
+/* -------------------------------
+   STOCK
+-------------------------------- */
+
+.product-stock {
+    margin: 0 0 10px !important;
+}
+
+.in-stock,
+.out-of-stock {
+    padding: 5px 9px !important;
+
+    font-size: 11px !important;
+}
+
+
+/* -------------------------------
+   PRICING
+-------------------------------- */
+
+.product-pricing {
+    display: grid !important;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 8px !important;
+
+    margin: 0 0 10px !important;
+}
+
+.price-row {
+    padding: 9px 10px !important;
+
+    border-radius: 9px !important;
+}
+
+.price-row span {
+    font-size: 10px !important;
+}
+
+.price-row strong {
+    font-size: 14px !important;
+
+    white-space: nowrap;
+}
+
+
+/* Wholesale note */
+
+.wholesale-note {
+    grid-column: 1 / -1;
+
+    margin: 0 !important;
+
+    padding: 7px 8px !important;
+
+    border-radius: 8px !important;
+
+    font-size: 10px !important;
+    line-height: 1.2 !important;
+
+    text-align: center;
+}
+
+
+/* -------------------------------
+   QUANTITY
+-------------------------------- */
+
+.product-quantity-selector {
+    width: 100% !important;
+
+    display: grid !important;
+
+    grid-template-columns:
+        38px
+        minmax(0, 1fr)
+        38px !important;
+
+    align-items: center;
+
+    gap: 8px !important;
+
+    margin: 10px 0 !important;
+}
+
+.quantity-button {
+    width: 38px !important;
+    height: 38px !important;
+
+    border-radius: 8px !important;
+
+    font-size: 13px !important;
+}
+
+.product-quantity-input {
+    width: 100% !important;
+    height: 38px !important;
+
+    margin: 0 !important;
+
+    border-radius: 8px !important;
+
+    font-size: 14px !important;
+}
+
+
+/* -------------------------------
+   CURRENT UNIT PRICE
+-------------------------------- */
+
+.selected-price-box {
+    width: 100% !important;
+
+    margin: 0 0 10px !important;
+
+    padding: 10px 12px !important;
+
+    border-radius: 10px !important;
+
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 2px !important;
+}
+
+.selected-price-box span {
+    font-size: 9px !important;
+}
+
+.selected-price-box strong {
+    font-size: 18px !important;
+
+    line-height: 1.2;
+}
+
+.selected-price-box small {
+    font-size: 10px !important;
+
+    line-height: 1.3;
+}
+
+
+/* -------------------------------
+   ADD TO CART
+-------------------------------- */
+
+.add-cart-button {
+    width: 100% !important;
+
+    min-height: 41px !important;
+
+    margin: 0 !important;
+
+    padding: 9px 12px !important;
+
+    border-radius: 9px !important;
+
+    font-size: 13px !important;
+}
+
+
+/* -------------------------------
+   DESKTOP GRID
+-------------------------------- */
+
+@media screen and (min-width: 1200px) {
+
+    .product-grid {
+        grid-template-columns:
+            repeat(
+                3,
+                minmax(320px, 390px)
+            ) !important;
+
+        justify-content: center;
+
+        gap: 24px !important;
+    }
+}
+
+
+/* -------------------------------
+   TABLET
+-------------------------------- */
+
+@media screen and (max-width: 992px) {
+
+    .product-grid {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(280px, 1fr)
+            ) !important;
+    }
+}
+
+
+/* -------------------------------
+   MOBILE
+-------------------------------- */
+
+@media screen and (max-width: 650px) {
+
+    .product-grid {
+        grid-template-columns:
+            1fr !important;
+    }
+
+    .product-card {
+        max-width: 100%;
+    }
+
+    .product-image-container {
+        height: 180px !important;
+    }
+
+    .product-name {
+        font-size: 17px !important;
+    }
+
+    .product-net-content {
+        font-size: 10px;
+        padding: 4px 7px;
+    }
+}
 /* Mobile */
 @media screen and (max-width: 650px) {
     .product-quantity-selector {

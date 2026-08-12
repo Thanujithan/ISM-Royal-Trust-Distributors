@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
 
@@ -12,83 +13,144 @@
         Manage Products | ISM Admin
     </title>
 
+    <!-- Font Awesome -->
     <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     >
 
+    <!-- Admin CSS -->
     <link
         rel="stylesheet"
         href="css/admin.css"
     >
 </head>
 
+
 <body>
 
     <div class="admin-layout">
 
-        <!-- Sidebar -->
+
+        <!-- =====================================
+             SIDEBAR
+        ====================================== -->
+
         <aside
             class="sidebar"
             id="sidebar"
         >
 
             <div class="sidebar-header">
-                <h2>ISM Admin</h2>
-                <p>Royal Trust Distributors</p>
+
+                <h2>
+                    ISM Admin
+                </h2>
+
+                <p>
+                    Royal Trust Distributors
+                </p>
+
             </div>
+
 
             <nav class="sidebar-nav">
 
                 <a href="dashboard.html">
+
                     <i class="fas fa-chart-line"></i>
-                    <span>Dashboard</span>
+
+                    <span>
+                        Dashboard
+                    </span>
+
                 </a>
+
 
                 <a
                     href="products.html"
                     class="active"
                 >
+
                     <i class="fas fa-box"></i>
-                    <span>Products</span>
+
+                    <span>
+                        Products
+                    </span>
+
                 </a>
+
 
                 <a href="orders.html">
+
                     <i class="fas fa-cart-shopping"></i>
-                    <span>Orders</span>
+
+                    <span>
+                        Orders
+                    </span>
+
                 </a>
+
 
                 <a href="messages.html">
+
                     <i class="fas fa-envelope"></i>
-                    <span>Messages</span>
+
+                    <span>
+                        Messages
+                    </span>
+
                 </a>
+
 
                 <a href="users.html">
+
                     <i class="fas fa-users"></i>
-                    <span>Users</span>
+
+                    <span>
+                        Users
+                    </span>
+
                 </a>
 
+
                 <a href="../index.html">
+
                     <i class="fas fa-globe"></i>
-                    <span>View Website</span>
+
+                    <span>
+                        View Website
+                    </span>
+
                 </a>
 
             </nav>
+
 
             <button
                 type="button"
                 class="logout-btn"
                 id="logoutButton"
             >
+
                 <i class="fas fa-right-from-bracket"></i>
+
                 Logout
+
             </button>
 
         </aside>
 
 
-        <!-- Main Content -->
+
+        <!-- =====================================
+             MAIN CONTENT
+        ====================================== -->
+
         <main class="main-content">
+
+
+            <!-- TOPBAR -->
 
             <header class="topbar">
 
@@ -98,24 +160,36 @@
                     id="menuButton"
                     aria-label="Open menu"
                 >
+
                     <i class="fas fa-bars"></i>
+
                 </button>
 
+
                 <div>
-                    <h1>Manage Products</h1>
+
+                    <h1>
+                        Manage Products
+                    </h1>
 
                     <p>
                         Add, edit and delete company products
                     </p>
+
                 </div>
+
 
                 <div class="admin-profile">
 
                     <div class="profile-icon">
+
                         <i class="fas fa-user"></i>
+
                     </div>
 
+
                     <div>
+
                         <strong id="adminName">
                             Admin
                         </strong>
@@ -123,6 +197,7 @@
                         <small id="adminEmail">
                             Administrator
                         </small>
+
                     </div>
 
                 </div>
@@ -130,36 +205,57 @@
             </header>
 
 
+
+            <!-- =====================================
+                 PRODUCT CONTENT
+            ====================================== -->
+
             <section class="dashboard-content">
 
-                <!-- Product Header -->
+
+                <!-- PRODUCT HEADER -->
+
                 <div class="page-action-header">
 
                     <div>
-                        <h2>Product List</h2>
+
+                        <h2>
+                            Product List
+                        </h2>
 
                         <p>
                             Total Products:
+
                             <strong id="productCount">
                                 0
                             </strong>
                         </p>
+
                     </div>
+
 
                     <button
                         type="button"
                         class="primary-button"
                         id="openAddProductButton"
                     >
+
                         <i class="fas fa-plus"></i>
+
                         Add Product
+
                     </button>
 
                 </div>
 
 
-                <!-- Search and Filter -->
+
+                <!-- =====================================
+                     SEARCH AND FILTER
+                ====================================== -->
+
                 <div class="search-card">
+
 
                     <div class="search-box">
 
@@ -173,6 +269,7 @@
 
                     </div>
 
+
                     <select id="categoryFilter">
 
                         <option value="">
@@ -180,19 +277,23 @@
                         </option>
 
                         <option value="juice">
-                            Juice Items
-                        </option>
-
-                        <option value="bites">
-                            Bites Items
-                        </option>
-
-                        <option value="bottled-water">
-                            Bottled Water
+                            Juice
                         </option>
 
                         <option value="sweets">
-                            Sweet Items
+                            Sweets
+                        </option>
+
+                        <option value="bites">
+                            Bites
+                        </option>
+
+                        <option value="bottled-water">
+                            Bottle Water
+                        </option>
+
+                        <option value="rice">
+                            Rice
                         </option>
 
                     </select>
@@ -200,11 +301,19 @@
                 </div>
 
 
-                <!-- Page Message -->
+
+                <!-- =====================================
+                     PAGE MESSAGE
+                ====================================== -->
+
                 <div id="pageMessage"></div>
 
 
-                <!-- Products Table -->
+
+                <!-- =====================================
+                     PRODUCTS TABLE
+                ====================================== -->
+
                 <div class="table-card">
 
                     <div class="table-responsive">
@@ -214,36 +323,63 @@
                             <thead>
 
                                 <tr>
-                                    <th>Image</th>
 
-                                    <th>Product</th>
+                                    <th>
+                                        Image
+                                    </th>
 
-                                    <th>Category</th>
+                                    <th>
+                                        Product
+                                    </th>
 
-                                    <th>Retail Price</th>
+                                    <th>
+                                        Category
+                                    </th>
 
-                                    <th>Wholesale Price</th>
+                                    <th>
+                                        Net Content
+                                    </th>
 
-                                    <th>Minimum Qty</th>
+                                    <th>
+                                        Retail Price
+                                    </th>
 
-                                    <th>Stock</th>
+                                    <th>
+                                        Wholesale Price
+                                    </th>
 
-                                    <th>Status</th>
+                                    <th>
+                                        Minimum Qty
+                                    </th>
 
-                                    <th>Actions</th>
+                                    <th>
+                                        Stock
+                                    </th>
+
+                                    <th>
+                                        Status
+                                    </th>
+
+                                    <th>
+                                        Actions
+                                    </th>
+
                                 </tr>
 
                             </thead>
 
+
                             <tbody id="productTableBody">
 
                                 <tr>
+
                                     <td
-                                        colspan="9"
+                                        colspan="10"
                                         class="table-message"
                                     >
                                         Loading products...
                                     </td>
+
                                 </tr>
 
                             </tbody>
@@ -261,7 +397,11 @@
     </div>
 
 
-    <!-- Product Modal -->
+
+    <!-- =====================================
+         PRODUCT ADD / EDIT MODAL
+    ====================================== -->
+
     <div
         class="modal-overlay"
         id="productModal"
@@ -269,9 +409,13 @@
 
         <div class="modal-box">
 
+
+            <!-- MODAL HEADER -->
+
             <div class="modal-header">
 
                 <div>
+
                     <h2 id="modalTitle">
                         Add Product
                     </h2>
@@ -279,7 +423,9 @@
                     <p>
                         Enter the product information
                     </p>
+
                 </div>
+
 
                 <button
                     type="button"
@@ -287,11 +433,16 @@
                     id="closeModalButton"
                     aria-label="Close product modal"
                 >
+
                     <i class="fas fa-times"></i>
+
                 </button>
 
             </div>
 
+
+
+            <!-- PRODUCT FORM -->
 
             <form
                 id="productForm"
@@ -306,7 +457,11 @@
 
                 <div class="form-grid">
 
-                    <!-- Product Name -->
+
+                    <!-- =====================================
+                         PRODUCT NAME
+                    ====================================== -->
+
                     <div class="form-group">
 
                         <label for="productName">
@@ -323,7 +478,11 @@
                     </div>
 
 
-                    <!-- Category -->
+
+                    <!-- =====================================
+                         CATEGORY
+                    ====================================== -->
+
                     <div class="form-group">
 
                         <label for="productCategory">
@@ -340,19 +499,23 @@
                             </option>
 
                             <option value="juice">
-                                Juice Items
-                            </option>
-
-                            <option value="bites">
-                                Bites Items
-                            </option>
-
-                            <option value="bottled-water">
-                                Bottled Water
+                                Juice
                             </option>
 
                             <option value="sweets">
-                                Sweet Items
+                                Sweets
+                            </option>
+
+                            <option value="bites">
+                                Bites
+                            </option>
+
+                            <option value="bottled-water">
+                                Bottle Water
+                            </option>
+
+                            <option value="rice">
+                                Rice
                             </option>
 
                         </select>
@@ -360,7 +523,36 @@
                     </div>
 
 
-                    <!-- Retail Price -->
+
+                    <!-- =====================================
+                         NET CONTENT
+                    ====================================== -->
+
+                    <div class="form-group">
+
+                        <label for="productNetContent">
+                            Net Content
+                        </label>
+
+                        <input
+                            type="text"
+                            id="productNetContent"
+                            placeholder="Example: 500 ml, 1 L, 200 g, 5 kg"
+                        >
+
+                        <small class="input-help">
+                            Enter the product pack size such as
+                            500 ml, 1 L, 200 g or 5 kg.
+                        </small>
+
+                    </div>
+
+
+
+                    <!-- =====================================
+                         RETAIL PRICE
+                    ====================================== -->
+
                     <div class="form-group">
 
                         <label for="productRetailPrice">
@@ -379,7 +571,11 @@
                     </div>
 
 
-                    <!-- Wholesale Price -->
+
+                    <!-- =====================================
+                         WHOLESALE PRICE
+                    ====================================== -->
+
                     <div class="form-group">
 
                         <label for="productWholesalePrice">
@@ -396,13 +592,18 @@
                         >
 
                         <small class="input-help">
-                            Wholesale price should not be greater than retail price.
+                            Wholesale price should not be
+                            greater than retail price.
                         </small>
 
                     </div>
 
 
-                    <!-- Wholesale Minimum Quantity -->
+
+                    <!-- =====================================
+                         WHOLESALE MINIMUM QUANTITY
+                    ====================================== -->
+
                     <div class="form-group">
 
                         <label for="wholesaleMinimumQuantity">
@@ -419,13 +620,18 @@
                         >
 
                         <small class="input-help">
-                            Wholesale price will apply from this quantity.
+                            Wholesale price will apply from
+                            this quantity.
                         </small>
 
                     </div>
 
 
-                    <!-- Stock -->
+
+                    <!-- =====================================
+                         STOCK
+                    ====================================== -->
+
                     <div class="form-group">
 
                         <label for="productStock">
@@ -444,7 +650,11 @@
                     </div>
 
 
-                    <!-- Product Status -->
+
+                    <!-- =====================================
+                         PRODUCT STATUS
+                    ====================================== -->
+
                     <div class="form-group">
 
                         <label for="productStatus">
@@ -466,7 +676,11 @@
                     </div>
 
 
-                    <!-- Product Image -->
+
+                    <!-- =====================================
+                         PRODUCT IMAGE
+                    ====================================== -->
+
                     <div class="form-group full-width">
 
                         <label for="productImage">
@@ -480,8 +694,10 @@
                         >
 
                         <small class="input-help">
-                            Supported: JPG, PNG, WEBP. Maximum size: 5 MB.
+                            Supported: JPG, PNG, WEBP.
+                            Maximum size: 5 MB.
                         </small>
+
 
                         <div class="image-preview-wrapper">
 
@@ -493,9 +709,11 @@
                                     display: none;
                                     width: 180px;
                                     height: 180px;
-                                    object-fit: cover;
+                                    object-fit: contain;
                                     border-radius: 10px;
                                     border: 1px solid #dddddd;
+                                    background: #ffffff;
+                                    padding: 5px;
                                     margin-top: 15px;
                                 "
                             >
@@ -505,7 +723,11 @@
                     </div>
 
 
-                    <!-- Description -->
+
+                    <!-- =====================================
+                         DESCRIPTION
+                    ====================================== -->
+
                     <div class="form-group full-width">
 
                         <label for="productDescription">
@@ -524,6 +746,11 @@
                 </div>
 
 
+
+                <!-- =====================================
+                     FORM BUTTONS
+                ====================================== -->
+
                 <div class="modal-actions">
 
                     <button
@@ -534,13 +761,17 @@
                         Cancel
                     </button>
 
+
                     <button
                         type="submit"
                         class="primary-button"
                         id="saveProductButton"
                     >
+
                         <i class="fas fa-save"></i>
+
                         Save Product
+
                     </button>
 
                 </div>
@@ -552,7 +783,11 @@
     </div>
 
 
-    <!-- Delete Confirmation Modal -->
+
+    <!-- =====================================
+         DELETE CONFIRMATION MODAL
+    ====================================== -->
+
     <div
         class="modal-overlay"
         id="deleteModal"
@@ -561,15 +796,23 @@
         <div class="modal-box small-modal">
 
             <div class="delete-icon">
+
                 <i class="fas fa-trash"></i>
+
             </div>
 
-            <h2>Delete Product?</h2>
+
+            <h2>
+                Delete Product?
+            </h2>
+
 
             <p>
                 Are you sure you want to delete
+
                 <strong id="deleteProductName"></strong>?
             </p>
+
 
             <div class="modal-actions center-actions">
 
@@ -581,13 +824,17 @@
                     Cancel
                 </button>
 
+
                 <button
                     type="button"
                     class="danger-button"
                     id="confirmDeleteButton"
                 >
+
                     <i class="fas fa-trash"></i>
+
                     Delete
+
                 </button>
 
             </div>
@@ -597,8 +844,15 @@
     </div>
 
 
+
+    <!-- =====================================
+         JAVASCRIPT
+    ====================================== -->
+
     <script src="js/admin-auth.js"></script>
+
     <script src="js/products.js"></script>
 
 </body>
+
 </html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
 
@@ -10,36 +11,58 @@
 
     <meta
         name="description"
-        content="Browse quality food, beverage, household, electrical and hardware products distributed by ISM Royal Trust Distributors."
+        content="Browse quality juice, sweets, bites, bottled water and rice products distributed by ISM Royal Trust Distributors."
     >
 
     <title>
         Products | ISM ROYAL TRUST DISTRIBUTORS
     </title>
 
-    <link rel="stylesheet" href="css/products.css">
-    <link rel="stylesheet" href="css/theme.css">
-    <link rel="stylesheet" href="css/navbar-auth.css">
+    <!-- Main Product CSS -->
+    <link
+        rel="stylesheet"
+        href="css/products.css"
+    >
 
+    <!-- Theme CSS -->
+    <link
+        rel="stylesheet"
+        href="css/theme.css"
+    >
+
+    <!-- Common Navbar CSS -->
+    <link
+        rel="stylesheet"
+        href="css/navbar-auth.css"
+    >
+
+    <!-- Font Awesome -->
     <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     >
 </head>
 
+
 <body>
 
-    <!-- Header -->
+    <!-- =====================================
+         HEADER / NAVBAR
+    ====================================== -->
+
     <header>
+
         <div class="container">
 
             <div class="logo">
 
                 <a href="index.html">
+
                     <img
                         src="images/logo.png"
                         alt="ISM Royal Trust Distributors Logo"
                     >
+
                 </a>
 
                 <h1>
@@ -48,8 +71,13 @@
 
             </div>
 
+
             <nav>
-                <ul class="nav-links" id="navLinks">
+
+                <ul
+                    class="nav-links"
+                    id="navLinks"
+                >
 
                     <li>
                         <a href="index.html">
@@ -57,20 +85,25 @@
                         </a>
                     </li>
 
+
                     <li>
                         <a href="about.html">
                             About
                         </a>
                     </li>
 
+
                     <li>
+
                         <a
                             href="products.html"
                             class="active"
                         >
                             Products
                         </a>
+
                     </li>
+
 
                     <li>
                         <a href="services.html">
@@ -78,17 +111,21 @@
                         </a>
                     </li>
 
+
                     <li>
                         <a href="contact.html">
                             Contact
                         </a>
                     </li>
 
+
                     <li>
+
                         <a
                             href="cart.html"
                             class="cart-nav-link"
                         >
+
                             <i class="fas fa-cart-shopping"></i>
 
                             Cart
@@ -99,21 +136,35 @@
                             >
                                 0
                             </span>
+
                         </a>
+
                     </li>
 
+
+                    <!-- Login / Profile loaded by JS -->
+
                     <li id="authNavItem">
+
                         <a
                             href="login.html"
                             class="btn-nav-login"
                         >
+
                             <i class="fas fa-sign-in-alt"></i>
+
                             Login
+
                         </a>
+
                     </li>
 
                 </ul>
+
             </nav>
+
+
+            <!-- Mobile Menu -->
 
             <button
                 type="button"
@@ -121,14 +172,21 @@
                 id="menuToggle"
                 aria-label="Open navigation menu"
             >
+
                 <i class="fas fa-bars"></i>
+
             </button>
 
         </div>
+
     </header>
 
 
-    <!-- Page Banner -->
+
+    <!-- =====================================
+         PAGE BANNER
+    ====================================== -->
+
     <section class="page-banner">
 
         <div class="container">
@@ -138,8 +196,8 @@
             </h1>
 
             <p>
-                We distribute high-quality products from trusted
-                brands across Sri Lanka.
+                We distribute high-quality products from
+                trusted brands across Sri Lanka.
             </p>
 
         </div>
@@ -147,7 +205,11 @@
     </section>
 
 
-    <!-- Search -->
+
+    <!-- =====================================
+         SEARCH PRODUCTS
+    ====================================== -->
+
     <section class="search-section">
 
         <div class="container">
@@ -167,7 +229,9 @@
                     id="searchButton"
                     aria-label="Search products"
                 >
+
                     <i class="fas fa-search"></i>
+
                 </button>
 
             </div>
@@ -177,7 +241,11 @@
     </section>
 
 
-    <!-- Category Filters -->
+
+    <!-- =====================================
+         PRODUCT CATEGORY FILTERS
+    ====================================== -->
+
     <section class="filter-section">
 
         <div class="container">
@@ -188,6 +256,8 @@
                 aria-label="Product categories"
             >
 
+                <!-- ALL -->
+
                 <button
                     type="button"
                     class="active"
@@ -196,39 +266,54 @@
                     All
                 </button>
 
-                <button
-                    type="button"
-                    data-category="food"
-                >
-                    Food
-                </button>
+
+                <!-- JUICE -->
 
                 <button
                     type="button"
-                    data-category="beverages"
+                    data-category="juice"
                 >
-                    Beverages
+                    Juice
                 </button>
+
+
+                <!-- SWEETS -->
 
                 <button
                     type="button"
-                    data-category="household"
+                    data-category="sweets"
                 >
-                    Household
+                    Sweets
                 </button>
+
+
+                <!-- BITES -->
 
                 <button
                     type="button"
-                    data-category="electrical"
+                    data-category="bites"
                 >
-                    Electrical
+                    Bites
                 </button>
+
+
+                <!-- BOTTLE WATER -->
 
                 <button
                     type="button"
-                    data-category="hardware"
+                    data-category="bottle water"
                 >
-                    Hardware
+                    Bottle Water
+                </button>
+
+
+                <!-- RICE -->
+
+                <button
+                    type="button"
+                    data-category="rice"
+                >
+                    Rice
                 </button>
 
             </div>
@@ -238,7 +323,11 @@
     </section>
 
 
-    <!-- Products -->
+
+    <!-- =====================================
+         PRODUCTS
+    ====================================== -->
+
     <main class="products">
 
         <div class="container">
@@ -248,15 +337,19 @@
                 id="productGrid"
                 aria-live="polite"
             >
+
                 <div class="products-loading">
 
-                    <i class="fas fa-spinner fa-spin"></i>
+                    <i
+                        class="fas fa-spinner fa-spin"
+                    ></i>
 
                     <p>
                         Loading products...
                     </p>
 
                 </div>
+
             </div>
 
         </div>
@@ -264,7 +357,11 @@
     </main>
 
 
-    <!-- Trusted Brands -->
+
+    <!-- =====================================
+         TRUSTED BRANDS
+    ====================================== -->
+
     <section class="brands">
 
         <div class="container">
@@ -280,11 +377,13 @@
                 </h2>
 
                 <p>
-                    We work with reliable brands to supply quality
-                    products to customers and businesses.
+                    We work with reliable brands to supply
+                    quality products to customers and
+                    businesses.
                 </p>
 
             </div>
+
 
             <div class="brand-grid">
 
@@ -297,19 +396,19 @@
                 </div>
 
                 <div class="brand-box">
-                    CleanMax
+                    Juice Brands
                 </div>
 
                 <div class="brand-box">
-                    Bright Light
+                    Sweet Brands
                 </div>
 
                 <div class="brand-box">
-                    Ultra Build
+                    Water Brands
                 </div>
 
                 <div class="brand-box">
-                    Golden Drop
+                    Rice Brands
                 </div>
 
             </div>
@@ -319,7 +418,11 @@
     </section>
 
 
-    <!-- Call to Action -->
+
+    <!-- =====================================
+         CALL TO ACTION
+    ====================================== -->
+
     <section class="products-cta">
 
         <div class="container">
@@ -331,18 +434,23 @@
                 </h2>
 
                 <p>
-                    Contact our team and we will help you find the
-                    right products for your business.
+                    Contact our team and we will help you
+                    find the right products for your
+                    business.
                 </p>
 
             </div>
+
 
             <a
                 href="contact.html"
                 class="products-cta-button"
             >
+
                 Contact Us
+
                 <i class="fas fa-arrow-right"></i>
+
             </a>
 
         </div>
@@ -350,10 +458,16 @@
     </section>
 
 
-    <!-- Footer -->
+
+    <!-- =====================================
+         FOOTER
+    ====================================== -->
+
     <footer>
 
         <div class="container footer-content">
+
+            <!-- Company -->
 
             <div class="footer-logo">
 
@@ -367,13 +481,16 @@
                 </h2>
 
                 <p>
-                    Your trusted distribution partner providing
-                    quality products and reliable delivery services
-                    across Sri Lanka.
+                    Your trusted distribution partner
+                    providing quality products and
+                    reliable delivery services across
+                    Sri Lanka.
                 </p>
 
             </div>
 
+
+            <!-- Quick Links -->
 
             <div class="footer-links">
 
@@ -430,6 +547,8 @@
             </div>
 
 
+            <!-- Contact -->
+
             <div class="footer-contact">
 
                 <h3>
@@ -437,25 +556,37 @@
                 </h3>
 
                 <p>
+
                     <i class="fas fa-phone"></i>
+
                     +94 75 769 3155
+
                 </p>
 
                 <p>
+
                     <i class="fas fa-envelope"></i>
+
                     ismdistributors1030@gmail.com
+
                 </p>
 
                 <p>
+
                     <i class="fas fa-location-dot"></i>
+
                     No. 29, Korakkovil Road,
                     Sammanthurai, Sri Lanka
+
                 </p>
 
                 <p>
+
                     <i class="fas fa-clock"></i>
+
                     Monday - Saturday:
                     8.30 AM - 5.30 PM
+
                 </p>
 
             </div>
@@ -475,8 +606,15 @@
     </footer>
 
 
+
+    <!-- =====================================
+         JAVASCRIPT
+    ====================================== -->
+
     <script src="js/products.js"></script>
+
     <script src="js/auth-navbar.js"></script>
 
 </body>
+
 </html>

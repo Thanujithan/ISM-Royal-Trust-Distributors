@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+
 /*
 ========================================
 ORDER ITEM SCHEMA
@@ -40,12 +41,36 @@ const orderItemSchema =
 
             /*
             ========================================
+            NET CONTENT SNAPSHOT
+
+            Examples:
+            200 ml
+            500 ml
+            1 L
+            100 g
+            1 kg
+            5 kg
+
+            This value is stored inside the order
+            so old receipts remain unchanged even
+            if the product is edited later.
+            ========================================
+            */
+
+            netContent: {
+                type: String,
+                trim: true,
+                default: ""
+            },
+
+            /*
+            ========================================
             LEGACY PRICE
 
             Existing My Orders, invoice and admin
-            functions price field use செய்யலாம்.
+            functions may still use price.
 
-            New order create செய்யும்போது:
+            New order:
             price = appliedPrice
             ========================================
             */
@@ -144,6 +169,7 @@ const orderItemSchema =
         }
     );
 
+
 /*
 ========================================
 ORDER ITEM PRICE COMPATIBILITY
@@ -154,80 +180,142 @@ orderItemSchema.pre(
     "validate",
     function () {
         const legacyPrice =
-            Number(this.price || 0);
+            Number(
+                this.price || 0
+            );
 
         const retailPrice =
             Number(
-                this.retailPrice ||
+                this.retailPrice ??
                 legacyPrice
             );
 
         const wholesalePrice =
             Number(
-                this.wholesalePrice ||
+                this.wholesalePrice ??
                 retailPrice
             );
 
         const minimumQuantity =
             Number(
-                this.wholesaleMinimumQuantity ||
+                this.wholesaleMinimumQuantity ??
                 20
             );
 
         const quantity =
-            Number(this.quantity || 1);
+            Number(
+                this.quantity || 1
+            );
 
         const isWholesale =
-            quantity >= minimumQuantity;
+            quantity >=
+            minimumQuantity;
 
         const calculatedAppliedPrice =
             isWholesale
                 ? wholesalePrice
                 : retailPrice;
 
+
+        /*
+        Normalize retail price
+        */
+
         this.retailPrice =
-            Number.isNaN(retailPrice)
+            Number.isNaN(
+                retailPrice
+            )
                 ? legacyPrice
                 : retailPrice;
 
+
+        /*
+        Normalize wholesale price
+        */
+
         this.wholesalePrice =
-            Number.isNaN(wholesalePrice)
+            Number.isNaN(
+                wholesalePrice
+            )
                 ? this.retailPrice
                 : wholesalePrice;
 
+
+        /*
+        Normalize wholesale minimum quantity
+        */
+
         this.wholesaleMinimumQuantity =
-            Number.isInteger(minimumQuantity) &&
+            Number.isInteger(
+                minimumQuantity
+            ) &&
             minimumQuantity >= 1
                 ? minimumQuantity
                 : 20;
 
+
         /*
-        New controller appliedPrice அனுப்பினால் அதை use செய்யும்.
-        Old controller price மட்டும் அனுப்பினால் price use செய்யும்.
+        New controller appliedPrice அனுப்பினால்
+        அதை use செய்யும்.
+
+        Old controller price மட்டும் அனுப்பினால்
+        calculated price use செய்யும்.
         */
 
         const suppliedAppliedPrice =
-            Number(this.appliedPrice || 0);
+            Number(
+                this.appliedPrice || 0
+            );
 
         this.appliedPrice =
             suppliedAppliedPrice > 0
                 ? suppliedAppliedPrice
                 : calculatedAppliedPrice;
 
+
+        /*
+        Determine retail / wholesale
+        */
+
         this.priceType =
-            this.priceType === "wholesale" ||
+            this.priceType ===
+                "wholesale" ||
             isWholesale
                 ? "wholesale"
                 : "retail";
 
+
         /*
-        Existing invoice/cart/order UI compatibility.
+        Existing invoice/cart/order UI
+        compatibility.
+
+        price always equals appliedPrice.
         */
 
         this.price =
             this.appliedPrice;
+
+
+        /*
+        Clean Net Content
+        */
+
+        if (
+            this.netContent !==
+                undefined &&
+            this.netContent !==
+                null
+        ) {
+            this.netContent =
+                String(
+                    this.netContent
+                ).trim();
+        } else {
+            this.netContent = "";
+        }
     }
 );
+
 
 /*
 ========================================
@@ -287,6 +375,7 @@ const deliveryAddressSchema =
         }
     );
 
+
 /*
 ========================================
 CUSTOMER SCHEMA
@@ -335,6 +424,7 @@ const customerSchema =
         }
     );
 
+
 /*
 ========================================
 ORDER SCHEMA
@@ -364,7 +454,9 @@ const orderSchema =
             },
 
             customer: {
-                type: customerSchema,
+                type:
+                    customerSchema,
+
                 required: true
             },
 
@@ -391,7 +483,9 @@ const orderSchema =
                 validate: {
                     validator(items) {
                         return (
-                            Array.isArray(items) &&
+                            Array.isArray(
+                                items
+                            ) &&
                             items.length > 0
                         );
                     },
@@ -417,6 +511,7 @@ const orderSchema =
 
             deliveryFee: {
                 type: Number,
+
                 default: 0,
 
                 min: [
@@ -460,7 +555,8 @@ const orderSchema =
                     "failed"
                 ],
 
-                default: "pending"
+                default:
+                    "pending"
             },
 
             orderStatus: {
@@ -475,7 +571,8 @@ const orderSchema =
                     "cancelled"
                 ],
 
-                default: "pending"
+                default:
+                    "pending"
             },
 
             statusHistory: [
@@ -507,6 +604,7 @@ const orderSchema =
         }
     );
 
+
 /*
 ========================================
 GENERATE ORDER NUMBER
@@ -526,19 +624,27 @@ orderSchema.pre(
         const randomNumber =
             Math.floor(
                 1000 +
-                Math.random() * 9000
+                Math.random() *
+                    9000
             );
 
         const datePart =
             new Date()
                 .toISOString()
-                .slice(0, 10)
-                .replaceAll("-", "");
+                .slice(
+                    0,
+                    10
+                )
+                .replaceAll(
+                    "-",
+                    ""
+                );
 
         this.orderNumber =
             `ISM-${datePart}-${randomNumber}`;
     }
 );
+
 
 /*
 ========================================
@@ -553,7 +659,8 @@ orderSchema.pre(
             this.isNew &&
             (
                 !this.statusHistory ||
-                this.statusHistory.length === 0
+                this.statusHistory
+                    .length === 0
             )
         ) {
             this.statusHistory.push({
@@ -563,6 +670,7 @@ orderSchema.pre(
         }
     }
 );
+
 
 module.exports =
     mongoose.model(

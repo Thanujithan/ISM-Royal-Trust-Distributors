@@ -28,13 +28,32 @@ const productSchema = new mongoose.Schema(
 
         /*
         ========================================
+        NET CONTENT
+
+        Examples:
+        200 ml
+        500 ml
+        1 L
+        100 g
+        1 kg
+        5 kg
+        ========================================
+        */
+
+        netContent: {
+            type: String,
+            trim: true,
+            default: ""
+        },
+
+        /*
+        ========================================
         LEGACY PRICE
 
         Existing frontend/backend functions
-        இன்னும் price field use செய்யலாம்.
+        may still use price.
 
-        retailPrice update ஆகும்போது price-மும்
-        அதே retail price ஆக automatic update ஆகும்.
+        price always follows retailPrice.
         ========================================
         */
 
@@ -125,20 +144,18 @@ const productSchema = new mongoose.Schema(
     }
 );
 
+
 /*
 ========================================
 PRICE COMPATIBILITY
 
 Old products:
-    price only
+price only
 
 New products:
-    retailPrice
-    wholesalePrice
-    wholesaleMinimumQuantity
-
-இந்த hook பழைய products break ஆகாமல்
-prices automatic normalize பண்ணும்.
+retailPrice
+wholesalePrice
+wholesaleMinimumQuantity
 ========================================
 */
 
@@ -162,7 +179,8 @@ productSchema.pre(
 
         const minimumQuantity =
             Number(
-                this.wholesaleMinimumQuantity || 20
+                this.wholesaleMinimumQuantity ||
+                20
             );
 
         this.retailPrice =
@@ -176,22 +194,24 @@ productSchema.pre(
                 : wholesalePrice;
 
         this.wholesaleMinimumQuantity =
-            Number.isInteger(minimumQuantity) &&
+            Number.isInteger(
+                minimumQuantity
+            ) &&
             minimumQuantity >= 1
                 ? minimumQuantity
                 : 20;
 
         /*
-        Existing functions price field use பண்ணினாலும்
-        retail price கிடைக்கும்.
+        Existing functions using price
+        will still get retail price.
         */
 
         this.price =
             this.retailPrice;
 
         /*
-        Wholesale price retail price-ஐ விட அதிகமாக
-        இருக்கக்கூடாது.
+        Wholesale price must not be
+        greater than retail price.
         */
 
         if (
@@ -203,8 +223,23 @@ productSchema.pre(
                 "Wholesale price cannot be greater than retail price"
             );
         }
+
+        /*
+        Clean net content value
+        */
+
+        if (
+            this.netContent !== undefined &&
+            this.netContent !== null
+        ) {
+            this.netContent =
+                String(
+                    this.netContent
+                ).trim();
+        }
     }
 );
+
 
 /*
 ========================================
@@ -219,6 +254,7 @@ productSchema.pre(
             this.status === "active";
     }
 );
+
 
 module.exports =
     mongoose.model(
