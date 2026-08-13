@@ -708,6 +708,65 @@ footer {
     border-top: 1px solid rgba(255, 255, 255, 0.15);
 }
 
+/* =========================================
+   PROFILE FORM ADDITIONAL IMPROVEMENTS
+========================================= */
+
+#profileStreetAddress {
+    text-overflow: ellipsis;
+}
+
+.input-box.editing input:not(:disabled) {
+    background: #ffffff;
+    border-color: #b8c8e0;
+}
+
+.input-box.editing > i {
+    color: var(--primary);
+}
+
+#profileDetails .form-grid {
+    align-items: start;
+}
+
+#profileDetails .form-group {
+    min-width: 0;
+}
+
+#profileDetails .input-box input {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#profilePhone,
+#profilePostalCode {
+    letter-spacing: 0.2px;
+}
+
+
+/* Make address section feel balanced */
+
+@media (min-width: 851px) {
+
+    #profileDetails .form-group:nth-last-child(5) {
+        grid-column: 1 / -1;
+    }
+}
+
+
+/* Small screens */
+
+@media (max-width: 850px) {
+
+    #profileDetails .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    #profileDetails .form-group {
+        grid-column: auto !important;
+    }
+}
+
 /* Responsive */
 
 @media (max-width: 1050px) {

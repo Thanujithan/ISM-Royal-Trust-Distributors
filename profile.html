@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -17,36 +19,61 @@
         My Profile | ISM ROYAL TRUST DISTRIBUTORS
     </title>
 
-    <link rel="stylesheet" href="css/profile.css">
-    <link rel="stylesheet" href="css/navbar-auth.css">
+
+    <link
+        rel="stylesheet"
+        href="css/profile.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/navbar-auth.css"
+    >
 
     <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     >
+
 </head>
+
 
 <body>
 
-    <!-- Header -->
+
+    <!-- =====================================
+         HEADER
+    ====================================== -->
+
     <header>
+
         <div class="container">
 
+
             <div class="logo">
+
                 <a href="index.html">
+
                     <img
                         src="images/logo.png"
                         alt="ISM Royal Trust Distributors Logo"
                     >
+
                 </a>
 
                 <h1>
                     ISM ROYAL TRUST DISTRIBUTORS
                 </h1>
+
             </div>
 
+
             <nav>
-                <ul class="nav-links" id="navLinks">
+
+                <ul
+                    class="nav-links"
+                    id="navLinks"
+                >
 
                     <li>
                         <a href="index.html">
@@ -79,11 +106,14 @@
                     </li>
 
                     <li>
+
                         <a
                             href="cart.html"
                             class="cart-nav-link"
                         >
+
                             <i class="fas fa-cart-shopping"></i>
+
                             Cart
 
                             <span
@@ -92,21 +122,33 @@
                             >
                                 0
                             </span>
+
                         </a>
+
                     </li>
 
+
                     <li id="authNavItem">
+
                         <a
                             href="login.html"
                             class="btn-nav-login"
                         >
+
                             <i class="fas fa-sign-in-alt"></i>
-                            <span>Login</span>
+
+                            <span>
+                                Login
+                            </span>
+
                         </a>
+
                     </li>
 
                 </ul>
+
             </nav>
+
 
             <button
                 type="button"
@@ -114,15 +156,24 @@
                 id="menuToggle"
                 aria-label="Open navigation menu"
             >
+
                 <i class="fas fa-bars"></i>
+
             </button>
 
+
         </div>
+
     </header>
 
 
-    <!-- Page Banner -->
+
+    <!-- =====================================
+         PAGE BANNER
+    ====================================== -->
+
     <section class="page-banner">
+
         <div class="container">
 
             <h1>
@@ -134,19 +185,32 @@
             </p>
 
         </div>
+
     </section>
 
 
-    <!-- Profile Section -->
+
+    <!-- =====================================
+         PROFILE SECTION
+    ====================================== -->
+
     <main class="profile-section">
+
         <div class="container">
+
 
             <div class="profile-layout">
 
-                <!-- Sidebar -->
+
+                <!-- =================================
+                     SIDEBAR
+                ================================== -->
+
                 <aside class="profile-sidebar">
 
+
                     <div class="profile-avatar">
+
 
                         <div
                             class="avatar-circle"
@@ -155,13 +219,16 @@
                             U
                         </div>
 
+
                         <h2 id="sidebarUserName">
                             Loading...
                         </h2>
 
+
                         <p id="sidebarUserEmail">
                             Loading...
                         </p>
+
 
                         <span
                             class="role-badge"
@@ -170,43 +237,68 @@
                             Customer
                         </span>
 
+
                     </div>
 
+
                     <nav class="profile-menu">
+
 
                         <a
                             href="#profileDetails"
                             class="active"
                         >
+
                             <i class="fas fa-user"></i>
+
                             My Profile
+
                         </a>
+
 
                         <a href="my-orders.html">
+
                             <i class="fas fa-box"></i>
+
                             My Orders
+
                         </a>
 
+
                         <a href="#changePasswordSection">
+
                             <i class="fas fa-lock"></i>
+
                             Change Password
+
                         </a>
+
 
                         <button
                             type="button"
                             id="profileLogoutButton"
                         >
+
                             <i class="fas fa-right-from-bracket"></i>
+
                             Logout
+
                         </button>
 
+
                     </nav>
+
 
                 </aside>
 
 
-                <!-- Main Profile Content -->
+
+                <!-- =================================
+                     MAIN PROFILE CONTENT
+                ================================== -->
+
                 <section class="profile-content">
+
 
                     <div
                         id="profileAlert"
@@ -216,71 +308,107 @@
                     ></div>
 
 
-                    <!-- Statistics -->
+
+                    <!-- =================================
+                         STATISTICS
+                    ================================== -->
+
                     <div class="profile-stats">
+
 
                         <article class="profile-stat-card">
 
                             <div class="stat-icon">
+
                                 <i class="fas fa-box"></i>
+
                             </div>
 
+
                             <div>
-                                <p>Total Orders</p>
+
+                                <p>
+                                    Total Orders
+                                </p>
 
                                 <h2 id="totalOrders">
                                     0
                                 </h2>
+
                             </div>
 
                         </article>
 
 
+
                         <article class="profile-stat-card">
 
                             <div class="stat-icon">
+
                                 <i class="fas fa-money-bill-wave"></i>
+
                             </div>
 
+
                             <div>
-                                <p>Total Spent</p>
+
+                                <p>
+                                    Total Spent
+                                </p>
 
                                 <h2 id="totalSpent">
                                     LKR 0.00
                                 </h2>
+
                             </div>
 
                         </article>
+
 
 
                         <article class="profile-stat-card">
 
                             <div class="stat-icon">
+
                                 <i class="fas fa-truck"></i>
+
                             </div>
 
+
                             <div>
-                                <p>Delivered Orders</p>
+
+                                <p>
+                                    Delivered Orders
+                                </p>
 
                                 <h2 id="deliveredOrders">
                                     0
                                 </h2>
+
                             </div>
 
                         </article>
 
+
                     </div>
 
 
-                    <!-- Personal Information -->
+
+                    <!-- =================================
+                         PERSONAL INFORMATION
+                    ================================== -->
+
                     <section
                         class="profile-card"
                         id="profileDetails"
                     >
 
+
                         <div class="card-header">
 
+
                             <div>
+
                                 <h2>
                                     Personal Information
                                 </h2>
@@ -288,29 +416,47 @@
                                 <p>
                                     View and update your account details.
                                 </p>
+
                             </div>
+
 
                             <button
                                 type="button"
                                 class="edit-profile-button"
                                 id="editProfileButton"
                             >
+
                                 <i class="fas fa-pen"></i>
+
                                 Edit Profile
+
                             </button>
+
 
                         </div>
 
 
-                        <form id="profileForm" novalidate>
+
+                        <form
+                            id="profileForm"
+                            novalidate
+                        >
+
 
                             <div class="form-grid">
 
+
+                                <!-- FULL NAME -->
+
                                 <div class="form-group">
 
+
                                     <label for="profileName">
+
                                         Full Name
+
                                     </label>
+
 
                                     <div class="input-box">
 
@@ -325,19 +471,28 @@
 
                                     </div>
 
+
                                     <small
                                         class="error-message"
                                         id="profileNameError"
                                     ></small>
 
+
                                 </div>
 
 
+
+                                <!-- EMAIL -->
+
                                 <div class="form-group">
 
+
                                     <label for="profileEmail">
+
                                         Email Address
+
                                     </label>
+
 
                                     <div class="input-box">
 
@@ -352,19 +507,65 @@
 
                                     </div>
 
+
                                     <small
                                         class="error-message"
                                         id="profileEmailError"
                                     ></small>
 
+
                                 </div>
 
 
+
+                                <!-- PHONE -->
+
                                 <div class="form-group">
 
-                                    <label for="profileRole">
-                                        Account Role
+
+                                    <label for="profilePhone">
+
+                                        Phone Number
+
                                     </label>
+
+
+                                    <div class="input-box">
+
+                                        <i class="fas fa-phone"></i>
+
+                                        <input
+                                            type="tel"
+                                            id="profilePhone"
+                                            placeholder="Enter phone number"
+                                            autocomplete="tel"
+                                            disabled
+                                        >
+
+                                    </div>
+
+
+                                    <small
+                                        class="error-message"
+                                        id="profilePhoneError"
+                                    ></small>
+
+
+                                </div>
+
+
+
+                                <!-- ROLE -->
+
+                                <div class="form-group">
+
+
+                                    <label for="profileRole">
+
+                                        Account Role
+
+                                    </label>
+
 
                                     <div class="input-box">
 
@@ -378,14 +579,22 @@
 
                                     </div>
 
+
                                 </div>
 
 
+
+                                <!-- JOINED DATE -->
+
                                 <div class="form-group">
 
+
                                     <label for="profileJoinedDate">
+
                                         Joined Date
+
                                     </label>
+
 
                                     <div class="input-box">
 
@@ -399,46 +608,194 @@
 
                                     </div>
 
+
                                 </div>
+
+
+
+                                <!-- STREET ADDRESS -->
+
+                                <div class="form-group">
+
+
+                                    <label for="profileStreetAddress">
+
+                                        Street Address
+
+                                    </label>
+
+
+                                    <div class="input-box">
+
+                                        <i class="fas fa-location-dot"></i>
+
+                                        <input
+                                            type="text"
+                                            id="profileStreetAddress"
+                                            placeholder="Enter street address"
+                                            autocomplete="street-address"
+                                            disabled
+                                        >
+
+                                    </div>
+
+
+                                </div>
+
+
+
+                                <!-- CITY -->
+
+                                <div class="form-group">
+
+
+                                    <label for="profileCity">
+
+                                        City
+
+                                    </label>
+
+
+                                    <div class="input-box">
+
+                                        <i class="fas fa-city"></i>
+
+                                        <input
+                                            type="text"
+                                            id="profileCity"
+                                            placeholder="Enter city"
+                                            autocomplete="address-level2"
+                                            disabled
+                                        >
+
+                                    </div>
+
+
+                                </div>
+
+
+
+                                <!-- DISTRICT -->
+
+                                <div class="form-group">
+
+
+                                    <label for="profileDistrict">
+
+                                        District
+
+                                    </label>
+
+
+                                    <div class="input-box">
+
+                                        <i class="fas fa-map"></i>
+
+                                        <input
+                                            type="text"
+                                            id="profileDistrict"
+                                            placeholder="Enter district"
+                                            autocomplete="address-level1"
+                                            disabled
+                                        >
+
+                                    </div>
+
+
+                                </div>
+
+
+
+                                <!-- POSTAL CODE -->
+
+                                <div class="form-group">
+
+
+                                    <label for="profilePostalCode">
+
+                                        Postal Code
+
+                                    </label>
+
+
+                                    <div class="input-box">
+
+                                        <i class="fas fa-envelopes-bulk"></i>
+
+                                        <input
+                                            type="text"
+                                            id="profilePostalCode"
+                                            placeholder="Enter postal code"
+                                            autocomplete="postal-code"
+                                            disabled
+                                        >
+
+                                    </div>
+
+
+                                </div>
+
 
                             </div>
 
+
+
+                            <!-- =================================
+                                 PROFILE ACTIONS
+                            ================================== -->
 
                             <div
                                 class="profile-form-actions"
                                 id="profileFormActions"
                             >
 
+
                                 <button
                                     type="button"
                                     class="cancel-edit-button"
                                     id="cancelEditButton"
                                 >
+
                                     Cancel
+
                                 </button>
+
 
                                 <button
                                     type="submit"
                                     class="save-profile-button"
                                     id="saveProfileButton"
                                 >
+
                                     <i class="fas fa-check"></i>
+
                                     Save Changes
+
                                 </button>
+
 
                             </div>
 
+
                         </form>
+
 
                     </section>
 
 
-                    <!-- Recent Orders -->
+
+                    <!-- =================================
+                         RECENT ORDERS
+                    ================================== -->
+
                     <section class="profile-card">
+
 
                         <div class="card-header">
 
+
                             <div>
+
                                 <h2>
                                     Recent Orders
                                 </h2>
@@ -446,17 +803,24 @@
                                 <p>
                                     Your latest placed orders.
                                 </p>
+
                             </div>
+
 
                             <a
                                 href="my-orders.html"
                                 class="view-all-orders"
                             >
+
                                 View All Orders
+
                                 <i class="fas fa-arrow-right"></i>
+
                             </a>
 
+
                         </div>
+
 
 
                         <div
@@ -464,6 +828,7 @@
                             id="recentOrdersList"
                             aria-live="polite"
                         >
+
 
                             <div class="profile-loading">
 
@@ -475,20 +840,29 @@
 
                             </div>
 
+
                         </div>
+
 
                     </section>
 
 
-                    <!-- Change Password -->
+
+                    <!-- =================================
+                         CHANGE PASSWORD
+                    ================================== -->
+
                     <section
                         class="profile-card"
                         id="changePasswordSection"
                     >
 
+
                         <div class="card-header">
 
+
                             <div>
+
                                 <h2>
                                     Change Password
                                 </h2>
@@ -496,9 +870,12 @@
                                 <p>
                                     Update your account password securely.
                                 </p>
+
                             </div>
 
+
                         </div>
+
 
 
                         <form
@@ -506,13 +883,21 @@
                             novalidate
                         >
 
+
                             <div class="form-grid">
+
+
+                                <!-- CURRENT PASSWORD -->
 
                                 <div class="form-group full-width">
 
+
                                     <label for="currentPassword">
+
                                         Current Password
+
                                     </label>
+
 
                                     <div class="input-box">
 
@@ -525,30 +910,43 @@
                                             autocomplete="current-password"
                                         >
 
+
                                         <button
                                             type="button"
                                             class="password-toggle"
                                             data-target="currentPassword"
                                             aria-label="Show current password"
                                         >
+
                                             <i class="fas fa-eye"></i>
+
                                         </button>
 
+
                                     </div>
+
 
                                     <small
                                         class="error-message"
                                         id="currentPasswordError"
                                     ></small>
 
+
                                 </div>
 
 
+
+                                <!-- NEW PASSWORD -->
+
                                 <div class="form-group">
 
+
                                     <label for="newPassword">
+
                                         New Password
+
                                     </label>
+
 
                                     <div class="input-box">
 
@@ -561,30 +959,43 @@
                                             autocomplete="new-password"
                                         >
 
+
                                         <button
                                             type="button"
                                             class="password-toggle"
                                             data-target="newPassword"
                                             aria-label="Show new password"
                                         >
+
                                             <i class="fas fa-eye"></i>
+
                                         </button>
 
+
                                     </div>
+
 
                                     <small
                                         class="error-message"
                                         id="newPasswordError"
                                     ></small>
 
+
                                 </div>
 
 
+
+                                <!-- CONFIRM PASSWORD -->
+
                                 <div class="form-group">
 
+
                                     <label for="confirmPassword">
+
                                         Confirm Password
+
                                     </label>
+
 
                                     <div class="input-box">
 
@@ -597,159 +1008,238 @@
                                             autocomplete="new-password"
                                         >
 
+
                                         <button
                                             type="button"
                                             class="password-toggle"
                                             data-target="confirmPassword"
                                             aria-label="Show confirmed password"
                                         >
+
                                             <i class="fas fa-eye"></i>
+
                                         </button>
 
+
                                     </div>
+
 
                                     <small
                                         class="error-message"
                                         id="confirmPasswordError"
                                     ></small>
 
+
                                 </div>
+
 
                             </div>
 
 
+
                             <div class="password-form-actions">
+
 
                                 <button
                                     type="submit"
                                     class="change-password-button"
                                     id="changePasswordButton"
                                 >
+
                                     <i class="fas fa-lock"></i>
+
                                     Update Password
+
                                 </button>
+
 
                             </div>
 
+
                         </form>
+
 
                     </section>
 
+
                 </section>
+
 
             </div>
 
+
         </div>
+
     </main>
 
 
-    <!-- Footer -->
+
+    <!-- =====================================
+         FOOTER
+    ====================================== -->
+
     <footer>
+
 
         <div class="container footer-content">
 
+
             <div class="footer-logo">
+
 
                 <img
                     src="images/logo.png"
                     alt="ISM Royal Trust Distributors Logo"
                 >
 
+
                 <h2>
                     ISM ROYAL TRUST DISTRIBUTORS
                 </h2>
+
 
                 <p>
                     Your trusted distribution partner across Sri Lanka.
                 </p>
 
+
             </div>
 
 
+
             <div class="footer-links">
+
 
                 <h3>
                     Quick Links
                 </h3>
 
+
                 <ul>
 
+
                     <li>
+
                         <a href="index.html">
                             Home
                         </a>
+
                     </li>
 
+
                     <li>
+
                         <a href="about.html">
                             About
                         </a>
+
                     </li>
 
+
                     <li>
+
                         <a href="products.html">
                             Products
                         </a>
+
                     </li>
 
+
                     <li>
+
                         <a href="cart.html">
                             Cart
                         </a>
+
                     </li>
 
+
                     <li>
+
                         <a href="my-orders.html">
                             My Orders
                         </a>
+
                     </li>
 
+
                 </ul>
+
 
             </div>
 
 
+
             <div class="footer-contact">
+
 
                 <h3>
                     Contact
                 </h3>
 
+
                 <p>
+
                     <i class="fas fa-phone"></i>
+
                     +94 75 769 3155
+
                 </p>
 
+
                 <p>
+
                     <i class="fas fa-envelope"></i>
+
                     ismdistributors1030@gmail.com
+
                 </p>
 
+
                 <p>
+
                     <i class="fas fa-location-dot"></i>
+
                     No. 29, Korakkovil Road,
                     Sammanthurai, Sri Lanka
+
                 </p>
+
 
             </div>
 
+
         </div>
+
 
 
         <div class="copyright">
 
+
             <p>
+
                 &copy; 2026 ISM ROYAL TRUST DISTRIBUTORS
                 (Pvt) Ltd. All Rights Reserved.
+
             </p>
 
+
         </div>
+
 
     </footer>
 
 
+
+    <!-- =====================================
+         SCRIPTS
+    ====================================== -->
+
     <script src="js/profile.js"></script>
+
     <script src="js/auth-navbar.js"></script>
 
+
 </body>
+
 </html>
