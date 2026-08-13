@@ -1,75 +1,160 @@
-const API_BASE_URL = "http://localhost:5000/api";
-let monthlyRevenueChartInstance = null;
-let orderStatusChartInstance = null;
-let monthlyOrdersChartInstance = null;
+const API_BASE_URL =
+    "http://localhost:5000/api";
 
-document.addEventListener("DOMContentLoaded", () => {
-    initializeDashboard();
-});
+
+let monthlyRevenueChartInstance =
+    null;
+
+let orderStatusChartInstance =
+    null;
+
+let monthlyOrdersChartInstance =
+    null;
+
+
+/* =================================
+   PAGE LOAD
+================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        initializeDashboard();
+    }
+);
+
+
+/* =================================
+   INITIALIZE DASHBOARD
+================================= */
 
 async function initializeDashboard() {
+
     loadAdminInformation();
+
     initializeSidebar();
+
     initializeLogout();
 
-    const token = getAdminToken();
-    const admin = getStoredAdmin();
 
-    if (!token || !admin) {
-        window.location.href = "../login.html";
-        return;
-    }
+    const token =
+        getAdminToken();
+
+
+    const admin =
+        getStoredAdmin();
+
 
     if (
-        String(admin.role || "").toLowerCase() !==
-        "admin"
+        !token ||
+        !admin
     ) {
-        clearAuthenticationData();
-        window.location.href = "../login.html";
+
+        window.location.href =
+            "../login.html";
+
         return;
     }
+
+
+    if (
+        String(
+            admin.role ||
+            ""
+        ).toLowerCase() !==
+        "admin"
+    ) {
+
+        clearAuthenticationData();
+
+        window.location.href =
+            "../login.html";
+
+        return;
+    }
+
 
     await loadDashboard();
 }
+
 
 /* =================================
    AUTH
 ================================= */
 
 function getAdminToken() {
+
     return (
-        localStorage.getItem("token") ||
-        sessionStorage.getItem("token") ||
-        localStorage.getItem("adminToken") ||
-        sessionStorage.getItem("adminToken")
+        localStorage.getItem(
+            "token"
+        ) ||
+
+        sessionStorage.getItem(
+            "token"
+        ) ||
+
+        localStorage.getItem(
+            "adminToken"
+        ) ||
+
+        sessionStorage.getItem(
+            "adminToken"
+        )
     );
 }
 
+
 function getStoredAdmin() {
+
     const storedUser =
-        localStorage.getItem("user") ||
-        sessionStorage.getItem("user") ||
-        localStorage.getItem("adminUser") ||
-        sessionStorage.getItem("adminUser");
+        localStorage.getItem(
+            "user"
+        ) ||
+
+        sessionStorage.getItem(
+            "user"
+        ) ||
+
+        localStorage.getItem(
+            "adminUser"
+        ) ||
+
+        sessionStorage.getItem(
+            "adminUser"
+        );
+
 
     if (!storedUser) {
+
         return null;
     }
 
+
     try {
-        return JSON.parse(storedUser);
+
+        return JSON.parse(
+            storedUser
+        );
+
+
     } catch (error) {
+
         console.error(
             "Invalid stored admin data:",
             error
         );
 
+
         clearAuthenticationData();
+
         return null;
     }
 }
 
+
 function clearAuthenticationData() {
+
     const keys = [
         "token",
         "user",
@@ -78,142 +163,272 @@ function clearAuthenticationData() {
         "redirectAfterLogin"
     ];
 
-    keys.forEach((key) => {
-        localStorage.removeItem(key);
-        sessionStorage.removeItem(key);
-    });
+
+    keys.forEach(
+        (key) => {
+
+            localStorage.removeItem(
+                key
+            );
+
+            sessionStorage.removeItem(
+                key
+            );
+        }
+    );
 }
 
+
+/* =================================
+   ADMIN INFORMATION
+================================= */
+
 function loadAdminInformation() {
-    const admin = getStoredAdmin();
+
+    const admin =
+        getStoredAdmin();
+
 
     if (!admin) {
+
         return;
     }
 
+
     setText(
         "adminName",
-        admin.name || "Administrator"
+        admin.name ||
+        "Administrator"
     );
+
 
     setText(
         "adminEmail",
-        admin.email || "Admin"
+        admin.email ||
+        "Admin"
     );
 }
 
+
+/* =================================
+   LOGOUT
+================================= */
+
 function initializeLogout() {
+
     document
-        .getElementById("logoutButton")
-        ?.addEventListener("click", () => {
-            const confirmed = window.confirm(
-                "Are you sure you want to logout?"
-            );
+        .getElementById(
+            "logoutButton"
+        )
+        ?.addEventListener(
+            "click",
+            () => {
 
-            if (!confirmed) {
-                return;
+                const confirmed =
+                    window.confirm(
+                        "Are you sure you want to logout?"
+                    );
+
+
+                if (!confirmed) {
+
+                    return;
+                }
+
+
+                clearAuthenticationData();
+
+
+                window.location.href =
+                    "../login.html";
             }
-
-            clearAuthenticationData();
-            window.location.href = "../login.html";
-        });
+        );
 }
+
 
 /* =================================
    SIDEBAR
 ================================= */
 
 function initializeSidebar() {
+
     const menuButton =
-        document.getElementById("menuButton");
+        document.getElementById(
+            "menuButton"
+        );
+
 
     const sidebar =
-        document.getElementById("sidebar");
+        document.getElementById(
+            "sidebar"
+        );
 
-    menuButton?.addEventListener("click", () => {
-        sidebar?.classList.toggle("open");
-    });
+
+    menuButton?.addEventListener(
+        "click",
+        () => {
+
+            sidebar?.classList.toggle(
+                "open"
+            );
+        }
+    );
+
 
     document
-        .querySelectorAll(".sidebar-nav a")
-        .forEach((link) => {
-            link.addEventListener("click", () => {
-                sidebar?.classList.remove("open");
-            });
-        });
+        .querySelectorAll(
+            ".sidebar-nav a"
+        )
+        .forEach(
+            (link) => {
+
+                link.addEventListener(
+                    "click",
+                    () => {
+
+                        sidebar?.classList.remove(
+                            "open"
+                        );
+                    }
+                );
+            }
+        );
 }
+
 
 /* =================================
    LOAD DASHBOARD
 ================================= */
 
 async function loadDashboard() {
+
     setDashboardLoading();
 
+
     try {
-        const response = await fetch(
-            `${API_BASE_URL}/dashboard`,
-            {
-                headers: {
-                    Authorization:
-                        `Bearer ${getAdminToken()}`
+
+        const response =
+            await fetch(
+                `${API_BASE_URL}/dashboard`,
+                {
+                    headers: {
+
+                        Authorization:
+                            `Bearer ${getAdminToken()}`
+                    }
                 }
-            }
-        );
+            );
+
 
         const result =
-            await parseResponse(response);
+            await parseResponse(
+                response
+            );
+
 
         if (
             response.status === 401 ||
             response.status === 403
         ) {
+
             clearAuthenticationData();
-            window.location.href = "../login.html";
+
+
+            window.location.href =
+                "../login.html";
+
+
             return;
         }
 
+
         if (!response.ok) {
+
             throw new Error(
                 result.message ||
                 "Unable to load dashboard."
             );
         }
 
+
         const statistics =
-            result.statistics || {};
+            result.statistics ||
+            {};
+
 
         const recent =
-            result.recent || {};
+            result.recent ||
+            {};
+
 
         const charts =
-            result.charts || {};
+            result.charts ||
+            {};
 
-        renderStatistics(statistics);
-        renderDashboardCharts(charts);
+
+        /* =================================
+           INVENTORY DATA
+        ================================= */
+
+        const inventory =
+            result.inventory ||
+            {};
+
+
+        /* =================================
+           RENDER DASHBOARD
+        ================================= */
+
+        renderStatistics(
+            statistics
+        );
+
+
+        renderInventory(
+            inventory,
+            statistics
+        );
+
+
+        renderDashboardCharts(
+            charts
+        );
+
 
         renderRecentOrders(
-            Array.isArray(recent.orders)
+            Array.isArray(
+                recent.orders
+            )
                 ? recent.orders
                 : []
         );
 
+
         renderRecentProducts(
-            Array.isArray(recent.products)
+            Array.isArray(
+                recent.products
+            )
                 ? recent.products
                 : []
         );
 
+
         renderRecentMessages(
-            Array.isArray(recent.messages)
+            Array.isArray(
+                recent.messages
+            )
                 ? recent.messages
                 : []
         );
+
+
     } catch (error) {
+
         console.error(
             "Dashboard load error:",
             error
         );
+
 
         showDashboardAlert(
             error.message ||
@@ -221,271 +436,764 @@ async function loadDashboard() {
             "error"
         );
 
-        renderStatistics({});
-        renderRecentOrders([]);
-        renderRecentProducts([]);
-        renderRecentMessages([]);
+
+        renderStatistics(
+            {}
+        );
+
+
+        renderInventory(
+            {},
+            {}
+        );
+
+
+        renderRecentOrders(
+            []
+        );
+
+
+        renderRecentProducts(
+            []
+        );
+
+
+        renderRecentMessages(
+            []
+        );
     }
 }
+
 
 /* =================================
    STATISTICS
 ================================= */
 
-function renderStatistics(statistics) {
+function renderStatistics(
+    statistics
+) {
+
     setText(
         "totalProducts",
-        String(statistics.totalProducts || 0)
+        String(
+            statistics.totalProducts ||
+            0
+        )
     );
+
 
     setText(
         "totalOrders",
-        String(statistics.totalOrders || 0)
+        String(
+            statistics.totalOrders ||
+            0
+        )
     );
+
 
     setText(
         "totalUsers",
-        String(statistics.totalUsers || 0)
+        String(
+            statistics.totalUsers ||
+            0
+        )
     );
+
 
     setText(
         "totalRevenue",
         formatCurrency(
-            statistics.totalRevenue || 0
+            statistics.totalRevenue ||
+            0
         )
     );
 
+
     setText(
         "pendingOrders",
-        String(statistics.pendingOrders || 0)
+        String(
+            statistics.pendingOrders ||
+            0
+        )
     );
+
 
     setText(
         "processingOrders",
-        String(statistics.processingOrders || 0)
+        String(
+            statistics.processingOrders ||
+            0
+        )
     );
+
 
     setText(
         "deliveredOrders",
-        String(statistics.deliveredOrders || 0)
+        String(
+            statistics.deliveredOrders ||
+            0
+        )
     );
+
 
     setText(
         "unreadMessages",
-        String(statistics.unreadMessages || 0)
+        String(
+            statistics.unreadMessages ||
+            0
+        )
     );
 }
+
+
+/* =================================
+   INVENTORY ALERTS
+================================= */
+
+function renderInventory(
+    inventory,
+    statistics
+) {
+
+    const lowStockProducts =
+        Array.isArray(
+            inventory.lowStockProducts
+        )
+            ? inventory.lowStockProducts
+            : [];
+
+
+    const outOfStockProducts =
+        Array.isArray(
+            inventory.outOfStockProducts
+        )
+            ? inventory.outOfStockProducts
+            : [];
+
+
+    const lowStockCount =
+        Number(
+            statistics.lowStockCount ??
+            lowStockProducts.length
+        );
+
+
+    const outOfStockCount =
+        Number(
+            statistics.outOfStockCount ??
+            outOfStockProducts.length
+        );
+
+
+    setText(
+        "lowStockCount",
+        String(
+            lowStockCount
+        )
+    );
+
+
+    setText(
+        "outOfStockCount",
+        String(
+            outOfStockCount
+        )
+    );
+
+
+    setText(
+        "lowStockBadge",
+        String(
+            lowStockCount
+        )
+    );
+
+
+    setText(
+        "outOfStockBadge",
+        String(
+            outOfStockCount
+        )
+    );
+
+
+    renderStockProductList(
+        "lowStockProducts",
+        lowStockProducts,
+        "low"
+    );
+
+
+    renderStockProductList(
+        "outOfStockProducts",
+        outOfStockProducts,
+        "out"
+    );
+}
+
+
+/* =================================
+   RENDER STOCK PRODUCT LIST
+================================= */
+
+function renderStockProductList(
+    containerId,
+    products,
+    type
+) {
+
+    const container =
+        document.getElementById(
+            containerId
+        );
+
+
+    if (!container) {
+
+        return;
+    }
+
+
+    if (!products.length) {
+
+        container.innerHTML = `
+            <div class="inventory-empty">
+
+                <i class="fas fa-circle-check"></i>
+
+                <div>
+
+                    <strong>
+                        ${
+                            type === "low"
+                                ? "No low stock products"
+                                : "No out of stock products"
+                        }
+                    </strong>
+
+                    <p>
+                        Inventory levels are currently healthy.
+                    </p>
+
+                </div>
+
+            </div>
+        `;
+
+
+        return;
+    }
+
+
+    container.innerHTML =
+        products
+            .slice(
+                0,
+                8
+            )
+            .map(
+                (product) => {
+
+                    const name =
+                        product.name ||
+                        "Unnamed Product";
+
+
+                    const category =
+                        product.category ||
+                        "No category";
+
+
+                    const stock =
+                        Number(
+                            product.stock ||
+                            0
+                        );
+
+
+                    const price =
+                        Number(
+                            product.retailPrice ??
+                            product.price ??
+                            0
+                        );
+
+
+                    const netContent =
+                        String(
+                            product.netContent ||
+                            ""
+                        ).trim();
+
+
+                    return `
+                        <div class="inventory-product-item">
+
+                            <div class="inventory-product-info">
+
+                                <div class="inventory-product-icon">
+
+                                    <i class="fas fa-box"></i>
+
+                                </div>
+
+
+                                <div>
+
+                                    <h4>
+                                        ${escapeHTML(
+                                            name
+                                        )}
+                                    </h4>
+
+
+                                    <p>
+
+                                        ${escapeHTML(
+                                            category
+                                        )}
+
+                                        ${
+                                            netContent
+                                                ? ` · ${escapeHTML(
+                                                    netContent
+                                                )}`
+                                                : ""
+                                        }
+
+                                    </p>
+
+
+                                    <small>
+
+                                        ${formatCurrency(
+                                            price
+                                        )}
+
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+
+                            <div
+                                class="
+                                    inventory-stock-value
+                                    ${
+                                        type === "out"
+                                            ? "stock-out"
+                                            : "stock-low"
+                                    }
+                                "
+                            >
+
+                                ${
+                                    type === "out"
+
+                                        ? `
+                                            <i class="fas fa-circle-xmark"></i>
+                                            Out of Stock
+                                          `
+
+                                        : `
+                                            <i class="fas fa-triangle-exclamation"></i>
+                                            Only ${stock} left
+                                          `
+                                }
+
+                            </div>
+
+                        </div>
+                    `;
+                }
+            )
+            .join("");
+}
+
 
 /* =================================
    RECENT ORDERS
 ================================= */
 
-function renderRecentOrders(orders) {
+function renderRecentOrders(
+    orders
+) {
+
     const container =
-        document.getElementById("recentOrders");
+        document.getElementById(
+            "recentOrders"
+        );
+
 
     if (!container) {
+
         return;
     }
 
+
     if (!orders.length) {
+
         container.innerHTML = `
             <p class="empty-message">
                 No orders found.
             </p>
         `;
+
+
         return;
     }
 
-    container.innerHTML = orders
-        .slice(0, 5)
-        .map((order) => {
-            const orderNumber =
-                order.orderNumber ||
-                `#${String(order._id || "")
-                    .slice(-8)
-                    .toUpperCase()}`;
 
-            const customerName =
-                order.customer?.name ||
-                order.user?.name ||
-                "Unknown Customer";
+    container.innerHTML =
+        orders
+            .slice(
+                0,
+                5
+            )
+            .map(
+                (order) => {
 
-            const status =
-                normalizeStatus(
-                    order.orderStatus
-                );
+                    const orderNumber =
+                        order.orderNumber ||
 
-            return `
-                <div class="recent-item">
+                        `#${String(
+                            order._id ||
+                            ""
+                        )
+                            .slice(-8)
+                            .toUpperCase()}`;
 
-                    <div>
-                        <h3>
-                            ${escapeHTML(orderNumber)}
-                        </h3>
 
-                        <p>
-                            ${escapeHTML(customerName)}
-                            ·
-                            ${escapeHTML(
-                                formatDate(order.createdAt)
-                            )}
-                        </p>
-                    </div>
+                    const customerName =
+                        order.customer?.name ||
+                        order.user?.name ||
+                        "Unknown Customer";
 
-                    <div class="dashboard-recent-right">
 
-                        <strong>
-                            ${formatCurrency(
-                                order.totalAmount
-                            )}
-                        </strong>
+                    const status =
+                        normalizeStatus(
+                            order.orderStatus
+                        );
 
-                        <span
-                            class="admin-status-badge ${status}"
-                        >
-                            ${escapeHTML(
-                                formatStatus(status)
-                            )}
-                        </span>
 
-                    </div>
+                    return `
+                        <div class="recent-item">
 
-                </div>
-            `;
-        })
-        .join("");
+                            <div>
+
+                                <h3>
+                                    ${escapeHTML(
+                                        orderNumber
+                                    )}
+                                </h3>
+
+                                <p>
+
+                                    ${escapeHTML(
+                                        customerName
+                                    )}
+
+                                    ·
+
+                                    ${escapeHTML(
+                                        formatDate(
+                                            order.createdAt
+                                        )
+                                    )}
+
+                                </p>
+
+                            </div>
+
+
+                            <div class="dashboard-recent-right">
+
+                                <strong>
+
+                                    ${formatCurrency(
+                                        order.totalAmount
+                                    )}
+
+                                </strong>
+
+
+                                <span
+                                    class="admin-status-badge ${status}"
+                                >
+
+                                    ${escapeHTML(
+                                        formatStatus(
+                                            status
+                                        )
+                                    )}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+                    `;
+                }
+            )
+            .join("");
 }
+
 
 /* =================================
    RECENT PRODUCTS
 ================================= */
 
-function renderRecentProducts(products) {
+function renderRecentProducts(
+    products
+) {
+
     const container =
-        document.getElementById("recentProducts");
+        document.getElementById(
+            "recentProducts"
+        );
+
 
     if (!container) {
+
         return;
     }
 
+
     if (!products.length) {
+
         container.innerHTML = `
             <p class="empty-message">
                 No products found.
             </p>
         `;
+
+
         return;
     }
 
-    container.innerHTML = products
-        .slice(0, 5)
-        .map((product) => {
-            const name =
-                product.name ||
-                "Unnamed Product";
 
-            const category =
-                product.category ||
-                "No category";
+    container.innerHTML =
+        products
+            .slice(
+                0,
+                5
+            )
+            .map(
+                (product) => {
 
-            return `
-                <div class="recent-item">
+                    const name =
+                        product.name ||
+                        "Unnamed Product";
 
-                    <div>
-                        <h3>
-                            ${escapeHTML(name)}
-                        </h3>
 
-                        <p>
-                            ${escapeHTML(category)}
-                            · Stock:
-                            ${Number(product.stock || 0)}
-                        </p>
-                    </div>
+                    const category =
+                        product.category ||
+                        "No category";
 
-                    <strong>
-                        ${formatCurrency(product.price)}
-                    </strong>
 
-                </div>
-            `;
-        })
-        .join("");
+                    const stock =
+                        Number(
+                            product.stock ||
+                            0
+                        );
+
+
+                    const price =
+                        Number(
+                            product.retailPrice ??
+                            product.price ??
+                            0
+                        );
+
+
+                    let stockLabel = "";
+
+
+                    if (
+                        stock <= 0
+                    ) {
+
+                        stockLabel = `
+                            <span class="recent-stock-label stock-out">
+                                Out of Stock
+                            </span>
+                        `;
+
+                    } else if (
+                        stock <= 10
+                    ) {
+
+                        stockLabel = `
+                            <span class="recent-stock-label stock-low">
+                                Only ${stock} left
+                            </span>
+                        `;
+
+                    } else {
+
+                        stockLabel = `
+                            <span class="recent-stock-label stock-normal">
+                                Stock: ${stock}
+                            </span>
+                        `;
+                    }
+
+
+                    return `
+                        <div class="recent-item">
+
+                            <div>
+
+                                <h3>
+                                    ${escapeHTML(
+                                        name
+                                    )}
+                                </h3>
+
+                                <p>
+
+                                    ${escapeHTML(
+                                        category
+                                    )}
+
+                                </p>
+
+                                ${stockLabel}
+
+                            </div>
+
+
+                            <strong>
+
+                                ${formatCurrency(
+                                    price
+                                )}
+
+                            </strong>
+
+                        </div>
+                    `;
+                }
+            )
+            .join("");
 }
+
 
 /* =================================
    RECENT MESSAGES
 ================================= */
 
-function renderRecentMessages(messages) {
+function renderRecentMessages(
+    messages
+) {
+
     const container =
-        document.getElementById("recentMessages");
+        document.getElementById(
+            "recentMessages"
+        );
+
 
     if (!container) {
+
         return;
     }
 
+
     if (!messages.length) {
+
         container.innerHTML = `
             <p class="empty-message">
                 No customer messages found.
             </p>
         `;
+
+
         return;
     }
 
-    container.innerHTML = messages
-        .slice(0, 5)
-        .map((message) => {
-            const customerName =
-                message.name ||
-                "Unknown Customer";
 
-            const subject =
-                message.subject ||
-                "No subject";
+    container.innerHTML =
+        messages
+            .slice(
+                0,
+                5
+            )
+            .map(
+                (message) => {
 
-            const status =
-                String(
-                    message.status || "unread"
-                ).toLowerCase();
+                    const customerName =
+                        message.name ||
+                        "Unknown Customer";
 
-            const safeStatus =
-                status === "read"
-                    ? "read"
-                    : "unread";
 
-            return `
-                <div class="recent-item">
+                    const subject =
+                        message.subject ||
+                        "No subject";
 
-                    <div>
-                        <h3>
-                            ${escapeHTML(customerName)}
-                        </h3>
 
-                        <p>
-                            ${escapeHTML(subject)}
-                        </p>
-                    </div>
+                    const status =
+                        String(
+                            message.status ||
+                            "unread"
+                        ).toLowerCase();
 
-                    <span
-                        class="status-badge status-${safeStatus}"
-                    >
-                        ${escapeHTML(safeStatus)}
-                    </span>
 
-                </div>
-            `;
-        })
-        .join("");
+                    const safeStatus =
+                        status === "read"
+                            ? "read"
+                            : "unread";
+
+
+                    return `
+                        <div class="recent-item">
+
+                            <div>
+
+                                <h3>
+
+                                    ${escapeHTML(
+                                        customerName
+                                    )}
+
+                                </h3>
+
+
+                                <p>
+
+                                    ${escapeHTML(
+                                        subject
+                                    )}
+
+                                </p>
+
+                            </div>
+
+
+                            <span
+                                class="status-badge status-${safeStatus}"
+                            >
+
+                                ${escapeHTML(
+                                    safeStatus
+                                )}
+
+                            </span>
+
+                        </div>
+                    `;
+                }
+            )
+            .join("");
 }
+
 
 /* =================================
    UI STATES
 ================================= */
 
 function setDashboardLoading() {
+
     [
         "totalProducts",
         "totalOrders",
@@ -494,22 +1202,87 @@ function setDashboardLoading() {
         "pendingOrders",
         "processingOrders",
         "deliveredOrders",
-        "unreadMessages"
-    ].forEach((id) => {
-        setText(id, "...");
-    });
+        "unreadMessages",
+        "lowStockCount",
+        "outOfStockCount",
+        "lowStockBadge",
+        "outOfStockBadge"
+    ].forEach(
+        (id) => {
+
+            setText(
+                id,
+                "..."
+            );
+        }
+    );
+
+
+    const lowStockContainer =
+        document.getElementById(
+            "lowStockProducts"
+        );
+
+
+    const outOfStockContainer =
+        document.getElementById(
+            "outOfStockProducts"
+        );
+
+
+    if (
+        lowStockContainer
+    ) {
+
+        lowStockContainer.innerHTML = `
+            <p class="empty-message">
+                Loading low stock products...
+            </p>
+        `;
+    }
+
+
+    if (
+        outOfStockContainer
+    ) {
+
+        outOfStockContainer.innerHTML = `
+            <p class="empty-message">
+                Loading out of stock products...
+            </p>
+        `;
+    }
 }
 
-function showDashboardAlert(message, type) {
+
+/* =================================
+   DASHBOARD ALERT
+================================= */
+
+function showDashboardAlert(
+    message,
+    type
+) {
+
     const alert =
-        document.getElementById("dashboardAlert");
+        document.getElementById(
+            "dashboardAlert"
+        );
+
 
     if (!alert) {
+
         return;
     }
 
-    alert.hidden = false;
-    alert.textContent = message;
+
+    alert.hidden =
+        false;
+
+
+    alert.textContent =
+        message;
+
 
     alert.className =
         type === "success"
@@ -517,312 +1290,639 @@ function showDashboardAlert(message, type) {
             : "page-alert page-alert-error";
 }
 
+
 /* =================================
-   HELPERS
+   PARSE RESPONSE
 ================================= */
 
-async function parseResponse(response) {
+async function parseResponse(
+    response
+) {
+
     const contentType =
-        response.headers.get("content-type") || "";
+        response.headers.get(
+            "content-type"
+        ) ||
+        "";
+
 
     if (
         contentType.includes(
             "application/json"
         )
     ) {
-        return response.json();
+
+        try {
+
+            return await response.json();
+
+        } catch {
+
+            return {};
+        }
     }
+
 
     const text =
         await response.text();
 
+
     return {
+
         message:
             text ||
             `Server returned status ${response.status}.`
     };
 }
 
-function setText(id, value) {
-    const element =
-        document.getElementById(id);
 
-    if (element) {
-        element.textContent = value;
+/* =================================
+   SET TEXT
+================================= */
+
+function setText(
+    id,
+    value
+) {
+
+    const element =
+        document.getElementById(
+            id
+        );
+
+
+    if (
+        element
+    ) {
+
+        element.textContent =
+            value;
     }
 }
 
-function formatCurrency(value) {
-    return Number(value || 0).toLocaleString(
+
+/* =================================
+   FORMAT CURRENCY
+================================= */
+
+function formatCurrency(
+    value
+) {
+
+    return Number(
+        value ||
+        0
+    ).toLocaleString(
         "en-LK",
         {
-            style: "currency",
-            currency: "LKR",
-            minimumFractionDigits: 2
+
+            style:
+                "currency",
+
+            currency:
+                "LKR",
+
+            minimumFractionDigits:
+                2
         }
     );
 }
 
-function formatDate(value) {
+
+/* =================================
+   FORMAT DATE
+================================= */
+
+function formatDate(
+    value
+) {
+
     if (!value) {
+
         return "Not available";
     }
 
+
     const date =
-        new Date(value);
+        new Date(
+            value
+        );
+
 
     if (
         Number.isNaN(
             date.getTime()
         )
     ) {
+
         return "Not available";
     }
+
 
     return date.toLocaleDateString(
         "en-LK",
         {
-            year: "numeric",
-            month: "short",
-            day: "numeric"
+
+            year:
+                "numeric",
+
+            month:
+                "short",
+
+            day:
+                "numeric"
         }
     );
 }
 
-function normalizeStatus(value) {
-    return String(value || "pending")
+
+/* =================================
+   NORMALIZE STATUS
+================================= */
+
+function normalizeStatus(
+    value
+) {
+
+    return String(
+        value ||
+        "pending"
+    )
         .trim()
         .toLowerCase()
-        .replace(/\s+/g, "-");
+        .replace(
+            /\s+/g,
+            "-"
+        );
 }
 
-function formatStatus(value) {
-    return normalizeStatus(value)
+
+/* =================================
+   FORMAT STATUS
+================================= */
+
+function formatStatus(
+    value
+) {
+
+    return normalizeStatus(
+        value
+    )
         .split("-")
-        .map((word) => {
-            return (
-                word.charAt(0).toUpperCase() +
-                word.slice(1)
-            );
-        })
+        .map(
+            (word) => {
+
+                return (
+                    word
+                        .charAt(0)
+                        .toUpperCase() +
+
+                    word.slice(1)
+                );
+            }
+        )
         .join(" ");
 }
 
-function escapeHTML(value) {
-    return String(value ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+
+/* =================================
+   ESCAPE HTML
+================================= */
+
+function escapeHTML(
+    value
+) {
+
+    return String(
+        value ??
+        ""
+    )
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
 }
+
 
 /* =================================
    DASHBOARD CHARTS
 ================================= */
 
-function renderDashboardCharts(charts) {
-    if (typeof Chart === "undefined") {
-        console.error("Chart.js is not loaded.");
+function renderDashboardCharts(
+    charts
+) {
+
+    if (
+        typeof Chart ===
+        "undefined"
+    ) {
+
+        console.error(
+            "Chart.js is not loaded."
+        );
+
         return;
     }
 
-    renderMonthlyRevenueChart(charts);
-    renderOrderStatusChart(charts);
-    renderMonthlyOrdersChart(charts);
+
+    renderMonthlyRevenueChart(
+        charts
+    );
+
+
+    renderOrderStatusChart(
+        charts
+    );
+
+
+    renderMonthlyOrdersChart(
+        charts
+    );
 }
 
-function renderMonthlyRevenueChart(charts) {
+
+/* =================================
+   MONTHLY REVENUE CHART
+================================= */
+
+function renderMonthlyRevenueChart(
+    charts
+) {
+
     const canvas =
         document.getElementById(
             "monthlyRevenueChart"
         );
 
-    if (!canvas) return;
 
-    monthlyRevenueChartInstance?.destroy();
+    if (!canvas) {
+
+        return;
+    }
+
+
+    monthlyRevenueChartInstance
+        ?.destroy();
+
 
     monthlyRevenueChartInstance =
-        new Chart(canvas, {
-            type: "bar",
+        new Chart(
+            canvas,
+            {
 
-            data: {
-                labels:
-                    charts.monthlyLabels || [],
+                type:
+                    "bar",
 
-                datasets: [
-                    {
-                        label: "Revenue (LKR)",
 
-                        data:
-                            charts.monthlyRevenue ||
-                            [],
+                data: {
 
-                        borderWidth: 1,
-                        borderRadius: 8
-                    }
-                ]
-            },
+                    labels:
+                        charts.monthlyLabels ||
+                        [],
 
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
 
-                plugins: {
-                    legend: {
-                        display: false
-                    },
+                    datasets: [
+                        {
 
-                    tooltip: {
-                        callbacks: {
-                            label(context) {
-                                return formatCurrency(
-                                    context.raw
-                                );
-                            }
+                            label:
+                                "Revenue (LKR)",
+
+
+                            data:
+                                charts.monthlyRevenue ||
+                                [],
+
+
+                            borderWidth:
+                                1,
+
+
+                            borderRadius:
+                                8
                         }
-                    }
+                    ]
                 },
 
-                scales: {
-                    y: {
-                        beginAtZero: true,
 
-                        ticks: {
-                            callback(value) {
-                                return `LKR ${Number(
-                                    value
-                                ).toLocaleString(
-                                    "en-LK"
-                                )}`;
+                options: {
+
+                    responsive:
+                        true,
+
+
+                    maintainAspectRatio:
+                        false,
+
+
+                    plugins: {
+
+                        legend: {
+
+                            display:
+                                false
+                        },
+
+
+                        tooltip: {
+
+                            callbacks: {
+
+                                label(
+                                    context
+                                ) {
+
+                                    return formatCurrency(
+                                        context.raw
+                                    );
+                                }
                             }
                         }
                     },
 
-                    x: {
-                        grid: {
-                            display: false
+
+                    scales: {
+
+                        y: {
+
+                            beginAtZero:
+                                true,
+
+
+                            ticks: {
+
+                                callback(
+                                    value
+                                ) {
+
+                                    return (
+                                        `LKR ${Number(
+                                            value
+                                        ).toLocaleString(
+                                            "en-LK"
+                                        )}`
+                                    );
+                                }
+                            }
+                        },
+
+
+                        x: {
+
+                            grid: {
+
+                                display:
+                                    false
+                            }
                         }
                     }
                 }
             }
-        });
+        );
 }
 
-function renderOrderStatusChart(charts) {
+
+/* =================================
+   ORDER STATUS CHART
+================================= */
+
+function renderOrderStatusChart(
+    charts
+) {
+
     const canvas =
         document.getElementById(
             "orderStatusChart"
         );
 
-    if (!canvas) return;
 
-    orderStatusChartInstance?.destroy();
+    if (!canvas) {
 
-    const labels = Array.isArray(
-        charts.statusLabels
-    )
-        ? charts.statusLabels.map(
-              formatStatus
-          )
-        : [];
+        return;
+    }
+
+
+    orderStatusChartInstance
+        ?.destroy();
+
+
+    const labels =
+        Array.isArray(
+            charts.statusLabels
+        )
+
+            ? charts.statusLabels
+                .map(
+                    formatStatus
+                )
+
+            : [];
+
 
     orderStatusChartInstance =
-        new Chart(canvas, {
-            type: "doughnut",
+        new Chart(
+            canvas,
+            {
 
-            data: {
-                labels,
+                type:
+                    "doughnut",
 
-                datasets: [
-                    {
-                        data:
-                            charts.statusCounts || [],
 
-                        borderWidth: 2
-                    }
-                ]
-            },
+                data: {
 
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
+                    labels,
 
-                plugins: {
-                    legend: {
-                        position: "bottom",
 
-                        labels: {
-                            usePointStyle: true,
-                            padding: 16
+                    datasets: [
+                        {
+
+                            data:
+                                charts.statusCounts ||
+                                [],
+
+
+                            borderWidth:
+                                2
                         }
-                    }
+                    ]
                 },
 
-                cutout: "65%"
+
+                options: {
+
+                    responsive:
+                        true,
+
+
+                    maintainAspectRatio:
+                        false,
+
+
+                    plugins: {
+
+                        legend: {
+
+                            position:
+                                "bottom",
+
+
+                            labels: {
+
+                                usePointStyle:
+                                    true,
+
+
+                                padding:
+                                    16
+                            }
+                        }
+                    },
+
+
+                    cutout:
+                        "65%"
+                }
             }
-        });
+        );
 }
 
-function renderMonthlyOrdersChart(charts) {
+
+/* =================================
+   MONTHLY ORDERS CHART
+================================= */
+
+function renderMonthlyOrdersChart(
+    charts
+) {
+
     const canvas =
         document.getElementById(
             "monthlyOrdersChart"
         );
 
-    if (!canvas) return;
 
-    monthlyOrdersChartInstance?.destroy();
+    if (!canvas) {
+
+        return;
+    }
+
+
+    monthlyOrdersChartInstance
+        ?.destroy();
+
 
     monthlyOrdersChartInstance =
-        new Chart(canvas, {
-            type: "line",
+        new Chart(
+            canvas,
+            {
 
-            data: {
-                labels:
-                    charts.monthlyLabels || [],
+                type:
+                    "line",
 
-                datasets: [
-                    {
-                        label: "Orders",
 
-                        data:
-                            charts.monthlyOrderCount ||
-                            [],
+                data: {
 
-                        borderWidth: 3,
-                        tension: 0.35,
-                        fill: false,
-                        pointRadius: 4,
-                        pointHoverRadius: 6
-                    }
-                ]
-            },
+                    labels:
+                        charts.monthlyLabels ||
+                        [],
 
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
 
-                plugins: {
-                    legend: {
-                        display: false
-                    }
+                    datasets: [
+                        {
+
+                            label:
+                                "Orders",
+
+
+                            data:
+                                charts.monthlyOrderCount ||
+                                [],
+
+
+                            borderWidth:
+                                3,
+
+
+                            tension:
+                                0.35,
+
+
+                            fill:
+                                false,
+
+
+                            pointRadius:
+                                4,
+
+
+                            pointHoverRadius:
+                                6
+                        }
+                    ]
                 },
 
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0
+
+                options: {
+
+                    responsive:
+                        true,
+
+
+                    maintainAspectRatio:
+                        false,
+
+
+                    plugins: {
+
+                        legend: {
+
+                            display:
+                                false
                         }
                     },
 
-                    x: {
-                        grid: {
-                            display: false
+
+                    scales: {
+
+                        y: {
+
+                            beginAtZero:
+                                true,
+
+
+                            ticks: {
+
+                                precision:
+                                    0
+                            }
+                        },
+
+
+                        x: {
+
+                            grid: {
+
+                                display:
+                                    false
+                            }
                         }
                     }
                 }
             }
-        });
+        );
 }

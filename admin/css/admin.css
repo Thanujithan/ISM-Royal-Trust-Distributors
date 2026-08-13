@@ -2015,6 +2015,464 @@ a {
     border-radius: 12px;
     padding: 8px;
 }
+/* ==========================================
+   DASHBOARD INVENTORY SUMMARY
+========================================== */
+
+.inventory-summary {
+    margin-top: 22px;
+
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 18px;
+}
+
+
+.inventory-summary-card {
+    padding: 20px 22px;
+
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    background: var(--white);
+
+    border: 1px solid var(--border);
+    border-radius: 14px;
+
+    box-shadow:
+        0 6px 18px rgba(15, 76, 129, 0.06);
+}
+
+
+.inventory-summary-icon {
+    width: 54px;
+    height: 54px;
+
+    flex-shrink: 0;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 13px;
+
+    font-size: 22px;
+}
+
+
+.inventory-summary-info {
+    min-width: 0;
+}
+
+
+.inventory-summary-info span {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: var(--muted);
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
+
+.inventory-summary-info strong {
+    display: block;
+
+    margin-bottom: 5px;
+
+    font-size: 26px;
+    font-weight: 800;
+}
+
+
+.inventory-summary-info small {
+    color: var(--muted);
+
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+
+/* LOW STOCK */
+
+.low-stock-summary {
+    border-left: 5px solid #f59e0b;
+}
+
+
+.low-stock-summary .inventory-summary-icon {
+    color: #b45309;
+    background: #fff7ed;
+}
+
+
+.low-stock-summary .inventory-summary-info strong {
+    color: #b45309;
+}
+
+
+/* OUT OF STOCK */
+
+.out-stock-summary {
+    border-left: 5px solid #dc2626;
+}
+
+
+.out-stock-summary .inventory-summary-icon {
+    color: #b91c1c;
+    background: #fee2e2;
+}
+
+
+.out-stock-summary .inventory-summary-info strong {
+    color: #b91c1c;
+}
+
+
+/* ==========================================
+   INVENTORY ALERT CARD
+========================================== */
+
+.inventory-alert-card {
+    margin-top: 22px;
+}
+
+
+.inventory-alert-card .card-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+
+.inventory-alert-card .card-header h2 i {
+    color: var(--secondary);
+}
+
+
+.inventory-alert-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 20px;
+
+    padding: 22px;
+}
+
+
+/* ==========================================
+   INVENTORY ALERT SECTION
+========================================== */
+
+.inventory-alert-section {
+    min-width: 0;
+
+    padding: 18px;
+
+    background: #f8fafc;
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+
+
+.inventory-alert-title {
+    margin-bottom: 14px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+}
+
+
+.inventory-alert-title > div {
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+}
+
+
+.inventory-alert-title h3 {
+    font-size: 16px;
+}
+
+
+.inventory-alert-title i {
+    color: var(--secondary);
+}
+
+
+.inventory-alert-section:last-child
+.inventory-alert-title i {
+    color: var(--danger);
+}
+
+
+.inventory-count-badge {
+    min-width: 30px;
+    height: 30px;
+
+    padding: 0 8px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--white);
+    background: var(--primary);
+
+    border-radius: 20px;
+
+    font-size: 12px;
+    font-weight: 800;
+}
+
+
+/* ==========================================
+   INVENTORY PRODUCT LIST
+========================================== */
+
+.inventory-product-list {
+    display: flex;
+    flex-direction: column;
+}
+
+
+.inventory-product-item {
+    padding: 14px 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 14px;
+
+    border-bottom: 1px solid var(--border);
+}
+
+
+.inventory-product-item:last-child {
+    border-bottom: none;
+}
+
+
+.inventory-product-info {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+}
+
+
+.inventory-product-icon {
+    width: 42px;
+    height: 42px;
+
+    flex-shrink: 0;
+
+    display: grid;
+    place-items: center;
+
+    color: var(--primary);
+    background: #eaf4ff;
+
+    border-radius: 10px;
+
+    font-size: 16px;
+}
+
+
+.inventory-product-info h4 {
+    margin-bottom: 4px;
+
+    color: var(--text);
+
+    font-size: 14px;
+}
+
+
+.inventory-product-info p {
+    margin-bottom: 4px;
+
+    color: var(--muted);
+
+    font-size: 12px;
+}
+
+
+.inventory-product-info small {
+    color: var(--primary);
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+/* ==========================================
+   STOCK LABELS
+========================================== */
+
+.inventory-stock-value {
+    flex-shrink: 0;
+
+    padding: 7px 10px;
+
+    display: inline-flex;
+    align-items: center;
+
+    gap: 6px;
+
+    border-radius: 20px;
+
+    font-size: 11px;
+    font-weight: 800;
+
+    white-space: nowrap;
+}
+
+
+.inventory-stock-value.stock-low {
+    color: #92400e;
+    background: #fef3c7;
+}
+
+
+.inventory-stock-value.stock-out {
+    color: #991b1b;
+    background: #fee2e2;
+}
+
+
+/* ==========================================
+   EMPTY INVENTORY STATE
+========================================== */
+
+.inventory-empty {
+    min-height: 90px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    color: var(--muted);
+}
+
+
+.inventory-empty i {
+    color: var(--success);
+
+    font-size: 26px;
+}
+
+
+.inventory-empty strong {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: var(--success);
+
+    font-size: 13px;
+}
+
+
+.inventory-empty p {
+    font-size: 12px;
+}
+
+
+/* ==========================================
+   RECENT PRODUCT STOCK LABELS
+========================================== */
+
+.recent-stock-label {
+    display: inline-flex;
+
+    margin-top: 6px;
+
+    padding: 5px 8px;
+
+    border-radius: 20px;
+
+    font-size: 11px;
+    font-weight: 700;
+}
+
+
+.recent-stock-label.stock-normal {
+    color: #166534;
+    background: #dcfce7;
+}
+
+
+.recent-stock-label.stock-low {
+    color: #92400e;
+    background: #fef3c7;
+}
+
+
+.recent-stock-label.stock-out {
+    color: #991b1b;
+    background: #fee2e2;
+}
+
+
+/* ==========================================
+   RESPONSIVE INVENTORY
+========================================== */
+
+@media (max-width: 950px) {
+
+    .inventory-alert-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+@media (max-width: 800px) {
+
+    .inventory-summary {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+@media (max-width: 580px) {
+
+    .inventory-summary-card {
+        padding: 17px;
+    }
+
+
+    .inventory-alert-grid {
+        padding: 16px;
+    }
+
+
+    .inventory-alert-section {
+        padding: 15px;
+    }
+
+
+    .inventory-product-item {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+
+    .inventory-stock-value {
+        align-self: flex-start;
+    }
+}
 
 @media (max-width: 580px) {
     .invoice-actions {

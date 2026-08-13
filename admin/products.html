@@ -649,6 +649,34 @@
 
                     </div>
 
+                    <!-- =====================================
+                        LOW STOCK ALERT THRESHOLD
+                    ====================================== -->
+
+                    <div class="form-group">
+
+                        <label for="productLowStockThreshold">
+                            Low Stock Alert At
+                        </label>
+
+                        <input
+                            type="number"
+                            id="productLowStockThreshold"
+                            name="lowStockThreshold"
+                            min="1"
+                            step="1"
+                            value="10"
+                            required
+                            placeholder="Enter low stock alert quantity"
+                        >
+
+                        <small class="input-help">
+                            A warning will appear when the product stock
+                            reaches this quantity or below.
+                        </small>
+
+                    </div>
+
 
 
                     <!-- =====================================

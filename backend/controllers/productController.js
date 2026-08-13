@@ -18,7 +18,7 @@ const ALLOWED_CATEGORIES = [
 ];
 
 const DEFAULT_WHOLESALE_MINIMUM = 20;
-
+const DEFAULT_LOW_STOCK_THRESHOLD = 10;
 
 /* ========================================
    IMAGE HELPERS
@@ -347,7 +347,7 @@ const createProduct = async (
     res
 ) => {
     try {
-        const {
+            const {
             name,
             category,
             brand,
@@ -357,11 +357,11 @@ const createProduct = async (
             wholesalePrice,
             wholesaleMinimumQuantity,
             stock,
+            lowStockThreshold,
             description,
             status,
             isAvailable
         } = req.body;
-
 
         /* -------------------------------
            PRODUCT NAME
@@ -543,6 +543,37 @@ const createProduct = async (
                 });
         }
 
+                    /* -------------------------------
+            LOW STOCK THRESHOLD
+            -------------------------------- */
+
+            const numericLowStockThreshold =
+                getNumericValue(
+                    lowStockThreshold ??
+                    DEFAULT_LOW_STOCK_THRESHOLD
+                );
+
+            if (
+                numericLowStockThreshold === null ||
+                !Number.isInteger(
+                    numericLowStockThreshold
+                ) ||
+                numericLowStockThreshold < 1
+            ) {
+
+                deleteCurrentUploadedFile(
+                    req
+                );
+
+                return res
+                    .status(400)
+                    .json({
+                        success: false,
+                        message:
+                            "Low stock threshold must be at least 1."
+                    });
+            }
+
 
         /* -------------------------------
            STATUS
@@ -619,6 +650,9 @@ const createProduct = async (
 
                 stock:
                     numericStock,
+
+                lowStockThreshold:
+                    numericLowStockThreshold,
 
                 image:
                     uploadedImage,
@@ -759,6 +793,7 @@ const updateProduct = async (
             wholesalePrice,
             wholesaleMinimumQuantity,
             stock,
+            lowStockThreshold,
             description,
             status,
             isAvailable
@@ -1080,6 +1115,44 @@ const updateProduct = async (
 
             existingProduct.stock =
                 numericStock;
+        }
+
+                /* -------------------------------
+        LOW STOCK THRESHOLD
+        -------------------------------- */
+
+        if (
+            lowStockThreshold !== undefined
+        ) {
+
+            const numericLowStockThreshold =
+                getNumericValue(
+                    lowStockThreshold
+                );
+
+            if (
+                numericLowStockThreshold === null ||
+                !Number.isInteger(
+                    numericLowStockThreshold
+                ) ||
+                numericLowStockThreshold < 1
+            ) {
+
+                deleteCurrentUploadedFile(
+                    req
+                );
+
+                return res
+                    .status(400)
+                    .json({
+                        success: false,
+                        message:
+                            "Low stock threshold must be at least 1."
+                    });
+            }
+
+            existingProduct.lowStockThreshold =
+                numericLowStockThreshold;
         }
 
 

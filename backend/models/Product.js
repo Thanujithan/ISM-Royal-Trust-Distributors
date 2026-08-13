@@ -1,7 +1,12 @@
 const mongoose = require("mongoose");
 
+
 const productSchema = new mongoose.Schema(
     {
+        /* ========================================
+           BASIC PRODUCT INFORMATION
+        ======================================== */
+
         name: {
             type: String,
             required: [
@@ -26,19 +31,18 @@ const productSchema = new mongoose.Schema(
             default: "ISM Royal Trust"
         },
 
-        /*
-        ========================================
-        NET CONTENT
 
-        Examples:
-        200 ml
-        500 ml
-        1 L
-        100 g
-        1 kg
-        5 kg
-        ========================================
-        */
+        /* ========================================
+           NET CONTENT
+
+           Examples:
+           200 ml
+           500 ml
+           1 L
+           100 g
+           1 kg
+           5 kg
+        ======================================== */
 
         netContent: {
             type: String,
@@ -46,16 +50,15 @@ const productSchema = new mongoose.Schema(
             default: ""
         },
 
-        /*
-        ========================================
-        LEGACY PRICE
 
-        Existing frontend/backend functions
-        may still use price.
+        /* ========================================
+           LEGACY PRICE
 
-        price always follows retailPrice.
-        ========================================
-        */
+           Existing frontend/backend functions
+           may still use "price".
+
+           price always follows retailPrice.
+        ======================================== */
 
         price: {
             type: Number,
@@ -66,11 +69,10 @@ const productSchema = new mongoose.Schema(
             default: 0
         },
 
-        /*
-        ========================================
-        RETAIL AND WHOLESALE PRICES
-        ========================================
-        */
+
+        /* ========================================
+           RETAIL PRICE
+        ======================================== */
 
         retailPrice: {
             type: Number,
@@ -80,6 +82,11 @@ const productSchema = new mongoose.Schema(
             ]
         },
 
+
+        /* ========================================
+           WHOLESALE PRICE
+        ======================================== */
+
         wholesalePrice: {
             type: Number,
             min: [
@@ -87,6 +94,11 @@ const productSchema = new mongoose.Schema(
                 "Wholesale price cannot be negative"
             ]
         },
+
+
+        /* ========================================
+           WHOLESALE MINIMUM QUANTITY
+        ======================================== */
 
         wholesaleMinimumQuantity: {
             type: Number,
@@ -96,6 +108,11 @@ const productSchema = new mongoose.Schema(
                 "Wholesale minimum quantity must be at least 1"
             ]
         },
+
+
+        /* ========================================
+           STOCK
+        ======================================== */
 
         stock: {
             type: Number,
@@ -110,11 +127,45 @@ const productSchema = new mongoose.Schema(
             ]
         },
 
+
+        /* ========================================
+           LOW STOCK ALERT THRESHOLD
+
+           Example:
+
+           stock = 50
+           lowStockThreshold = 100
+
+           Result:
+           Low Stock Warning
+
+           Default = 10
+        ======================================== */
+
+        lowStockThreshold: {
+            type: Number,
+            default: 10,
+            min: [
+                1,
+                "Low stock threshold must be at least 1"
+            ]
+        },
+
+
+        /* ========================================
+           PRODUCT IMAGE
+        ======================================== */
+
         image: {
             type: String,
             trim: true,
             default: ""
         },
+
+
+        /* ========================================
+           DESCRIPTION
+        ======================================== */
 
         description: {
             type: String,
@@ -125,10 +176,20 @@ const productSchema = new mongoose.Schema(
             trim: true
         },
 
+
+        /* ========================================
+           AVAILABILITY
+        ======================================== */
+
         isAvailable: {
             type: Boolean,
             default: true
         },
+
+
+        /* ========================================
+           STATUS
+        ======================================== */
 
         status: {
             type: String,
@@ -145,93 +206,171 @@ const productSchema = new mongoose.Schema(
 );
 
 
-/*
-========================================
-PRICE COMPATIBILITY
-
-Old products:
-price only
-
-New products:
-retailPrice
-wholesalePrice
-wholesaleMinimumQuantity
-========================================
-*/
+/* ========================================
+   VALIDATION / DATA COMPATIBILITY
+======================================== */
 
 productSchema.pre(
     "validate",
     function () {
+
+        /* ========================================
+           LEGACY PRICE
+        ======================================== */
+
         const legacyPrice =
-            Number(this.price || 0);
+            Number(
+                this.price || 0
+            );
+
+
+        /* ========================================
+           RETAIL PRICE
+        ======================================== */
 
         const retailPrice =
             this.retailPrice !== undefined &&
             this.retailPrice !== null
-                ? Number(this.retailPrice)
+
+                ? Number(
+                    this.retailPrice
+                )
+
                 : legacyPrice;
+
+
+        /* ========================================
+           WHOLESALE PRICE
+        ======================================== */
 
         const wholesalePrice =
             this.wholesalePrice !== undefined &&
             this.wholesalePrice !== null
-                ? Number(this.wholesalePrice)
+
+                ? Number(
+                    this.wholesalePrice
+                )
+
                 : retailPrice;
+
+
+        /* ========================================
+           WHOLESALE MINIMUM QUANTITY
+        ======================================== */
 
         const minimumQuantity =
             Number(
-                this.wholesaleMinimumQuantity ||
+                this.wholesaleMinimumQuantity ??
                 20
             );
 
+
+        /* ========================================
+           LOW STOCK THRESHOLD
+        ======================================== */
+
+        const lowStockThreshold =
+            Number(
+                this.lowStockThreshold ??
+                10
+            );
+
+
+        /* ========================================
+           SET RETAIL PRICE
+        ======================================== */
+
         this.retailPrice =
-            Number.isNaN(retailPrice)
-                ? 0
-                : retailPrice;
+            Number.isFinite(
+                retailPrice
+            ) &&
+            retailPrice >= 0
+
+                ? retailPrice
+
+                : 0;
+
+
+        /* ========================================
+           SET WHOLESALE PRICE
+        ======================================== */
 
         this.wholesalePrice =
-            Number.isNaN(wholesalePrice)
-                ? this.retailPrice
-                : wholesalePrice;
+            Number.isFinite(
+                wholesalePrice
+            ) &&
+            wholesalePrice >= 0
+
+                ? wholesalePrice
+
+                : this.retailPrice;
+
+
+        /* ========================================
+           SET WHOLESALE MINIMUM QUANTITY
+        ======================================== */
 
         this.wholesaleMinimumQuantity =
             Number.isInteger(
                 minimumQuantity
             ) &&
             minimumQuantity >= 1
+
                 ? minimumQuantity
+
                 : 20;
 
-        /*
-        Existing functions using price
-        will still get retail price.
-        */
+
+        /* ========================================
+           SET LOW STOCK THRESHOLD
+        ======================================== */
+
+        this.lowStockThreshold =
+            Number.isInteger(
+                lowStockThreshold
+            ) &&
+            lowStockThreshold >= 1
+
+                ? lowStockThreshold
+
+                : 10;
+
+
+        /* ========================================
+           LEGACY PRICE COMPATIBILITY
+
+           price always follows retailPrice
+        ======================================== */
 
         this.price =
             this.retailPrice;
 
-        /*
-        Wholesale price must not be
-        greater than retail price.
-        */
+
+        /* ========================================
+           WHOLESALE VALIDATION
+        ======================================== */
 
         if (
             this.wholesalePrice >
             this.retailPrice
         ) {
+
             this.invalidate(
                 "wholesalePrice",
                 "Wholesale price cannot be greater than retail price"
             );
         }
 
-        /*
-        Clean net content value
-        */
+
+        /* ========================================
+           CLEAN NET CONTENT
+        ======================================== */
 
         if (
             this.netContent !== undefined &&
             this.netContent !== null
         ) {
+
             this.netContent =
                 String(
                     this.netContent
@@ -241,17 +380,17 @@ productSchema.pre(
 );
 
 
-/*
-========================================
-STATUS AND AVAILABILITY
-========================================
-*/
+/* ========================================
+   STATUS AND AVAILABILITY
+======================================== */
 
 productSchema.pre(
     "save",
     function () {
+
         this.isAvailable =
-            this.status === "active";
+            this.status ===
+            "active";
     }
 );
 

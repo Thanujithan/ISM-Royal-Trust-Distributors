@@ -228,6 +228,165 @@
 
                 </div>
 
+                            <!-- =========================================
+                INVENTORY STOCK OVERVIEW
+            ========================================= -->
+
+            <div class="inventory-summary">
+
+                <!-- LOW STOCK CARD -->
+                <article class="inventory-summary-card low-stock-summary">
+
+                    <div class="inventory-summary-icon">
+                        <i class="fas fa-triangle-exclamation"></i>
+                    </div>
+
+                    <div class="inventory-summary-info">
+                        <span>Low Stock Products</span>
+
+                        <strong id="lowStockCount">
+                            0
+                        </strong>
+
+                        <small>
+                            Products with 1 - 10 items remaining
+                        </small>
+                    </div>
+
+                </article>
+
+
+                <!-- OUT OF STOCK CARD -->
+                <article class="inventory-summary-card out-stock-summary">
+
+                    <div class="inventory-summary-icon">
+                        <i class="fas fa-box-open"></i>
+                    </div>
+
+                    <div class="inventory-summary-info">
+                        <span>Out of Stock</span>
+
+                        <strong id="outOfStockCount">
+                            0
+                        </strong>
+
+                        <small>
+                            Products that need restocking
+                        </small>
+                    </div>
+
+                </article>
+
+            </div>
+
+
+            <!-- =========================================
+                STOCK ALERT PRODUCTS
+            ========================================= -->
+
+            <section class="content-card inventory-alert-card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2>
+                            <i class="fas fa-boxes-stacked"></i>
+                            Inventory Alerts
+                        </h2>
+
+                        <p>
+                            Products that require your attention
+                        </p>
+
+                    </div>
+
+                    <a href="products.html">
+                        Manage Products
+                    </a>
+
+                </div>
+
+
+                <div class="inventory-alert-grid">
+
+                    <!-- LOW STOCK PRODUCTS -->
+                    <div class="inventory-alert-section">
+
+                        <div class="inventory-alert-title">
+
+                            <div>
+                                <i class="fas fa-triangle-exclamation"></i>
+
+                                <h3>
+                                    Low Stock
+                                </h3>
+                            </div>
+
+                            <span
+                                class="inventory-count-badge"
+                                id="lowStockBadge"
+                            >
+                                0
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            class="inventory-product-list"
+                            id="lowStockProducts"
+                        >
+
+                            <p class="empty-message">
+                                Loading low stock products...
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- OUT OF STOCK PRODUCTS -->
+                    <div class="inventory-alert-section">
+
+                        <div class="inventory-alert-title">
+
+                            <div>
+                                <i class="fas fa-circle-xmark"></i>
+
+                                <h3>
+                                    Out of Stock
+                                </h3>
+                            </div>
+
+                            <span
+                                class="inventory-count-badge"
+                                id="outOfStockBadge"
+                            >
+                                0
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            class="inventory-product-list"
+                            id="outOfStockProducts"
+                        >
+
+                            <p class="empty-message">
+                                Loading out of stock products...
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
                 <div class="dashboard-charts">
 
                     <section class="content-card dashboard-chart-card">
