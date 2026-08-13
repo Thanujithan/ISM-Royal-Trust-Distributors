@@ -52,6 +52,21 @@ function initializeProductsPage() {
         );
 
 
+    /*
+    ========================================
+    CATEGORY BUTTONS
+    ========================================
+    */
+
+    const categoryButtons =
+        document.querySelectorAll(
+            ".category-btn, .filter-btn, [data-category]"
+        );
+
+
+    let activeCategory = "";
+
+
     const cartCount =
         document.getElementById(
             "cartCount"
@@ -62,6 +77,7 @@ function initializeProductsPage() {
 
 
     if (!productContainer) {
+
         console.error(
             "Product container not found."
         );
@@ -75,15 +91,84 @@ function initializeProductsPage() {
     loadProducts();
 
 
+    /* ========================================
+       SEARCH EVENT
+    ======================================== */
+
     searchInput?.addEventListener(
         "input",
         filterProducts
     );
 
 
+    /* ========================================
+       SELECT CATEGORY EVENT
+    ======================================== */
+
     categoryFilter?.addEventListener(
         "change",
-        filterProducts
+        () => {
+
+            activeCategory =
+                normalizeCategoryValue(
+                    categoryFilter.value
+                );
+
+            filterProducts();
+        }
+    );
+
+
+    /* ========================================
+       CATEGORY BUTTON EVENTS
+    ======================================== */
+
+    categoryButtons.forEach(
+        (button) => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const buttonCategory =
+                        button.dataset.category ||
+                        button.dataset.filter ||
+                        button.textContent ||
+                        "";
+
+
+                    activeCategory =
+                        normalizeCategoryValue(
+                            buttonCategory
+                        );
+
+
+                    categoryButtons.forEach(
+                        (btn) => {
+
+                            btn.classList.remove(
+                                "active"
+                            );
+                        }
+                    );
+
+
+                    button.classList.add(
+                        "active"
+                    );
+
+
+                    if (categoryFilter) {
+
+                        categoryFilter.value =
+                            activeCategory;
+                    }
+
+
+                    filterProducts();
+                }
+            );
+        }
     );
 
 
@@ -111,6 +196,7 @@ function initializeProductsPage() {
 
 
             if (!response.ok) {
+
                 throw new Error(
                     result.message ||
                     "Unable to fetch products."
@@ -124,6 +210,7 @@ function initializeProductsPage() {
                     result.data
                 )
             ) {
+
                 throw new Error(
                     "Invalid product response."
                 );
@@ -131,24 +218,115 @@ function initializeProductsPage() {
 
 
             allProducts =
-                result.data
+    result.data
 
-                    .filter(
-                        (product) => {
-                            return (
-                                product.status ===
-                                    "active" &&
-                                product
-                                    .isAvailable !==
-                                    false
-                            );
-                        }
-                    )
+        .filter(
+            (product) => {
 
-                    .map(
-                        normalizeProduct
+                return (
+                    product.status ===
+                        "active" &&
+
+                    product.isAvailable !==
+                        false
+                );
+            }
+        )
+
+        .map(
+            normalizeProduct
+        )
+
+        .sort(
+            (a, b) => {
+
+                /*
+                ========================================
+                CATEGORY DISPLAY ORDER
+
+                1. Juice
+                2. Sweets
+                3. Bottle Water
+                4. Rice
+                5. Bites
+                ========================================
+                */
+
+                const categoryOrder = {
+
+                    juice: 1,
+
+                    sweets: 2,
+
+                    "bottled-water": 3,
+
+                    rice: 4,
+
+                    bites: 5
+                };
+
+
+                const categoryA =
+                    normalizeCategoryValue(
+                        a.category
                     );
 
+
+                const categoryB =
+                    normalizeCategoryValue(
+                        b.category
+                    );
+
+
+                const orderA =
+                    categoryOrder[
+                        categoryA
+                    ] ?? 999;
+
+
+                const orderB =
+                    categoryOrder[
+                        categoryB
+                    ] ?? 999;
+
+
+                /*
+                Different categories:
+                category priority use pannum
+                */
+
+                if (
+                    orderA !== orderB
+                ) {
+
+                    return (
+                        orderA - orderB
+                    );
+                }
+
+
+                /*
+                Same category-la
+                latest added product first
+                */
+
+                const dateA =
+                    new Date(
+                        a.createdAt || 0
+                    ).getTime();
+
+
+                const dateB =
+                    new Date(
+                        b.createdAt || 0
+                    ).getTime();
+
+
+                return (
+                    dateB - dateA
+                );
+            }
+        );
 
             createCategoryOptions();
 
@@ -199,31 +377,65 @@ function initializeProductsPage() {
 
 
         return {
+
             ...product,
+
 
             retailPrice,
 
+
             wholesalePrice,
+
 
             wholesaleMinimumQuantity,
 
+
             /*
-            Net Content
+            ========================================
+            NET CONTENT
+            ========================================
             */
 
             netContent:
-                product.netContent
+                product.netContent !==
+                    undefined &&
+                product.netContent !==
+                    null
+
                     ? String(
                         product.netContent
                     ).trim()
+
                     : "",
 
+
             /*
-            Legacy compatibility
+            ========================================
+            NORMALIZED CATEGORY
+            ========================================
+            */
+
+            normalizedCategory:
+                normalizeCategoryValue(
+                    product.category
+                ),
+
+
+            /*
+            ========================================
+            LEGACY PRICE
+            ========================================
             */
 
             price:
                 retailPrice,
+
+
+            /*
+            ========================================
+            PRODUCT IMAGE
+            ========================================
+            */
 
             image:
                 getProductImageUrl(
@@ -235,6 +447,10 @@ function initializeProductsPage() {
         };
     }
 
+
+    /* ========================================
+       RETAIL PRICE
+    ======================================== */
 
     function getRetailPrice(product) {
 
@@ -253,6 +469,10 @@ function initializeProductsPage() {
             : retailPrice;
     }
 
+
+    /* ========================================
+       WHOLESALE PRICE
+    ======================================== */
 
     function getWholesalePrice(
         product,
@@ -273,6 +493,10 @@ function initializeProductsPage() {
             : wholesalePrice;
     }
 
+
+    /* ========================================
+       WHOLESALE MINIMUM
+    ======================================== */
 
     function getWholesaleMinimumQuantity(
         product
@@ -297,9 +521,14 @@ function initializeProductsPage() {
     }
 
 
+    /* ========================================
+       PRODUCT IMAGE URL
+    ======================================== */
+
     function getProductImageUrl(image) {
 
         if (!image) {
+
             return (
                 "images/products/" +
                 "default-product.jpg"
@@ -318,6 +547,7 @@ function initializeProductsPage() {
                 "data:"
             )
         ) {
+
             return image;
         }
 
@@ -543,6 +773,7 @@ function initializeProductsPage() {
                         alt="${productName}"
                         class="product-image"
                         loading="lazy"
+
                         onerror="
                             this.onerror=null;
                             this.src='images/products/default-product.jpg';
@@ -567,11 +798,12 @@ function initializeProductsPage() {
                     </p>
 
 
-                    <!-- =================================
-                         PRODUCT NAME + NET CONTENT
-                    ================================== -->
+                    <!-- =========================
+                         NAME + NET CONTENT
+                    ========================== -->
 
                     <div class="product-name-row">
+
 
                         <h3 class="product-name">
                             ${productName}
@@ -580,13 +812,16 @@ function initializeProductsPage() {
 
                         ${
                             netContent
+
                                 ? `
                                     <span class="product-net-content">
                                         ${netContent}
                                     </span>
                                   `
+
                                 : ""
                         }
+
 
                     </div>
 
@@ -601,9 +836,9 @@ function initializeProductsPage() {
                     </div>
 
 
-                    <!-- =================================
-                         RETAIL / WHOLESALE PRICE
-                    ================================== -->
+                    <!-- =========================
+                         PRICES
+                    ========================== -->
 
                     <div class="product-pricing">
 
@@ -654,22 +889,29 @@ function initializeProductsPage() {
 
                         </p>
 
+
                     </div>
 
 
-                    <!-- =================================
+                    <!-- =========================
                          QUANTITY
-                    ================================== -->
+                    ========================== -->
 
                     <div class="product-quantity-selector">
 
 
                         <button
                             type="button"
-                            class="quantity-button decrease-quantity"
+
+                            class="
+                                quantity-button
+                                decrease-quantity
+                            "
+
                             data-product-id="${escapeAttribute(
                                 productId
                             )}"
+
                             ${
                                 stock <= 0
                                     ? "disabled"
@@ -684,13 +926,19 @@ function initializeProductsPage() {
 
                         <input
                             type="number"
+
                             class="product-quantity-input"
+
                             data-product-id="${escapeAttribute(
                                 productId
                             )}"
+
                             value="1"
+
                             min="1"
+
                             max="${stock}"
+
                             ${
                                 stock <= 0
                                     ? "disabled"
@@ -701,10 +949,16 @@ function initializeProductsPage() {
 
                         <button
                             type="button"
-                            class="quantity-button increase-quantity"
+
+                            class="
+                                quantity-button
+                                increase-quantity
+                            "
+
                             data-product-id="${escapeAttribute(
                                 productId
                             )}"
+
                             ${
                                 stock <= 0
                                     ? "disabled"
@@ -716,15 +970,17 @@ function initializeProductsPage() {
 
                         </button>
 
+
                     </div>
 
 
-                    <!-- =================================
+                    <!-- =========================
                          CURRENT UNIT PRICE
-                    ================================== -->
+                    ========================== -->
 
                     <div
                         class="selected-price-box"
+
                         id="selectedPrice-${escapeAttribute(
                             productId
                         )}"
@@ -747,19 +1003,23 @@ function initializeProductsPage() {
                             Retail price applied
                         </small>
 
+
                     </div>
 
 
-                    <!-- =================================
+                    <!-- =========================
                          ADD TO CART
-                    ================================== -->
+                    ========================== -->
 
                     <button
                         type="button"
+
                         class="add-cart-button"
+
                         data-product-id="${escapeAttribute(
                             productId
                         )}"
+
                         ${
                             stock <= 0
                                 ? "disabled"
@@ -783,14 +1043,13 @@ function initializeProductsPage() {
 
                     </button>
 
+
                 </div>
 
             </article>
         `;
     }
-
-
-    /* ========================================
+        /* ========================================
        PRODUCT CARD EVENTS
     ======================================== */
 
@@ -820,6 +1079,10 @@ function initializeProductsPage() {
             );
 
 
+        /* ========================================
+           DECREASE QUANTITY
+        ======================================== */
+
         decreaseButtons.forEach(
             (button) => {
 
@@ -827,15 +1090,63 @@ function initializeProductsPage() {
                     "click",
                     () => {
 
-                        changeProductQuantity(
-                            button.dataset.productId,
-                            -1
+                        const productId =
+                            button.dataset.productId;
+
+
+                        const product =
+                            findProduct(
+                                productId
+                            );
+
+
+                        if (!product) {
+                            return;
+                        }
+
+
+                        const input =
+                            getQuantityInput(
+                                productId
+                            );
+
+
+                        if (!input) {
+                            return;
+                        }
+
+
+                        let quantity =
+                            Number(
+                                input.value ||
+                                1
+                            );
+
+
+                        quantity =
+                            Math.max(
+                                1,
+                                quantity - 1
+                            );
+
+
+                        input.value =
+                            quantity;
+
+
+                        updateDisplayedPrice(
+                            product,
+                            quantity
                         );
                     }
                 );
             }
         );
 
+
+        /* ========================================
+           INCREASE QUANTITY
+        ======================================== */
 
         increaseButtons.forEach(
             (button) => {
@@ -844,42 +1155,197 @@ function initializeProductsPage() {
                     "click",
                     () => {
 
-                        changeProductQuantity(
-                            button.dataset.productId,
-                            1
+                        const productId =
+                            button.dataset.productId;
+
+
+                        const product =
+                            findProduct(
+                                productId
+                            );
+
+
+                        if (!product) {
+                            return;
+                        }
+
+
+                        const input =
+                            getQuantityInput(
+                                productId
+                            );
+
+
+                        if (!input) {
+                            return;
+                        }
+
+
+                        let quantity =
+                            Number(
+                                input.value ||
+                                1
+                            );
+
+
+                        const stock =
+                            Number(
+                                product.stock ||
+                                0
+                            );
+
+
+                        if (
+                            quantity >= stock
+                        ) {
+
+                            showToast(
+                                `Only ${stock} item(s) available in stock.`,
+                                "error"
+                            );
+
+                            return;
+                        }
+
+
+                        quantity += 1;
+
+
+                        input.value =
+                            quantity;
+
+
+                        updateDisplayedPrice(
+                            product,
+                            quantity
                         );
                     }
                 );
             }
         );
 
+
+        /* ========================================
+           MANUAL QUANTITY INPUT
+        ======================================== */
 
         quantityInputs.forEach(
             (input) => {
 
                 input.addEventListener(
-                    "change",
+                    "input",
                     () => {
 
-                        validateProductQuantity(
-                            input.dataset.productId
+                        const productId =
+                            input.dataset.productId;
+
+
+                        const product =
+                            findProduct(
+                                productId
+                            );
+
+
+                        if (!product) {
+                            return;
+                        }
+
+
+                        const stock =
+                            Number(
+                                product.stock ||
+                                0
+                            );
+
+
+                        let quantity =
+                            Number(
+                                input.value
+                            );
+
+
+                        if (
+                            !Number.isInteger(
+                                quantity
+                            ) ||
+                            quantity < 1
+                        ) {
+
+                            quantity = 1;
+                        }
+
+
+                        if (
+                            quantity > stock
+                        ) {
+
+                            quantity =
+                                stock;
+
+
+                            showToast(
+                                `Only ${stock} item(s) available in stock.`,
+                                "error"
+                            );
+                        }
+
+
+                        input.value =
+                            quantity;
+
+
+                        updateDisplayedPrice(
+                            product,
+                            quantity
                         );
                     }
                 );
 
 
                 input.addEventListener(
-                    "input",
+                    "blur",
                     () => {
 
-                        updateSelectedPrice(
-                            input.dataset.productId
-                        );
+                        if (
+                            !input.value ||
+                            Number(
+                                input.value
+                            ) < 1
+                        ) {
+
+                            input.value =
+                                1;
+                        }
+
+
+                        const productId =
+                            input.dataset.productId;
+
+
+                        const product =
+                            findProduct(
+                                productId
+                            );
+
+
+                        if (product) {
+
+                            updateDisplayedPrice(
+                                product,
+                                Number(
+                                    input.value
+                                )
+                            );
+                        }
                     }
                 );
             }
         );
 
+
+        /* ========================================
+           ADD TO CART
+        ======================================== */
 
         addCartButtons.forEach(
             (button) => {
@@ -888,9 +1354,12 @@ function initializeProductsPage() {
                     "click",
                     () => {
 
-                        addToCart(
-                            button.dataset.productId,
-                            button
+                        const productId =
+                            button.dataset.productId;
+
+
+                        addProductToCart(
+                            productId
                         );
                     }
                 );
@@ -900,202 +1369,64 @@ function initializeProductsPage() {
 
 
     /* ========================================
-       CHANGE PRODUCT QUANTITY
+       FIND PRODUCT
     ======================================== */
 
-    function changeProductQuantity(
-        productId,
-        change
-    ) {
+    function findProduct(productId) {
 
-        const product =
-            findProductById(
-                productId
-            );
+        return allProducts.find(
+            (product) => {
 
-
-        const input =
-            getQuantityInput(
-                productId
-            );
-
-
-        if (
-            !product ||
-            !input
-        ) {
-            return;
-        }
-
-
-        const stock =
-            Number(
-                product.stock ||
-                0
-            );
-
-
-        let quantity =
-            Number(
-                input.value ||
-                1
-            );
-
-
-        quantity +=
-            change;
-
-
-        if (
-            quantity < 1
-        ) {
-            quantity = 1;
-        }
-
-
-        if (
-            stock > 0 &&
-            quantity > stock
-        ) {
-
-            quantity =
-                stock;
-
-
-            showNotification(
-                `Only ${stock} items are available.`,
-                "error"
-            );
-        }
-
-
-        input.value =
-            quantity;
-
-
-        updateSelectedPrice(
-            productId
+                return String(
+                    product._id ||
+                    product.id ||
+                    ""
+                ) ===
+                String(
+                    productId
+                );
+            }
         );
     }
 
 
     /* ========================================
-       VALIDATE PRODUCT QUANTITY
+       GET QUANTITY INPUT
     ======================================== */
 
-    function validateProductQuantity(
+    function getQuantityInput(
         productId
     ) {
 
-        const product =
-            findProductById(
+        return productContainer.querySelector(
+            `.product-quantity-input[data-product-id="${escapeSelector(
                 productId
-            );
-
-
-        const input =
-            getQuantityInput(
-                productId
-            );
-
-
-        if (
-            !product ||
-            !input
-        ) {
-            return;
-        }
-
-
-        const stock =
-            Number(
-                product.stock ||
-                0
-            );
-
-
-        let quantity =
-            Number(
-                input.value
-            );
-
-
-        if (
-            !Number.isInteger(
-                quantity
-            ) ||
-            quantity < 1
-        ) {
-            quantity = 1;
-        }
-
-
-        if (
-            stock > 0 &&
-            quantity > stock
-        ) {
-
-            quantity =
-                stock;
-
-
-            showNotification(
-                `Only ${stock} items are available.`,
-                "error"
-            );
-        }
-
-
-        input.value =
-            quantity;
-
-
-        updateSelectedPrice(
-            productId
+            )}"]`
         );
     }
 
 
     /* ========================================
-       UPDATE SELECTED PRICE
+       UPDATE CURRENT UNIT PRICE
     ======================================== */
 
-    function updateSelectedPrice(
-        productId
+    function updateDisplayedPrice(
+        product,
+        quantity
     ) {
-
-        const product =
-            findProductById(
-                productId
-            );
-
-
-        const input =
-            getQuantityInput(
-                productId
-            );
-
 
         const priceBox =
             document.getElementById(
-                `selectedPrice-${productId}`
+                `selectedPrice-${
+                    product._id ||
+                    product.id
+                }`
             );
 
 
-        if (
-            !product ||
-            !input ||
-            !priceBox
-        ) {
+        if (!priceBox) {
             return;
         }
-
-
-        const quantity =
-            Number(
-                input.value ||
-                1
-            );
 
 
         const appliedPrice =
@@ -1110,11 +1441,6 @@ function initializeProductsPage() {
                 product,
                 quantity
             );
-
-
-        const itemTotal =
-            appliedPrice *
-            quantity;
 
 
         priceBox.innerHTML = `
@@ -1132,93 +1458,50 @@ function initializeProductsPage() {
             </strong>
 
 
-            <small
-                class="${
-                    priceType ===
-                    "wholesale"
+            ${
+                priceType ===
+                "wholesale"
 
-                        ? "wholesale-applied"
+                    ? `
+                        <small class="wholesale-applied">
 
-                        : "retail-applied"
-                }"
-            >
+                            <i class="fas fa-boxes-stacked"></i>
 
-                ${
-                    priceType ===
-                    "wholesale"
+                            Wholesale price applied
 
-                        ? `Wholesale price applied · Total LKR ${formatPrice(
-                            itemTotal
-                        )}`
+                        </small>
+                      `
 
-                        : `Retail price applied · Total LKR ${formatPrice(
-                            itemTotal
-                        )}`
-                }
+                    : `
+                        <small class="retail-applied">
 
-            </small>
+                            Retail price applied
+
+                        </small>
+                      `
+            }
         `;
     }
 
 
-    function getQuantityInput(
-        productId
-    ) {
-
-        return productContainer
-            .querySelector(
-                `.product-quantity-input[data-product-id="${cssEscape(
-                    productId
-                )}"]`
-            );
-    }
-
-
-    function findProductById(
-        productId
-    ) {
-
-        return allProducts.find(
-            (product) =>
-                String(
-                    product._id ||
-                    product.id
-                ) ===
-                String(
-                    productId
-                )
-        );
-    }
-
-
     /* ========================================
-       ADD TO CART
+       ADD PRODUCT TO CART
     ======================================== */
 
-    function addToCart(
-        productId,
-        button
+    function addProductToCart(
+        productId
     ) {
 
         const product =
-            findProductById(
+            findProduct(
                 productId
             );
 
 
-        const quantityInput =
-            getQuantityInput(
-                productId
-            );
+        if (!product) {
 
-
-        if (
-            !product ||
-            !quantityInput
-        ) {
-
-            showNotification(
-                "Product could not be found.",
+            showToast(
+                "Product not found.",
                 "error"
             );
 
@@ -1233,49 +1516,49 @@ function initializeProductsPage() {
             );
 
 
-        const selectedQuantity =
+        if (
+            stock <= 0
+        ) {
+
+            showToast(
+                "This product is out of stock.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        const quantityInput =
+            getQuantityInput(
+                productId
+            );
+
+
+        let quantity =
             Number(
-                quantityInput.value ||
+                quantityInput?.value ||
                 1
             );
 
 
         if (
-            stock <= 0
-        ) {
-
-            showNotification(
-                "This product is currently out of stock.",
-                "error"
-            );
-
-            return;
-        }
-
-
-        if (
             !Number.isInteger(
-                selectedQuantity
+                quantity
             ) ||
-            selectedQuantity < 1
+            quantity < 1
         ) {
 
-            showNotification(
-                "Please enter a valid quantity.",
-                "error"
-            );
-
-            return;
+            quantity = 1;
         }
 
 
         if (
-            selectedQuantity >
-            stock
+            quantity > stock
         ) {
 
-            showNotification(
-                `Only ${stock} items are available.`,
+            showToast(
+                `Only ${stock} item(s) available in stock.`,
                 "error"
             );
 
@@ -1283,43 +1566,69 @@ function initializeProductsPage() {
         }
 
 
-        const cart =
+        const appliedPrice =
+            getAppliedPrice(
+                product,
+                quantity
+            );
+
+
+        const priceType =
+            getPriceType(
+                product,
+                quantity
+            );
+
+
+        let cart =
             getCart();
 
 
-        const existingProduct =
-            cart.find(
-                (item) =>
-                    String(
-                        item._id
+        const existingIndex =
+            cart.findIndex(
+                (item) => {
+
+                    return String(
+                        item._id ||
+                        item.id ||
+                        item.productId ||
+                        ""
                     ) ===
                     String(
-                        product._id
-                    )
+                        productId
+                    );
+                }
             );
 
 
         /* ========================================
-           EXISTING CART PRODUCT
+           PRODUCT ALREADY IN CART
         ======================================== */
 
-        if (existingProduct) {
+        if (
+            existingIndex !== -1
+        ) {
+
+            const existingItem =
+                cart[
+                    existingIndex
+                ];
+
 
             const newQuantity =
                 Number(
-                    existingProduct.quantity ||
+                    existingItem.quantity ||
                     0
                 ) +
-                selectedQuantity;
+                quantity;
 
 
             if (
-                newQuantity >
-                stock
+                newQuantity > stock
             ) {
 
-                showNotification(
-                    "Maximum available stock has been reached.",
+                showToast(
+                    `You cannot add more than ${stock} item(s).`,
                     "error"
                 );
 
@@ -1327,76 +1636,51 @@ function initializeProductsPage() {
             }
 
 
-            existingProduct.quantity =
-                newQuantity;
-
-
-            /*
-            Net Content always keep updated
-            */
-
-            existingProduct.netContent =
-                product.netContent ||
-                "";
-
-
-            existingProduct.category =
-                product.category;
-
-
-            existingProduct.brand =
-                product.brand;
-
-
-            existingProduct.image =
-                product.image;
-
-
-            existingProduct.stock =
-                stock;
-
-
-            existingProduct.retailPrice =
-                Number(
-                    product.retailPrice
+            const newPrice =
+                getAppliedPrice(
+                    product,
+                    newQuantity
                 );
 
 
-            existingProduct.wholesalePrice =
-                Number(
-                    product.wholesalePrice
+            const newPriceType =
+                getPriceType(
+                    product,
+                    newQuantity
                 );
 
 
-            existingProduct.wholesaleMinimumQuantity =
-                Number(
-                    product
-                        .wholesaleMinimumQuantity
-                );
+            cart[
+                existingIndex
+            ] = {
 
+                ...existingItem,
 
-            updateCartItemPricing(
-                existingProduct
-            );
-
-        } else {
-
-            /* ========================================
-               NEW CART ITEM
-            ======================================== */
-
-            const cartItem = {
 
                 _id:
+                    product._id ||
+                    product.id,
+
+
+                id:
+                    product.id ||
                     product._id,
 
 
+                productId:
+                    product._id ||
+                    product.id,
+
+
                 name:
-                    product.name,
+                    product.name ||
+                    "Product",
 
 
                 /*
-                NET CONTENT
+                ========================================
+                IMPORTANT: NET CONTENT
+                ========================================
                 */
 
                 netContent:
@@ -1405,249 +1689,311 @@ function initializeProductsPage() {
 
 
                 category:
-                    product.category,
+                    product.category ||
+                    "General",
 
 
                 brand:
-                    product.brand,
+                    product.brand ||
+                    "ISM Royal Trust",
+
+
+                image:
+                    product.image ||
+                    "",
+
+
+                description:
+                    product.description ||
+                    "",
+
+
+                stock,
 
 
                 retailPrice:
                     Number(
-                        product.retailPrice
+                        product.retailPrice ||
+                        0
                     ),
 
 
                 wholesalePrice:
                     Number(
-                        product.wholesalePrice
+                        product.wholesalePrice ??
+                        product.retailPrice ??
+                        0
                     ),
 
 
                 wholesaleMinimumQuantity:
                     Number(
                         product
-                            .wholesaleMinimumQuantity
+                            .wholesaleMinimumQuantity ||
+                        DEFAULT_WHOLESALE_MINIMUM
                     ),
 
 
-                /*
-                Existing cart code price
-                field use செய்தாலும்
-                current applied price கிடைக்கும்.
-                */
+                quantity:
+                    newQuantity,
+
 
                 price:
-                    getAppliedPrice(
-                        product,
-                        selectedQuantity
-                    ),
+                    newPrice,
+
+
+                appliedPrice:
+                    newPrice,
 
 
                 priceType:
-                    getPriceType(
-                        product,
-                        selectedQuantity
-                    ),
+                    newPriceType
+            };
+
+
+        } else {
+
+            /* ========================================
+               NEW CART ITEM
+            ======================================== */
+
+            cart.push({
+
+                _id:
+                    product._id ||
+                    product.id,
+
+
+                id:
+                    product.id ||
+                    product._id,
+
+
+                productId:
+                    product._id ||
+                    product.id,
+
+
+                name:
+                    product.name ||
+                    "Product",
+
+
+                /*
+                ========================================
+                IMPORTANT: NET CONTENT
+                ========================================
+                */
+
+                netContent:
+                    product.netContent ||
+                    "",
+
+
+                category:
+                    product.category ||
+                    "General",
+
+
+                brand:
+                    product.brand ||
+                    "ISM Royal Trust",
+
+
+                image:
+                    product.image ||
+                    "",
+
+
+                description:
+                    product.description ||
+                    "",
 
 
                 stock,
 
 
-                image:
-                    product.image,
+                retailPrice:
+                    Number(
+                        product.retailPrice ||
+                        0
+                    ),
 
 
-                quantity:
-                    selectedQuantity
-            };
+                wholesalePrice:
+                    Number(
+                        product.wholesalePrice ??
+                        product.retailPrice ??
+                        0
+                    ),
 
 
-            cart.push(
-                cartItem
-            );
+                wholesaleMinimumQuantity:
+                    Number(
+                        product
+                            .wholesaleMinimumQuantity ||
+                        DEFAULT_WHOLESALE_MINIMUM
+                    ),
+
+
+                quantity,
+
+
+                price:
+                    appliedPrice,
+
+
+                appliedPrice,
+
+
+                priceType
+            });
         }
 
 
-        localStorage.setItem(
-            "ismCart",
-            JSON.stringify(
-                cart
-            )
+        /* ========================================
+           SAVE CART
+        ======================================== */
+
+        saveCart(
+            cart
         );
 
 
         updateCartCount();
 
 
-        showNotification(
+        showToast(
             `${product.name} added to cart.`,
             "success"
         );
 
 
-        showAddedButtonState(
-            button
+        /* Reset quantity */
+
+        if (
+            quantityInput
+        ) {
+
+            quantityInput.value =
+                1;
+        }
+
+
+        updateDisplayedPrice(
+            product,
+            1
         );
     }
 
 
     /* ========================================
-       UPDATE CART ITEM PRICING
-    ======================================== */
-
-    function updateCartItemPricing(
-        cartItem
-    ) {
-
-        const minimumQuantity =
-            Number(
-                cartItem
-                    .wholesaleMinimumQuantity ||
-                DEFAULT_WHOLESALE_MINIMUM
-            );
-
-
-        const quantity =
-            Number(
-                cartItem.quantity ||
-                1
-            );
-
-
-        const retailPrice =
-            Number(
-                cartItem.retailPrice ||
-                cartItem.price ||
-                0
-            );
-
-
-        const wholesalePrice =
-            Number(
-                cartItem.wholesalePrice ||
-                retailPrice
-            );
-
-
-        const isWholesale =
-            quantity >=
-            minimumQuantity;
-
-
-        cartItem.price =
-            isWholesale
-                ? wholesalePrice
-                : retailPrice;
-
-
-        cartItem.priceType =
-            isWholesale
-                ? "wholesale"
-                : "retail";
-    }
-
-
-    /* ========================================
-       CART HELPERS
+       GET CART
     ======================================== */
 
     function getCart() {
 
-        try {
+        const storageKeys = [
+            "ismCart",
+            "cart"
+        ];
 
-            const savedCart =
-                JSON.parse(
+
+        for (
+            const key of storageKeys
+        ) {
+
+            try {
+
+                const stored =
                     localStorage.getItem(
-                        "ismCart"
-                    )
-                );
-
-
-            if (
-                !Array.isArray(
-                    savedCart
-                )
-            ) {
-                return [];
-            }
-
-
-            return savedCart.map(
-                (item) => {
-
-                    const normalizedItem = {
-
-                        ...item,
-
-
-                        /*
-                        NET CONTENT
-                        */
-
-                        netContent:
-                            item.netContent
-                                ? String(
-                                    item.netContent
-                                ).trim()
-                                : "",
-
-
-                        retailPrice:
-                            Number(
-                                item.retailPrice ??
-                                item.price ??
-                                0
-                            ),
-
-
-                        wholesalePrice:
-                            Number(
-                                item.wholesalePrice ??
-                                item.retailPrice ??
-                                item.price ??
-                                0
-                            ),
-
-
-                        wholesaleMinimumQuantity:
-                            Number(
-                                item
-                                    .wholesaleMinimumQuantity ??
-                                DEFAULT_WHOLESALE_MINIMUM
-                            ),
-
-
-                        quantity:
-                            Number(
-                                item.quantity ||
-                                1
-                            )
-                    };
-
-
-                    updateCartItemPricing(
-                        normalizedItem
+                        key
                     );
 
 
-                    return normalizedItem;
+                if (!stored) {
+                    continue;
                 }
+
+
+                const parsed =
+                    JSON.parse(
+                        stored
+                    );
+
+
+                if (
+                    Array.isArray(
+                        parsed
+                    )
+                ) {
+
+                    return parsed;
+                }
+
+
+            } catch (error) {
+
+                console.error(
+                    `Unable to read ${key}:`,
+                    error
+                );
+            }
+        }
+
+
+        return [];
+    }
+
+
+    /* ========================================
+       SAVE CART
+    ======================================== */
+
+    function saveCart(cart) {
+
+        try {
+
+            localStorage.setItem(
+                "ismCart",
+                JSON.stringify(
+                    cart
+                )
+            );
+
+
+            /*
+            Keep legacy cart key synchronized
+            if another page still uses "cart".
+            */
+
+            localStorage.setItem(
+                "cart",
+                JSON.stringify(
+                    cart
+                )
             );
 
 
         } catch (error) {
 
             console.error(
-                "Unable to read shopping cart:",
+                "Unable to save cart:",
                 error
             );
 
 
-            return [];
+            showToast(
+                "Unable to update your cart.",
+                "error"
+            );
         }
     }
 
+
+    /* ========================================
+       UPDATE CART COUNT
+    ======================================== */
 
     function updateCartCount() {
 
@@ -1669,32 +2015,45 @@ function initializeProductsPage() {
                             0
                         )
                     );
-
                 },
                 0
             );
 
 
-        if (cartCount) {
+        if (
+            cartCount
+        ) {
+
             cartCount.textContent =
                 totalQuantity;
+
+
+            cartCount.style.display =
+                totalQuantity > 0
+                    ? "flex"
+                    : "none";
         }
 
+
+        /*
+        Update any other cart badges
+        used by the common navbar.
+        */
 
         document
             .querySelectorAll(
                 ".cart-count"
             )
             .forEach(
-                (element) => {
+                (badge) => {
 
-                    element.textContent =
+                    badge.textContent =
                         totalQuantity;
 
 
-                    element.style.display =
+                    badge.style.display =
                         totalQuantity > 0
-                            ? "inline-flex"
+                            ? "flex"
                             : "none";
                 }
             );
@@ -1702,13 +2061,13 @@ function initializeProductsPage() {
 
 
     /* ========================================
-       SEARCH & CATEGORY FILTER
+       FILTER PRODUCTS
     ======================================== */
 
     function filterProducts() {
 
         const searchText =
-            (
+            String(
                 searchInput?.value ||
                 ""
             )
@@ -1716,33 +2075,28 @@ function initializeProductsPage() {
                 .toLowerCase();
 
 
-        const selectedCategory =
-            (
+        const selectCategory =
+            normalizeCategoryValue(
                 categoryFilter?.value ||
                 ""
-            )
-                .trim()
-                .toLowerCase();
+            );
+
+
+        const selectedCategory =
+            activeCategory ||
+            selectCategory;
 
 
         const filteredProducts =
             allProducts.filter(
                 (product) => {
 
-
                     const name =
                         String(
                             product.name ||
                             ""
                         )
-                            .toLowerCase();
-
-
-                    const category =
-                        String(
-                            product.category ||
-                            ""
-                        )
+                            .trim()
                             .toLowerCase();
 
 
@@ -1751,27 +2105,48 @@ function initializeProductsPage() {
                             product.description ||
                             ""
                         )
+                            .trim()
                             .toLowerCase();
 
 
-                    /*
-                    Search Net Content too
-                    */
+                    const brand =
+                        String(
+                            product.brand ||
+                            ""
+                        )
+                            .trim()
+                            .toLowerCase();
+
 
                     const netContent =
                         String(
                             product.netContent ||
                             ""
                         )
+                            .trim()
+                            .toLowerCase();
+
+
+                    const category =
+                        normalizeCategoryValue(
+                            product.category ||
+                            ""
+                        );
+
+
+                    const categoryText =
+                        String(
+                            product.category ||
+                            ""
+                        )
+                            .trim()
                             .toLowerCase();
 
 
                     const matchesSearch =
-                        name.includes(
-                            searchText
-                        ) ||
+                        !searchText ||
 
-                        category.includes(
+                        name.includes(
                             searchText
                         ) ||
 
@@ -1779,13 +2154,22 @@ function initializeProductsPage() {
                             searchText
                         ) ||
 
+                        brand.includes(
+                            searchText
+                        ) ||
+
                         netContent.includes(
+                            searchText
+                        ) ||
+
+                        categoryText.includes(
                             searchText
                         );
 
 
                     const matchesCategory =
                         !selectedCategory ||
+
                         category ===
                             selectedCategory;
 
@@ -1805,7 +2189,90 @@ function initializeProductsPage() {
 
 
     /* ========================================
-       CATEGORY OPTIONS
+       NORMALIZE CATEGORY
+
+       Supports:
+       Juice / Juices
+       Sweet / Sweets
+       Bite / Bites
+       BottleWater / Bottle Water /
+       Bottled Water / bottled-water
+       Rice
+    ======================================== */
+
+    function normalizeCategoryValue(
+        category
+    ) {
+
+        const value =
+            String(
+                category ||
+                ""
+            )
+                .trim()
+                .toLowerCase()
+                .replaceAll(
+                    "_",
+                    "-"
+                )
+                .replace(
+                    /\s+/g,
+                    "-"
+                );
+
+
+        switch (value) {
+
+            case "":
+            case "all":
+            case "all-product":
+            case "all-products":
+            case "all-category":
+            case "all-categories":
+
+                return "";
+
+
+            case "juice":
+            case "juices":
+
+                return "juice";
+
+
+            case "sweet":
+            case "sweets":
+
+                return "sweets";
+
+
+            case "bite":
+            case "bites":
+
+                return "bites";
+
+
+            case "bottlewater":
+            case "bottle-water":
+            case "bottledwater":
+            case "bottled-water":
+            case "water":
+
+                return "bottled-water";
+
+
+            case "rice":
+            case "rices":
+
+                return "rice";
+
+
+            default:
+
+                return value;
+        }
+    }
+        /* ========================================
+       CREATE CATEGORY OPTIONS
     ======================================== */
 
     function createCategoryOptions() {
@@ -1813,6 +2280,14 @@ function initializeProductsPage() {
         if (!categoryFilter) {
             return;
         }
+
+
+        const previousValue =
+            normalizeCategoryValue(
+                categoryFilter.value ||
+                activeCategory ||
+                ""
+            );
 
 
         categoryFilter.innerHTML = `
@@ -1823,7 +2298,7 @@ function initializeProductsPage() {
 
 
             <option value="juice">
-                Juice
+                Juices
             </option>
 
 
@@ -1846,11 +2321,15 @@ function initializeProductsPage() {
                 Rice
             </option>
         `;
+
+
+        categoryFilter.value =
+            previousValue;
     }
 
 
     /* ========================================
-       LOADING
+       SHOW LOADING
     ======================================== */
 
     function showLoading() {
@@ -1864,13 +2343,17 @@ function initializeProductsPage() {
                     Loading Products...
                 </h3>
 
+                <p>
+                    Please wait while products are loading.
+                </p>
+
             </div>
         `;
     }
 
 
     /* ========================================
-       ERROR
+       SHOW ERROR
     ======================================== */
 
     function showProductsError(
@@ -1883,8 +2366,15 @@ function initializeProductsPage() {
                 <i class="fas fa-circle-exclamation"></i>
 
                 <h3>
-                    ${escapeHTML(message)}
+                    Unable to Load Products
                 </h3>
+
+                <p>
+                    ${escapeHTML(
+                        message ||
+                        "Please try again."
+                    )}
+                </p>
 
             </div>
         `;
@@ -1892,31 +2382,42 @@ function initializeProductsPage() {
 
 
     /* ========================================
-       NOTIFICATION
+       TOAST / NOTIFICATION
     ======================================== */
 
-    function showNotification(
+    function showToast(
         message,
         type = "success"
     ) {
 
-        const notification =
+        const oldToast =
+            document.querySelector(
+                ".product-toast"
+            );
+
+
+        oldToast?.remove();
+
+
+        const toast =
             document.createElement(
                 "div"
             );
 
 
-        notification.className =
-            `notification notification-${type}`;
+        toast.className =
+            `product-toast product-toast-${type}`;
 
 
-        notification.innerHTML = `
+        toast.innerHTML = `
 
-            <i class="fas ${
-                type === "success"
-                    ? "fa-circle-check"
-                    : "fa-circle-xmark"
-            }"></i>
+            <i
+                class="fas ${
+                    type === "success"
+                        ? "fa-circle-check"
+                        : "fa-circle-exclamation"
+                }"
+            ></i>
 
             <span>
                 ${escapeHTML(message)}
@@ -1925,32 +2426,32 @@ function initializeProductsPage() {
 
 
         document.body.appendChild(
-            notification
+            toast
         );
 
 
         requestAnimationFrame(
             () => {
 
-                notification.classList.add(
+                toast.classList.add(
                     "show"
                 );
             }
         );
 
 
-        setTimeout(
+        window.setTimeout(
             () => {
 
-                notification.classList.remove(
+                toast.classList.remove(
                     "show"
                 );
 
 
-                setTimeout(
+                window.setTimeout(
                     () => {
 
-                        notification.remove();
+                        toast.remove();
 
                     },
                     300
@@ -1963,49 +2464,6 @@ function initializeProductsPage() {
 
 
     /* ========================================
-       ADDED BUTTON STATE
-    ======================================== */
-
-    function showAddedButtonState(
-        button
-    ) {
-
-        if (!button) {
-            return;
-        }
-
-
-        const originalHTML =
-            button.innerHTML;
-
-
-        button.disabled =
-            true;
-
-
-        button.innerHTML = `
-            <i class="fas fa-check"></i>
-            Added
-        `;
-
-
-        setTimeout(
-            () => {
-
-                button.disabled =
-                    false;
-
-
-                button.innerHTML =
-                    originalHTML;
-
-            },
-            1500
-        );
-    }
-
-
-    /* ========================================
        FORMAT CATEGORY
     ======================================== */
 
@@ -2013,40 +2471,42 @@ function initializeProductsPage() {
         category
     ) {
 
-        switch (
-            String(
+        const normalized =
+            normalizeCategoryValue(
                 category
-            )
-                .trim()
-                .toLowerCase()
-        ) {
-
-            case "juice":
-                return "Juices";
+            );
 
 
-            case "sweets":
-                return "Sweets";
+        const labels = {
+
+            juice:
+                "Juices",
 
 
-            case "bites":
-                return "Bites";
+            sweets:
+                "Sweets",
 
 
-            case "bottled-water":
-                return "Bottle Water";
+            bites:
+                "Bites",
 
 
-            case "rice":
-                return "Rice";
+            "bottled-water":
+                "Bottle Water",
 
 
-            default:
-                return (
-                    category ||
-                    "General"
-                );
-        }
+            rice:
+                "Rice"
+        };
+
+
+        return (
+            labels[
+                normalized
+            ] ||
+            category ||
+            "General"
+        );
     }
 
 
@@ -2058,10 +2518,14 @@ function initializeProductsPage() {
         price
     ) {
 
-        return Number(
-            price ||
-            0
-        )
+        const numericPrice =
+            Number(
+                price ||
+                0
+            );
+
+
+        return numericPrice
             .toLocaleString(
                 "en-LK",
                 {
@@ -2076,21 +2540,48 @@ function initializeProductsPage() {
 
 
     /* ========================================
-       PARSE RESPONSE
+       PARSE API RESPONSE
     ======================================== */
 
     async function parseResponse(
         response
     ) {
 
-        try {
+        const contentType =
+            response.headers.get(
+                "content-type"
+            ) || "";
 
-            return await response.json();
 
-        } catch {
+        if (
+            contentType.includes(
+                "application/json"
+            )
+        ) {
 
-            return {};
+            try {
+
+                return await response.json();
+
+            } catch {
+
+                return {};
+            }
         }
+
+
+        const text =
+            await response.text();
+
+
+        return {
+            success:
+                response.ok,
+
+            message:
+                text ||
+                `Server returned status ${response.status}.`
+        };
     }
 
 
@@ -2106,33 +2597,32 @@ function initializeProductsPage() {
             value ??
             ""
         )
-
             .replaceAll(
                 "&",
                 "&amp;"
             )
-
             .replaceAll(
                 "<",
                 "&lt;"
             )
-
             .replaceAll(
                 ">",
                 "&gt;"
             )
-
             .replaceAll(
                 '"',
                 "&quot;"
             )
-
             .replaceAll(
                 "'",
                 "&#039;"
             );
     }
 
+
+    /* ========================================
+       ESCAPE ATTRIBUTE
+    ======================================== */
 
     function escapeAttribute(
         value
@@ -2144,30 +2634,98 @@ function initializeProductsPage() {
     }
 
 
-    function cssEscape(
+    /* ========================================
+       ESCAPE CSS SELECTOR
+    ======================================== */
+
+    function escapeSelector(
         value
     ) {
 
+        const stringValue =
+            String(
+                value ??
+                ""
+            );
+
+
         if (
             window.CSS &&
-            CSS.escape
+            typeof CSS.escape ===
+                "function"
         ) {
 
             return CSS.escape(
-                String(
-                    value
-                )
+                stringValue
             );
         }
 
 
-        return String(
-            value
-        )
+        return stringValue
+            .replaceAll(
+                "\\",
+                "\\\\"
+            )
             .replaceAll(
                 '"',
                 '\\"'
             );
     }
+
+
+    /* ========================================
+       INITIAL CATEGORY BUTTON ACTIVE STATE
+    ======================================== */
+
+    function initializeCategoryButtonState() {
+
+        if (
+            !categoryButtons.length
+        ) {
+            return;
+        }
+
+
+        let activeButtonFound =
+            false;
+
+
+        categoryButtons.forEach(
+            (button) => {
+
+                const category =
+                    normalizeCategoryValue(
+                        button.dataset.category ||
+                        button.dataset.filter ||
+                        button.textContent ||
+                        ""
+                    );
+
+
+                if (
+                    !activeButtonFound &&
+                    category === ""
+                ) {
+
+                    button.classList.add(
+                        "active"
+                    );
+
+
+                    activeButtonFound =
+                        true;
+
+                } else {
+
+                    button.classList.remove(
+                        "active"
+                    );
+                }
+            }
+        );
+    }
+
+
+    initializeCategoryButtonState();
 
 }
